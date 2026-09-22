@@ -36,3 +36,10 @@
 - Impact: the corrected full run would still reject all four legs during trade selection.
 - Correction: preparation now maps C -> CE and P -> PE, with a regression test.
 - Prevention: source-to-engine schema mapping is now explicitly tested before the historical run.
+
+## 2026-09-23 — Pandas 3 lot-size assignment failure
+- Event: the first run with the corrected data schema reached the backtest but failed in normalize() while assigning the lot-size fallback.
+- Root cause: when no lot sizes were missing, pandas 3.x could reject assigning an empty DatetimeArray result from Series.map into an integer column.
+- Impact: the backtest stopped immediately after data preparation; no trades were evaluated.
+- Correction: normalize() now uses nullable Int64 lot-size storage and only performs the fallback assignment when missing_lot.any() is true.
+- Prevention: regression tests now cover both existing integer lot sizes and missing lot-size fallback.
