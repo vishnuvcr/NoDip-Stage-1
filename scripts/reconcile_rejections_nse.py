@@ -173,6 +173,7 @@ def secondary_cycle(cycle: pd.Series, daily: dict[pd.Timestamp, pd.DataFrame], y
         "primary_strike": cycle["primary_strike"],
         "secondary_strike": "",
         "secondary_status": "",
+        "comparison_status": "",
         "secondary_missing_entry": "",
         "secondary_missing_exit": "",
         "secondary_max_abs_price_diff": "",
@@ -257,13 +258,8 @@ def main() -> None:
     args = ap.parse_args()
 
     audit = pd.read_csv(args.audit)
-    audit = audit[audit["primary_reason"] != "VALID"].copy()
-    # Preserve enough primary fields for direct price comparison.
     if audit.empty:
-        raise SystemExit("No rejected cycles to reconcile")
-
-    # The primary audit does not hold leg prices. The independent reconciliation
-    # remains classification-only unless a future version augments the audit.
+        raise SystemExit("Cycle audit is empty")
 
     dates = set()
     for _, r in audit.iterrows():
@@ -315,6 +311,18 @@ def main() -> None:
         results.append(secondary_cycle(cycle, daily, yahoo.get(cycle["entry_date"])))
 
     out = pd.DataFrame(results)
+    out["comparison_status"] = out.apply(
+        lambda r: (
+            "PRIMARY_VALID_SECONDARY_COMPLETE"
+            if r["primary_reason"] == "VALID" and r["secondary_status"] == "SECONDARY_COMPLETE"
+            else "RECOVERED_BY_SECONDARY"
+            if r["primary_reason"] != "VALID" and r["secondary_status"] == "SECONDARY_COMPLETE"
+            else "PRIMARY_REJECTED_SECONDARY_NONEXECUTABLE"
+            if r["primary_reason"] != "VALID"
+            else "PRIMARY_VALID_SECONDARY_NONEXECUTABLE"
+        ),
+        axis=1,
+    )
     args.out.parent.mkdir(parents=True, exist_ok=True)
     out.to_csv(args.out, index=False)
 
