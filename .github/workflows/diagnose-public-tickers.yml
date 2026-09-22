@@ -1,0 +1,51 @@
+name: Diagnose NIFTY Public Tickers
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/diagnose-public-tickers.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install pandas pyarrow requests
+      - name: Inspect one public NIFTY month
+        run: |
+          python - <<'PY'
+          import io
+          import re
+          import requests
+          import pandas as pd
+          import pyarrow.parquet as pq
+
+          url = "https://raw.githubusercontent.com/NagarajuGunda/NSEIndexOptionsData/main/2024/nifty/01.parquet"
+          r = requests.get(url, timeout=180)
+          r.raise_for_status()
+          table = pq.read_table(io.BytesIO(r.content), columns=["Ticker", "Date/Time"])
+          df = table.to_pandas()
+          df["Date/Time"] = pd.to_datetime(df["Date/Time"])
+          tickers = df["Ticker"].astype(str)
+          uniq = tickers[tickers.ne("NIFTY")].drop_duplicates()
+          print("rows:", len(df))
+          print("date range:", df["Date/Time"].min(), df["Date/Time"].max())
+          print("ticker samples:", uniq.head(50).tolist())
+          pats = [
+              re.compile(r"^NIFTY(?P<expiry>\d{2}[A-Z]{3}\d{2})(?P<option>[CP]E)(?P<strike>\d+)$"),
+              re.compile(r"^NIFTY(?P<expiry>\d{2}[A-Z]{3})(?P<option>[CP]E)(?P<strike>\d+)$"),
+          ]
+          def hit(s):
+              return any(p.match(s) for p in pats)
+          hits = uniq.map(hit)
+          print("regex hits:", int(hits.sum()), "of", len(uniq))
+          print("regex miss sample:", uniq[~hits].head(50).tolist())
+          PY
