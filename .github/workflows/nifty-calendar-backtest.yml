@@ -4,6 +4,10 @@ on:
   push:
     branches:
       - research-nifty-4leg-calendar-v1
+  pull_request:
+    branches:
+      - main
+    types: [opened, synchronize]
   workflow_dispatch:
     inputs:
       start:
@@ -17,6 +21,7 @@ on:
 
 permissions:
   contents: write
+  pull-requests: read
 
 jobs:
   backtest:
@@ -106,28 +111,15 @@ jobs:
               f"- Win rate: {(df['pnl_inr'] > 0).mean():.2%}",
               f"- Max drawdown (INR): {drawdown.min():.2f}",
               "",
-              "This is gross mark-to-market P&L from daily OPEN/CLOSE fields acquired by the workflow.",
-              "Brokerage, statutory charges and slippage are not yet subtracted in this summary.",
+              "Gross daily-open to expiry-close mark-to-market P&L; costs and slippage are separate.",
           ]
           out = Path("reports/nifty_calendar/BACKTEST_SUMMARY.md")
           out.parent.mkdir(parents=True, exist_ok=True)
           out.write_text("\\n".join(summary), encoding="utf-8")
           PY
 
-      - name: Update phase status
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          p = Path("docs/nifty_calendar/PHASE_STATUS.md")
-          s = p.read_text(encoding="utf-8")
-          s = s.replace("| P1 Literature / market structure | IN PROGRESS |", "| P1 Literature / market structure | COMPLETE |")
-          s = s.replace("| P2 Data acquisition | IN PROGRESS |", "| P2 Data acquisition | COMPLETE |")
-          s = s.replace("| P3 Engine/tests | PENDING |", "| P3 Engine/tests | COMPLETE |")
-          s = s.replace("| P4 Historical backtest | BLOCKED BY DATA |", "| P4 Historical backtest | COMPLETE |")
-          p.write_text(s, encoding="utf-8")
-          PY
-
-      - name: Commit reproducible outputs
+      - name: Commit reproducible outputs on branch runs
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
