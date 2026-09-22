@@ -43,3 +43,9 @@
 - Impact: the backtest stopped immediately after data preparation; no trades were evaluated.
 - Correction: normalize() now uses nullable Int64 lot-size storage and only performs the fallback assignment when missing_lot.any() is true.
 - Prevention: regression tests now cover both existing integer lot sizes and missing lot-size fallback.
+
+## 2026-09-23 — First validated 2022-2024 backtest completed with partial cycle coverage
+- Event: the corrected workflow completed successfully and produced 59 valid executable strategy cycles.
+- Audit: 134 potential cycles were examined; 75 were rejected (9 no common strike, 62 missing entry leg, 4 missing exit leg).
+- Impact: the gross and cost-adjusted figures are conditional on the 44.0% executable subset and may be affected by non-random missingness.
+- Handling: the limitation is now recorded in the robustness report and phase status; no extrapolation is made to the rejected cycles.
