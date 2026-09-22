@@ -89,6 +89,14 @@ def audit(fo: pd.DataFrame, spot: pd.DataFrame) -> pd.DataFrame:
             "missing_exit_legs": "",
             "entry_open_missing": "",
             "exit_close_missing": "",
+            "primary_near_pe_open": "",
+            "primary_near_pe_close": "",
+            "primary_near_ce_open": "",
+            "primary_near_ce_close": "",
+            "primary_far_ce_open": "",
+            "primary_far_ce_close": "",
+            "primary_far_pe_open": "",
+            "primary_far_pe_close": "",
         }
 
         if not candidates:
@@ -165,6 +173,27 @@ def audit(fo: pd.DataFrame, spot: pd.DataFrame) -> pd.DataFrame:
             ]
             if len(m) != 1 or m["close"].notna().sum() != 1:
                 exit_close_missing.append(name)
+
+        for name, expiry, opt in expected:
+            m = fo[
+                (fo["date"] == entry_date)
+                & (fo["symbol"] == "NIFTY")
+                & (fo["expiry"] == expiry)
+                & (fo["strike"] == strike)
+                & (fo["option_type"] == opt)
+            ]
+            if len(m) == 1:
+                base[f"primary_{name}_open"] = float(m.iloc[0]["open"]) if pd.notna(m.iloc[0]["open"]) else ""
+                base[f"primary_{name}_close"] = float(m.iloc[0]["close"]) if pd.notna(m.iloc[0]["close"]) else ""
+            m2 = fo[
+                (fo["date"] == near_expiry)
+                & (fo["symbol"] == "NIFTY")
+                & (fo["expiry"] == expiry)
+                & (fo["strike"] == strike)
+                & (fo["option_type"] == opt)
+            ]
+            if len(m2) == 1:
+                base[f"primary_{name}_close"] = float(m2.iloc[0]["close"]) if pd.notna(m2.iloc[0]["close"]) else base[f"primary_{name}_close"]
 
         if missing_exit or exit_close_missing:
             base["primary_reason"] = (
