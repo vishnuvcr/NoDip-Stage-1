@@ -19,17 +19,6 @@ REQUIRED_SPOT = {"date", "open"}
 
 
 def historical_nifty_lot_size(expiry: pd.Timestamp) -> int:
-    """Historical NIFTY weekly-contract lot sizes from NSE circular change dates.
-
-    Weekly contracts:
-      < 2021-08-05: 75
-      2021-08-05 through 2024-05-01: 50
-      2024-05-02 through 2025-01-01: 25
-      2025-01-02 through 2026-01-05: 75
-      >= 2026-01-06: 65
-
-    The function is a fallback only when the source row does not carry a lot size.
-    """
     e = pd.Timestamp(expiry)
     if e < pd.Timestamp("2021-08-05"):
         return 75
@@ -59,7 +48,9 @@ def normalize(df: pd.DataFrame) -> pd.DataFrame:
         out["lot_size"] = pd.NA
     out["lot_size"] = pd.to_numeric(out["lot_size"], errors="coerce")
     missing_lot = out["lot_size"].isna() & out["expiry"].notna()
-    out.loc[missing_lot, "lot_size"] = out.loc[missing_lot, "expiry"].map(historical_nifty_lot_size)
+    out.loc[missing_lot, "lot_size"] = out.loc[missing_lot, "expiry"].map(
+        historical_nifty_lot_size
+    )
     out["option_type"] = out["option_type"].astype(str).str.upper()
     out["symbol"] = out["symbol"].astype(str).str.upper()
     return out
@@ -117,31 +108,57 @@ def build_trades(fo: pd.DataFrame, spot: pd.DataFrame) -> pd.DataFrame:
     ]
     spot_days = set(spot["date"].dropna())
 
+    audit = {
+        "expiry_count": len(expiries),
+        "no_entry_session": 0,
+        "missing_spot_open": 0,
+        "no_common_strike": 0,
+        "missing_entry_leg": 0,
+        "missing_exit_leg": 0,
+        "valid_trades": 0,
+    }
+
     trades = []
     for i in range(1, len(expiries) - 3):
         previous_expiry = pd.Timestamp(expiries[i - 1])
         near_expiry = pd.Timestamp(expiries[i])
         far_expiry = pd.Timestamp(expiries[i + 3])
 
-        candidates = sorted(d for d in spot_days if d > previous_expiry and d < near_expiry)
+        candidates = sorted(
+            d for d in spot_days if d > previous_expiry and d < near_expiry
+        )
         if not candidates:
+            audit["no_entry_session"] += 1
             continue
         entry_date = candidates[0]
 
         spot_rows = spot[spot["date"] == entry_date]
         if len(spot_rows) != 1 or pd.isna(spot_rows.iloc[0]["open"]):
+            audit["missing_spot_open"] += 1
             continue
         spot_open = float(spot_rows.iloc[0]["open"])
 
         day_fo = fo[fo["date"] == entry_date]
         try:
-            strike = nearest_common_strike(day_fo, near_expiry, far_expiry, spot_open)
+            strike = nearest_common_strike(
+                day_fo, near_expiry, far_expiry, spot_open
+            )
+        except ValueError:
+            audit["no_common_strike"] += 1
+            continue
+
+        try:
             legs = {
                 "near_pe": leg_row(fo, entry_date, near_expiry, strike, "PE"),
                 "near_ce": leg_row(fo, entry_date, near_expiry, strike, "CE"),
                 "far_ce": leg_row(fo, entry_date, far_expiry, strike, "CE"),
                 "far_pe": leg_row(fo, entry_date, far_expiry, strike, "PE"),
             }
+        except ValueError:
+            audit["missing_entry_leg"] += 1
+            continue
+
+        try:
             exits = {
                 "near_pe": leg_row(fo, near_expiry, near_expiry, strike, "PE"),
                 "near_ce": leg_row(fo, near_expiry, near_expiry, strike, "CE"),
@@ -149,14 +166,16 @@ def build_trades(fo: pd.DataFrame, spot: pd.DataFrame) -> pd.DataFrame:
                 "far_pe": leg_row(fo, near_expiry, far_expiry, strike, "PE"),
             }
         except ValueError:
+            audit["missing_exit_leg"] += 1
             continue
 
         if any(pd.isna(x["open"]) for x in legs.values()):
+            audit["missing_entry_leg"] += 1
             continue
         if any(pd.isna(x["close"]) for x in exits.values()):
+            audit["missing_exit_leg"] += 1
             continue
 
-        # Use the actual lot size for each contract/expiry.
         for x in list(legs.values()) + list(exits.values()):
             if pd.isna(x["lot_size"]):
                 x["lot_size"] = historical_nifty_lot_size(pd.Timestamp(x["expiry"]))
@@ -202,7 +221,9 @@ def build_trades(fo: pd.DataFrame, spot: pd.DataFrame) -> pd.DataFrame:
                 "pnl_inr": pnl_inr,
             }
         )
+        audit["valid_trades"] += 1
 
+    print("Backtest audit:", audit)
     return pd.DataFrame(trades)
 
 
@@ -224,6 +245,17 @@ def main() -> None:
         raise ValueError(f"Missing FO columns: {sorted(missing_fo)}")
     if missing_spot:
         raise ValueError(f"Missing spot columns: {sorted(missing_spot)}")
+
+    print(
+        "Input summary:",
+        {
+            "fo_rows": len(fo),
+            "fo_dates": fo["date"].min(),
+            "fo_dates_max": fo["date"].max(),
+            "expiries": fo["expiry"].nunique(),
+            "spot_rows": len(spot),
+        },
+    )
 
     trades = build_trades(fo, spot)
     args.out.parent.mkdir(parents=True, exist_ok=True)
