@@ -259,11 +259,38 @@ def main() -> None:
     ap.add_argument("--out", required=True, type=Path)
     ap.add_argument("--rows-out", required=True, type=Path)
     ap.add_argument("--cache-dir", required=True, type=Path)
+    ap.add_argument("--rejected-only", action="store_true",
+                    help="Reconcile every rejected cycle and skip primary-valid cycles.")
+    ap.add_argument("--valid-sample", type=int, default=0,
+                    help="Also reconcile this many deterministic evenly-spaced primary-valid cycles.")
     args = ap.parse_args()
 
     audit = pd.read_csv(args.audit)
     if audit.empty:
         raise SystemExit("Cycle audit is empty")
+
+    rejected = audit[audit["primary_reason"] != "VALID"].copy()
+    valid = audit[audit["primary_reason"] == "VALID"].copy()
+
+    if args.rejected_only:
+        scope = rejected
+        if args.valid_sample > 0 and not valid.empty:
+            k = min(args.valid_sample, len(valid))
+            if k == 1:
+                picked = valid.iloc[[len(valid) // 2]]
+            else:
+                positions = [
+                    round(i * (len(valid) - 1) / (k - 1))
+                    for i in range(k)
+                ]
+                picked = valid.iloc[positions]
+            scope = pd.concat([scope, picked], ignore_index=True)
+    else:
+        scope = audit.copy()
+
+    audit = scope
+    if audit.empty:
+        raise SystemExit("Selected reconciliation scope is empty")
 
     dates = set()
     for _, r in audit.iterrows():
