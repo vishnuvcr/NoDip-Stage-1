@@ -74,3 +74,10 @@
 - Impact: several overlapping P5 workflow runs were started while the research files were being updated.
 - Correction: the P5 workflow now triggers only for its workflow file, the two reconciliation scripts, and the NIFTY calendar source package; outputs committed by the workflow no longer retrigger it. Concurrency cancellation was also added.
 - Prevention: phase workflows must never watch the output paths they themselves commit.
+
+
+## 2026-09-23 — P5 reconciliation patch generation syntax error
+- Event: one tool-side JavaScript patch attempt omitted a declaration before a template assignment.
+- Impact: the patch was rejected before any repository write; no research artifact was changed by that failed call.
+- Correction: the script patch was resent with explicit declarations and committed successfully.
+- Prevention: validate tool-side patch construction before invoking repository writes.
