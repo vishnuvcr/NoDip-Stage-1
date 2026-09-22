@@ -1,6 +1,6 @@
 # Phase Status
 
-Last updated: 2026-09-23
+Last updated: 2026-09-23  — P5 independent reconciliation running
 
 | Phase | Status | Notes |
 |---|---|---|
@@ -9,5 +9,5 @@ Last updated: 2026-09-23
 | P2 Data acquisition | COMPLETE | 2022-2024 public NIFTY archive acquired/cached; source ticker schema and C/P→CE/PE mapping validated |
 | P3 Engine/tests | COMPLETE | Frozen engine, historical lot sizes, CI fixes and regression tests completed |
 | P4 Historical backtest | COMPLETE | 59 valid executable trades; gross P&L ₹52,827.50; trade ledger and annual results committed |
-| P5 Verification/robustness | IN PROGRESS | Leg-specific slippage, known brokerage/statutory costs and exchange-charge sensitivity completed; 44.0% cycle coverage remains the main validation issue |
+| P5 Verification/robustness | IN PROGRESS | Slippage/cost sensitivity complete; independent NSE/Yahoo reconciliation implemented and running in GitHub Actions; no independent-source coverage result accepted yet |
 | P6 Final manuscript | PENDING | Awaiting P5 independent-source reconciliation and final figures/tables |
