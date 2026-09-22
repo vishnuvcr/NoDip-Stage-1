@@ -2,23 +2,23 @@
 
 ## Current research status — 2026-09-23
 
-**Strategy locked. P0/P1 complete. P2/P3 active. Automated GitHub Actions execution is now enabled; the first runs exposed and logged CI setup/import defects before data could be used. No historical performance number is claimed yet.**
+**Strategy locked. P0/P1 complete. P2/P3 active. CI diagnostics are being corrected before numerical performance is accepted.**
 
 Active branch: `research-nifty-4leg-calendar-v1`
 
 ### Frozen strategy
 - Entry: first trading day after the previous NIFTY weekly expiry.
-- Entry: 09:15 IST market-open.
+- Entry timestamp: 09:15 IST market-open.
 - ATM: nearest listed strike to the 09:15 NIFTY spot open.
 - Buy near-weekly ATM PE.
 - Sell near-weekly ATM CE.
 - Buy the same-strike far-weekly ATM CE, with far expiry three weekly intervals after near expiry.
 - Sell the same-strike far-weekly ATM PE.
-- Exit every leg at the near-expiry trading-day close.
+- Exit all legs at the near-expiry trading-day close.
 - One lot per leg using historical contract lot size.
-- No adjustments, rolling, targets, stop-losses or averaging.
+- No adjustments, rolling, target, stop-loss or averaging.
 
-### Phase documents
+### Research documents
 - [Research plan](https://github.com/vishnuvcr/NoDip-Stage-1/blob/research-nifty-4leg-calendar-v1/docs/nifty_calendar/RESEARCH_PLAN.md)
 - [Strategy lock](https://github.com/vishnuvcr/NoDip-Stage-1/blob/research-nifty-4leg-calendar-v1/docs/nifty_calendar/STRATEGY_LOCK.md)
 - [Phase status](https://github.com/vishnuvcr/NoDip-Stage-1/blob/research-nifty-4leg-calendar-v1/docs/nifty_calendar/PHASE_STATUS.md)
@@ -35,4 +35,6 @@ Active branch: `research-nifty-4leg-calendar-v1`
 
 The first historical execution source is the public `NSEIndexOptionsData` archive for 2022-2024. It contains NIFTY minute data and embedded NIFTY spot data. The preparation script converts 09:15 opens and expiry-session final closes into the frozen backtest schema.
 
-Gross P&L, slippage sensitivity, brokerage and statutory-cost layers remain separate. No unverified historical performance is presented as a trading result.
+Gross P&L, slippage, brokerage and statutory-cost layers remain separate. No unverified historical performance is presented as a trading result.
+
+Latest CI note: package-import and setup-python cache issues have been corrected and are logged in the branch error log. A new execution is being started from main against the corrected research branch.
