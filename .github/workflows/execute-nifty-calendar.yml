@@ -7,6 +7,10 @@ on:
       - ".github/workflows/diagnose-public-tickers.yml"
   workflow_dispatch:
 
+concurrency:
+  group: nifty-calendar-research
+  cancel-in-progress: true
+
 permissions:
   contents: write
 
@@ -51,12 +55,19 @@ jobs:
           PYTHONPATH: .
         run: pytest -q
 
-      - name: Download and prepare public 2022-2024 NIFTY data
+      - name: Restore normalized primary input from prior research artifact
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          python scripts/prepare_public_2022_2024.py \
-            --raw-dir data/cache/public_nse_index_options \
-            --fo-out data/cache/nifty_fo_daily_2022_2024.parquet \
-            --spot-out data/cache/nifty_spot_daily_2022_2024.csv
+          mkdir -p /tmp/nifty_artifact
+          artifact_url="$(curl -fsSL             -H "Authorization: Bearer $GITHUB_TOKEN"             -H "Accept: application/vnd.github+json"             "https://api.github.com/repos/vishnuvcr/NoDip-Stage-1/actions/artifacts?per_page=100"             | jq -r '[.artifacts[] | select(.name=="nifty-calendar-2022-2024-research" and .expired==false)] | sort_by(.created_at) | last | .archive_download_url')"
+          test -n "$artifact_url" -a "$artifact_url" != "null"
+          curl -fsSL             -H "Authorization: Bearer $GITHUB_TOKEN"             -H "Accept: application/vnd.github+json"             "$artifact_url"             -o /tmp/nifty_artifact/research.zip
+          unzip -q /tmp/nifty_artifact/research.zip -d /tmp/nifty_artifact/extracted
+          test -f /tmp/nifty_artifact/extracted/data/cache/nifty_fo_daily_2022_2024.parquet
+          test -f /tmp/nifty_artifact/extracted/data/cache/nifty_spot_daily_2022_2024.csv
+          cp -f /tmp/nifty_artifact/extracted/data/cache/nifty_fo_daily_2022_2024.parquet data/cache/nifty_fo_daily_2022_2024.parquet
+          cp -f /tmp/nifty_artifact/extracted/data/cache/nifty_spot_daily_2022_2024.csv data/cache/nifty_spot_daily_2022_2024.csv
 
       - name: Run frozen strategy
         env:
