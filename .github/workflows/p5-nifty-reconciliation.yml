@@ -1,0 +1,225 @@
+name: P5 NIFTY Calendar Independent Reconciliation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "scripts/**"
+      - "src/**"
+      - "docs/nifty_calendar/**"
+      - "reports/nifty_calendar/**"
+      - ".github/workflows/p5-nifty-reconciliation.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout P5 branch
+        uses: actions/checkout@v4
+        with:
+          ref: research-nifty-4leg-calendar-p5-reconciliation
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pandas pyarrow requests pytest scipy
+
+      - name: Restore primary public-data cache
+        uses: actions/cache@v4
+        with:
+          path: data/cache/public_nse_index_options
+          key: public-nse-index-options-2022-2024-p5-v1
+          restore-keys: |
+            public-nse-index-options-2022-2024-
+
+      - name: Restore secondary NSE cache
+        uses: actions/cache@v4
+        with:
+          path: data/cache/nse_reconciliation_raw
+          key: nse-reconciliation-2022-2024-p5-v1
+          restore-keys: |
+            nse-reconciliation-2022-2024-p5-
+
+      - name: Run tests
+        env:
+          PYTHONPATH: .
+        run: pytest -q
+
+      - name: Rebuild primary 2022-2024 dataset
+        run: |
+          python scripts/prepare_public_2022_2024.py             --raw-dir data/cache/public_nse_index_options             --fo-out data/cache/nifty_fo_daily_2022_2024.parquet             --spot-out data/cache/nifty_spot_daily_2022_2024.csv
+
+      - name: Run frozen primary backtest
+        env:
+          PYTHONPATH: .
+        run: |
+          python src/nifty_calendar/backtest.py             --fo data/cache/nifty_fo_daily_2022_2024.parquet             --spot data/cache/nifty_spot_daily_2022_2024.csv             --out reports/nifty_calendar/trade_level_results_2022_2024.csv
+
+      - name: Build detailed primary cycle audit
+        env:
+          PYTHONPATH: .
+        run: |
+          python scripts/audit_cycle_rejections.py             --fo data/cache/nifty_fo_daily_2022_2024.parquet             --spot data/cache/nifty_spot_daily_2022_2024.csv             --out reports/nifty_calendar/CYCLE_AUDIT_2022_2024.csv
+
+      - name: Reconcile all cycles against NSE bhavcopy plus Yahoo spot
+        env:
+          PYTHONPATH: .
+        run: |
+          python scripts/reconcile_rejections_nse.py             --audit reports/nifty_calendar/CYCLE_AUDIT_2022_2024.csv             --out reports/nifty_calendar/P5_SECONDARY_RECONCILIATION_2022_2024.csv             --rows-out data/cache/nifty_secondary_reconciliation_2022_2024.csv             --cache-dir data/cache/nse_reconciliation_raw
+
+      - name: Write P5 reconciliation report
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import pandas as pd
+          import numpy as np
+
+          audit = pd.read_csv("reports/nifty_calendar/CYCLE_AUDIT_2022_2024.csv")
+          recon = pd.read_csv("reports/nifty_calendar/P5_SECONDARY_RECONCILIATION_2022_2024.csv")
+
+          complete = recon[recon["secondary_status"].eq("SECONDARY_COMPLETE")].copy()
+          recovered = recon[recon["comparison_status"].eq("RECOVERED_BY_SECONDARY")].copy()
+          matched = recon[recon["comparison_status"].eq("PRIMARY_VALID_SECONDARY_COMPLETE")].copy()
+          rejected = recon[recon["primary_reason"].ne("VALID")]
+
+          lines = [
+              "# P5 Independent Reconciliation — NIFTY 4-Leg Calendar — 2022-2024",
+              "",
+              "## Source design",
+              "Primary source: public NIFTY options mirror used by the locked backtest.",
+              "Secondary contract source: NSE daily F&O bhavcopy (legacy schema through 2023-12-29; UDiFF from 2024-01-01).",
+              "Independent spot cross-check: Yahoo Finance NIFTY 50 daily session OPEN for each candidate entry date.",
+              "",
+              "## Cycle coverage reconciliation",
+              f"- Candidate strategy cycles: {len(audit)}",
+              f"- Primary valid cycles: {(audit['primary_reason'].eq('VALID')).sum()}",
+              f"- Primary rejected cycles: {(audit['primary_reason'].ne('VALID')).sum()}",
+              f"- Secondary fully executable cycles: {len(complete)}",
+              f"- Primary rejects recovered by secondary source: {len(recovered)}",
+              f"- Primary-valid cycles also complete on secondary: {len(matched)}",
+              f"- Primary-rejected cycles still non-executable or source-gap on secondary: {len(rejected) - len(recovered)}",
+              "",
+              "## Primary rejection reasons",
+              "",
+              "| Reason | Cycles |",
+              "|---|---:|",
+          ]
+          for reason, count in audit.loc[audit["primary_reason"].ne("VALID"), "primary_reason"].value_counts().items():
+              lines.append(f"| {reason} | {int(count)} |")
+
+          lines += [
+              "",
+              "## Secondary reconciliation status",
+              "",
+              "| Status | Cycles |",
+              "|---|---:|",
+          ]
+          for status, count in recon["comparison_status"].value_counts().items():
+              lines.append(f"| {status} | {int(count)} |")
+
+          lines += ["", "## Secondary P&L", ""]
+          if len(complete):
+              x = pd.to_numeric(complete["secondary_pnl_inr"], errors="coerce").dropna()
+              lines += [
+                  f"- Secondary complete cycles: {len(x)}",
+                  f"- Secondary total P&L across complete cycles: ₹{x.sum():,.2f}",
+                  f"- Secondary mean trade: ₹{x.mean():,.2f}",
+                  f"- Secondary win rate: {(x > 0).mean():.2%}",
+              ]
+          else:
+              lines.append("- No complete secondary cycles were available.")
+
+          lines += ["", "## Cross-source price and spot checks"]
+          diff = pd.to_numeric(matched["secondary_max_abs_price_diff"], errors="coerce").dropna()
+          spot_diff = pd.to_numeric(recon["spot_abs_diff"], errors="coerce").dropna()
+          if len(diff):
+              lines.append(f"- Matched-cycle maximum absolute option price difference: median ₹{diff.median():.4f}; p95 ₹{diff.quantile(.95):.4f}; max ₹{diff.max():.4f}.")
+          else:
+              lines.append("- No matched-cycle option price differences were available.")
+          if len(spot_diff):
+              lines.append(f"- Yahoo-vs-primary NIFTY open difference on candidate entry dates: median {spot_diff.median():.4f} index points; p95 {spot_diff.quantile(.95):.4f}; max {spot_diff.max():.4f}.")
+          else:
+              lines.append("- No independent Yahoo spot observations were available.")
+
+          lines += [
+              "",
+              "## Interpretation rule",
+              "A primary rejection is not treated as a genuine market non-trade unless the independent NSE source also fails to provide the required frozen-protocol contract data. A complete secondary cycle is classified as a data-coverage recovery, not as an intentional strategy filter.",
+              "",
+              "## Reproducibility",
+              "The compact NSE rows used for reconciliation are cached in data/cache/nifty_secondary_reconciliation_2022_2024.csv; raw NSE downloads remain in the GitHub Actions cache so reruns do not repeatedly download the same daily files.",
+          ]
+
+          Path("reports/nifty_calendar/P5_RECONCILIATION_REPORT_2022_2024.md").write_text("\n".join(lines), encoding="utf-8")
+
+          recovered_out = recovered[[
+              "entry_date","near_expiry","far_expiry",
+              "primary_reason","primary_strike","secondary_strike",
+              "secondary_spot_open","secondary_pnl_inr"
+          ]].copy()
+          recovered_out.to_csv("reports/nifty_calendar/SECONDARY_RECOVERED_TRADES_2022_2024.csv", index=False)
+
+          full = complete[["entry_date","near_expiry","far_expiry","secondary_strike","secondary_pnl_inr"]].copy()
+          full["secondary_pnl_inr"] = pd.to_numeric(full["secondary_pnl_inr"], errors="coerce")
+          full.to_csv("reports/nifty_calendar/SECONDARY_FULL_TRADE_LEDGER_2022_2024.csv", index=False)
+          PY
+
+      - name: Update P5 phase state
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path("docs/nifty_calendar/PHASE_STATUS.md")
+          s = p.read_text(encoding="utf-8")
+          s = s.replace(
+              "| P5 Verification/robustness | IN PROGRESS | 44.0% cycle coverage remains the main validation issue",
+              "| P5 Verification/robustness | IN PROGRESS | Independent NSE/Yahoo reconciliation completed; final interpretation of coverage and cost sensitivity remains to be consolidated"
+          )
+          p.write_text(s, encoding="utf-8")
+          PY
+
+      - name: Commit P5 outputs
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add reports/nifty_calendar data/cache/nifty_secondary_reconciliation_2022_2024.csv docs/nifty_calendar/PHASE_STATUS.md
+          git diff --cached --quiet || git commit -m "Run P5 independent NIFTY calendar reconciliation"
+          git push origin HEAD:research-nifty-4leg-calendar-p5-reconciliation
+
+      - name: Upload P5 artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nifty-calendar-p5-reconciliation-2022-2024
+          path: |
+            reports/nifty_calendar/CYCLE_AUDIT_2022_2024.csv
+            reports/nifty_calendar/P5_SECONDARY_RECONCILIATION_2022_2024.csv
+            reports/nifty_calendar/P5_RECONCILIATION_REPORT_2022_2024.md
+            reports/nifty_calendar/SECONDARY_RECOVERED_TRADES_2022_2024.csv
+            reports/nifty_calendar/SECONDARY_FULL_TRADE_LEDGER_2022_2024.csv
+            data/cache/nifty_secondary_reconciliation_2022_2024.csv
+
+      - name: Log workflow failure
+        if: failure()
+        run: |
+          {
+            echo
+            echo "## $(date -u +%F) — P5 workflow failure"
+            echo "- Run ID: ${GITHUB_RUN_ID}; attempt: ${GITHUB_RUN_ATTEMPT}"
+            echo "- Branch: ${GITHUB_REF_NAME}"
+            echo "- Event: ${GITHUB_EVENT_NAME}"
+            echo "- The failed step should be inspected in GitHub Actions logs before interpreting any P5 result."
+          } >> docs/nifty_calendar/ERROR_LOG.md
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/nifty_calendar/ERROR_LOG.md
+          git diff --cached --quiet || git commit -m "Log P5 workflow failure"
+          git push origin HEAD:research-nifty-4leg-calendar-p5-reconciliation || true
