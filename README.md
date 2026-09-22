@@ -2,7 +2,7 @@
 
 ## Current research status — 2026-09-23
 
-**Frozen strategy. Preliminary 2022-2024 backtest completed. Robustness/validation remains in progress.**
+**Frozen strategy. Preliminary 2022-2024 backtest completed. P5 independent-source verification is now running.**
 
 Preliminary result on the available public NIFTY option dataset:
 - 59 valid executable cycles
@@ -38,12 +38,16 @@ The result is conditional because 75 candidate cycles were rejected for incomple
 - [Data specification](https://github.com/vishnuvcr/NoDip-Stage-1/blob/research-nifty-4leg-calendar-v1/docs/nifty_calendar/DATA_SPEC.md)
 - [Sources and literature](https://github.com/vishnuvcr/NoDip-Stage-1/blob/research-nifty-4leg-calendar-v1/docs/nifty_calendar/SOURCES.md)
 - [Error log](https://github.com/vishnuvcr/NoDip-Stage-1/blob/research-nifty-4leg-calendar-v1/docs/nifty_calendar/ERROR_LOG.md)
-- [Conversation log](https://github.com/vishnuvcr/NoDip-Stage-1/blob/research-nifty-4leg-calendar-v1/docs/nifty_calendar/CONVERSATION_LOG.md)
+- [Conversation log](https://github.com/vishnuvcr/NoDip-Stage-1/blob/research-nifty-4leg-calendar-p5-reconciliation/docs/nifty_calendar/CONVERSATION_LOG.md)
+- [P5 cycle audit](https://github.com/vishnuvcr/NoDip-Stage-1/blob/research-nifty-4leg-calendar-p5-reconciliation/reports/nifty_calendar/CYCLE_AUDIT_2022_2024.csv)
+- [P5 reconciliation report](https://github.com/vishnuvcr/NoDip-Stage-1/blob/research-nifty-4leg-calendar-p5-reconciliation/reports/nifty_calendar/P5_RECONCILIATION_REPORT_2022_2024.md)
+- [Paytm historical brokerage sensitivity](https://github.com/vishnuvcr/NoDip-Stage-1/blob/research-nifty-4leg-calendar-p5-reconciliation/reports/nifty_calendar/PAYTM_BROKERAGE_SENSITIVITY_2022_2024.csv)
 - [Project rules](https://github.com/vishnuvcr/NoDip-Stage-1/blob/research-nifty-4leg-calendar-v1/docs/PROJECT_RULES.md)
 
 ### Execution infrastructure
 - [Main research runner](https://github.com/vishnuvcr/NoDip-Stage-1/blob/main/.github/workflows/execute-nifty-calendar.yml)
 - [Manual backtest workflow](https://github.com/vishnuvcr/NoDip-Stage-1/blob/research-nifty-4leg-calendar-v1/.github/workflows/nifty-calendar-backtest.yml)
 - [Public ticker diagnostic](https://github.com/vishnuvcr/NoDip-Stage-1/blob/main/.github/workflows/diagnose-public-tickers.yml)
+- [P5 manual reconciliation workflow](https://github.com/vishnuvcr/NoDip-Stage-1/blob/main/.github/workflows/p5-nifty-reconciliation.yml)
 
-The next research step is independent reconciliation of the 75 rejected cycles and finalization of the transaction-cost treatment. No claim about full-period strategy performance is made until that validation is completed.
+The next research step is independent reconciliation of the 75 rejected cycles. Paytm Money brokerage is being modeled by the documented historical client cohorts (₹10/₹15/₹20 per executed order) rather than assuming a single rate. No claim about full-period strategy performance is made until the independent validation is completed.
