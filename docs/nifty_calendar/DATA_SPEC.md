@@ -4,7 +4,7 @@
 
 NSE official historical equity-derivatives archives and historical reports.
 
-NSE documents that NIFTY weekly index options expire on Tuesday, with the previous trading day used when Tuesday is a trading holiday. Current NSE documentation also shows a 50-point strike interval for NIFTY weekly/monthly index options. These rules are versioned in the research scripts rather than assumed constant across all history.
+NIFTY weekly expiry timing is versioned by the actual contract dates. NSE's June 2025 circular changed NIFTY weekly expiry from Thursday to Tuesday for newly generated September 2025 onward weekly contracts; existing contracts expiring on or before 31-Aug-2025 retained their prior dates.
 
 ## Required contract-level fields
 
@@ -25,26 +25,37 @@ NSE documents that NIFTY weekly index options expire on Tuesday, with the previo
 ## Entry/exit observations
 
 Entry day:
-- NIFTY spot OPEN (reference for ATM)
-- Four option OPEN prices
+- NIFTY spot OPEN
+- four option OPEN prices
 
 Exit day:
-- Four option CLOSE prices
+- four option CLOSE prices
 
 Supporting:
-- expiry calendar
-- applicable lot size history
-- futures OPEN for independent forward/ATM sensitivity analysis
+- actual expiry calendar
+- applicable contract lot size
+- optional futures OPEN for independent forward-sensitivity checks
+
+## Lot-size history
+
+For INR conversion, use the lot size attached to each actual option contract rather than one constant multiplier:
+- NIFTY weekly contracts were 75 lots before the 2021 reduction.
+- August 2021 weekly expiries onward used 50.
+- May 2024 weekly expiry onward used 25.
+- New index contracts introduced from 20-Nov-2024 used 75.
+- January 2026 weekly expiries onward used 65 under the next revision.
+
+These transitions are sourced from NSE circulars and are validated against contract-level metadata whenever available.
 
 ## Quality gates
 
 A trade is valid only when:
 - entry date exists as a trading session;
-- both expiry dates are mapped;
-- all four contracts exist;
-- all four entry OPEN prices are numeric and > 0;
+- near and far expiry dates are mapped from the historical contract calendar;
+- all four contracts exist on entry and expiry dates;
+- all four entry OPEN prices are numeric;
 - all four exit CLOSE prices are numeric;
-- lot size is known from an applicable source or validated contract metadata.
+- lot sizes are known for each leg or are independently validated.
 
 Missing data is logged as a data-quality event, not filled from a future day or interpolated.
 
