@@ -2,21 +2,25 @@
 
 ## Current research status — 2026-09-23
 
-**Strategy locked. P0/P1 complete. P2/P3 active. Public 2022-2024 data acquisition now completes in CI; the first mechanical run produced zero valid trades, so the trade-selection/data mapping is under verification. No performance result is accepted yet.**
+**Strategy locked. P0/P1 complete. P2/P3 active. The public 2022-2024 data source was validated and a ticker-schema defect that caused the initial zero-trade run has been corrected. A fresh full execution is being triggered.**
 
 Active branch: `research-nifty-4leg-calendar-v1`
 
 ### Frozen strategy
 - Entry: first trading day after the previous NIFTY weekly expiry.
-- Entry timestamp: 09:15 IST market-open.
+- Entry: 09:15 IST market-open.
 - ATM: nearest listed strike to the 09:15 NIFTY spot open.
 - Buy near-weekly ATM PE.
 - Sell near-weekly ATM CE.
-- Buy the same-strike far-weekly ATM CE, with far expiry three weekly intervals after near expiry.
+- Buy the same-strike far-weekly ATM CE.
 - Sell the same-strike far-weekly ATM PE.
-- Exit all legs at the near-expiry trading-day close.
+- Far expiry: three weekly intervals after near expiry.
+- Exit all four legs at the near-expiry trading-day close.
 - One lot per leg using historical contract lot size.
 - No adjustments, rolling, target, stop-loss or averaging.
+
+### Latest data-integrity finding
+The public NIFTY archive uses ticker symbols such as NIFTY04JAN24C18300 / NIFTY04JAN24P18300, with a single C/P. The original parser expected CE/PE, which caused a zero-trade result despite valid option data. A dedicated diagnostic workflow confirmed the source schema; the research branch now uses a vectorized single-letter parser and aborts if zero contracts are parsed.
 
 ### Research documents
 - [Research plan](https://github.com/vishnuvcr/NoDip-Stage-1/blob/research-nifty-4leg-calendar-v1/docs/nifty_calendar/RESEARCH_PLAN.md)
@@ -27,12 +31,11 @@ Active branch: `research-nifty-4leg-calendar-v1`
 - [Error log](https://github.com/vishnuvcr/NoDip-Stage-1/blob/research-nifty-4leg-calendar-v1/docs/nifty_calendar/ERROR_LOG.md)
 - [Conversation log](https://github.com/vishnuvcr/NoDip-Stage-1/blob/research-nifty-4leg-calendar-v1/docs/nifty_calendar/CONVERSATION_LOG.md)
 - [Project rules](https://github.com/vishnuvcr/NoDip-Stage-1/blob/research-nifty-4leg-calendar-v1/docs/PROJECT_RULES.md)
-- [Manual backtest workflow](https://github.com/vishnuvcr/NoDip-Stage-1/blob/research-nifty-4leg-calendar-v1/.github/workflows/nifty-calendar-backtest.yml)
 
 ### Execution infrastructure
-- [Main execution runner](https://github.com/vishnuvcr/NoDip-Stage-1/blob/main/.github/workflows/execute-nifty-calendar.yml)
+- [Manual backtest workflow](https://github.com/vishnuvcr/NoDip-Stage-1/blob/research-nifty-4leg-calendar-v1/.github/workflows/nifty-calendar-backtest.yml)
+- [Main research runner](https://github.com/vishnuvcr/NoDip-Stage-1/blob/main/.github/workflows/execute-nifty-calendar.yml)
+- [Public ticker diagnostic](https://github.com/vishnuvcr/NoDip-Stage-1/blob/main/.github/workflows/diagnose-public-tickers.yml)
 - [Draft execution PR #1](https://github.com/vishnuvcr/NoDip-Stage-1/pull/1)
 
-The first historical execution source is the public `NSEIndexOptionsData` archive for 2022-2024. It contains NIFTY minute data and embedded NIFTY spot data. The preparation script converts 09:15 opens and expiry-session final closes into the frozen backtest schema and now prints source-ticker parsing diagnostics.
-
-No gross or net performance number is presented until the zero-trade condition is resolved and the selected contracts are spot-checked against the source.
+No gross or net performance figure is accepted until the corrected parser produces a validated trade ledger and the ledger passes source-quality checks.
