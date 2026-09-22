@@ -30,3 +30,9 @@
 - Detection: dedicated ticker-diagnostic workflow verified 5,137,099 rows and 773 unique option tickers in one public month, with 0/773 matches under the old regex.
 - Correction: parser changed to single-letter C/P and vectorized string extraction; preparation now aborts on zero parsed contracts instead of silently producing a zero-trade backtest.
 - Prevention: public-source schema diagnostics are now part of the workflow and must pass before numerical interpretation.
+
+## 2026-09-23 — Source labels were not normalized to engine labels
+- Event: after correcting the public parser to recognize single-letter C/P tickers, the preparation output still used C/P labels while the frozen engine expects CE/PE labels.
+- Impact: the corrected full run would still reject all four legs during trade selection.
+- Correction: preparation now maps C -> CE and P -> PE, with a regression test.
+- Prevention: source-to-engine schema mapping is now explicitly tested before the historical run.
