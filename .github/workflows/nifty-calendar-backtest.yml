@@ -1,10 +1,6 @@
 name: NIFTY 4-Leg Calendar Backtest
 
 on:
-  pull_request:
-    branches:
-      - main
-    types: [opened, synchronize]
   workflow_dispatch:
     inputs:
       start:
