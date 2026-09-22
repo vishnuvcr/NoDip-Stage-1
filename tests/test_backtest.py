@@ -5,7 +5,41 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import pandas as pd
 
-from src.nifty_calendar.backtest import build_trades
+from src.nifty_calendar.backtest import build_trades, normalize
+
+
+def test_normalize_with_existing_integer_lot_size():
+    raw = pd.DataFrame(
+        {
+            "date": [pd.Timestamp("2024-01-02")],
+            "symbol": ["NIFTY"],
+            "expiry": [pd.Timestamp("2024-01-04")],
+            "strike": [21000],
+            "option_type": ["CE"],
+            "open": [100.0],
+            "close": [90.0],
+            "lot_size": [50],
+        }
+    )
+    out = normalize(raw)
+    assert int(out.iloc[0]["lot_size"]) == 50
+
+
+def test_normalize_fills_missing_lot_size():
+    raw = pd.DataFrame(
+        {
+            "date": [pd.Timestamp("2024-01-02")],
+            "symbol": ["NIFTY"],
+            "expiry": [pd.Timestamp("2024-01-04")],
+            "strike": [21000],
+            "option_type": ["CE"],
+            "open": [100.0],
+            "close": [90.0],
+            "lot_size": [pd.NA],
+        }
+    )
+    out = normalize(raw)
+    assert int(out.iloc[0]["lot_size"]) == 50
 
 
 def test_four_leg_pnl_and_next_session_entry():
