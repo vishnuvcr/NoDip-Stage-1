@@ -12,6 +12,12 @@ REPO_API = "https://api.github.com/repos/NagarajuGunda/NSEIndexOptionsData/conte
 RAW_BASE = "https://raw.githubusercontent.com/NagarajuGunda/NSEIndexOptionsData/main"
 
 
+PATTERNS = [
+    re.compile(r"^NIFTY(?P<expiry>\d{2}[A-Z]{3}\d{2})(?P<option>[CP]E)(?P<strike>\d+)$"),
+    re.compile(r"^NIFTY(?P<expiry>\d{2}[A-Z]{3})(?P<option>[CP]E)(?P<strike>\d+)$"),
+]
+
+
 def list_month_files(year: int):
     r = requests.get(f"{REPO_API}/{year}/nifty", timeout=60)
     r.raise_for_status()
@@ -39,14 +45,34 @@ def download_month(year: int, month: int, out_dir: Path) -> Path:
 def parse_ticker(ticker: str):
     if ticker == "NIFTY":
         return None
-    m = re.match(r"^NIFTY(?P<expiry>\d{2}[A-Z]{3}\d{2})(?P<option>[CP]E)(?P<strike>\d+)$", ticker)
-    if not m:
+    for pattern in PATTERNS:
+        m = pattern.match(ticker)
+        if not m:
+            continue
+        expiry_text = m.group("expiry")
+        if len(expiry_text) == 7:
+            expiry = pd.to_datetime(expiry_text, format="%d%b%y", errors="coerce")
+        else:
+            # If the source encodes a 5-character DDMMM expiry, the year is
+            # recovered from the contract file's trading date by the caller.
+            expiry = pd.NaT
+        return expiry, m.group("option"), float(m.group("strike"))
+    return None
+
+
+def parse_with_year(ticker: str, trade_date: pd.Timestamp):
+    parsed = parse_ticker(ticker)
+    if parsed is None:
         return None
-    return (
-        pd.to_datetime(m.group("expiry"), format="%d%b%y"),
-        m.group("option"),
-        float(m.group("strike")),
-    )
+    expiry, opt, strike = parsed
+    if pd.isna(expiry):
+        m = PATTERNS[1].match(ticker)
+        expiry = pd.to_datetime(
+            f"{m.group('expiry')}{trade_date.year}",
+            format="%d%b%Y",
+            errors="coerce",
+        )
+    return expiry, opt, strike
 
 
 def historical_lot(expiry: pd.Timestamp) -> int:
@@ -83,6 +109,9 @@ def main():
             df["Date/Time"] = pd.to_datetime(df["Date/Time"])
             df["Ticker"] = df["Ticker"].astype(str)
 
+            raw_nonspot = df.loc[df["Ticker"].ne("NIFTY"), "Ticker"]
+            print("Ticker sample:", raw_nonspot.drop_duplicates().head(20).tolist())
+
             spot = df[df["Ticker"].eq("NIFTY")][["Date/Time", "Open"]].copy()
             spot_parts.append(spot)
 
@@ -90,10 +119,15 @@ def main():
                 ["Ticker", "Date/Time", "Open", "Close", "Volume", "Open Interest"]
             ].copy()
 
-            parsed = opt["Ticker"].map(parse_ticker)
+            parsed = opt.apply(
+                lambda r: parse_with_year(r["Ticker"], pd.Timestamp(r["Date/Time"])),
+                axis=1,
+            )
             valid = parsed.notna()
+            print(f"Parsed option rows: {int(valid.sum()):,}/{len(opt):,}")
             opt = opt.loc[valid].copy()
             parsed = parsed.loc[valid]
+
             opt["expiry"] = parsed.map(lambda x: x[0])
             opt["option_type"] = parsed.map(lambda x: x[1])
             opt["strike"] = parsed.map(lambda x: x[2])
