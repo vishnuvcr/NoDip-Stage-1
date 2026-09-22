@@ -2,7 +2,7 @@
 
 ## Status — 2026-09-23
 
-**P0 specification freeze is complete. P1 market-structure/data-source review has started. No historical performance number is claimed yet.**
+**P0 specification freeze and P1 market-structure review are complete. P2 data acquisition and P3 backtest-engine implementation are underway. No numerical backtest result is claimed yet.**
 
 Active branch: `research-nifty-4leg-calendar-v1`
 
@@ -11,9 +11,11 @@ Active branch: `research-nifty-4leg-calendar-v1`
 - Use the 09:15 IST market-open.
 - Select the nearest listed NIFTY strike to the 09:15 spot open.
 - Buy near-weekly ATM PE and sell near-weekly ATM CE.
-- Buy the same-strike far-weekly ATM CE and sell the same-strike far-weekly ATM PE, with the far expiry exactly three weekly intervals after the near expiry.
+- Buy the same-strike far-weekly ATM CE and sell the same-strike far-weekly ATM PE.
+- Far expiry is exactly three weekly intervals after the near expiry.
 - Exit all four legs at the near-expiry trading-day close.
-- One lot per leg; no adjustment, rolling, stop, target or averaging.
+- One lot per leg using each contract's historically applicable lot size.
+- No adjustment, rolling, stop, target or averaging.
 
 ### Research documents
 - [Research plan](docs/nifty_calendar/RESEARCH_PLAN.md)
@@ -24,5 +26,7 @@ Active branch: `research-nifty-4leg-calendar-v1`
 - [Error log](docs/nifty_calendar/ERROR_LOG.md)
 - [Conversation log](docs/nifty_calendar/CONVERSATION_LOG.md)
 - [Project rules](docs/PROJECT_RULES.md)
+- [Manual backtest workflow](.github/workflows/nifty-calendar-backtest.yml)
 
-Historical data, slippage and Paytm Money transaction-cost assumptions will be documented before any net-performance conclusion.
+### Execution model
+The workflow uses reproducible NSE daily derivatives acquisition, independent NIFTY spot data for the ATM reference, deterministic four-leg P&L calculation, and GitHub Actions artifacts for normalized data. Gross P&L is kept separate from slippage and Paytm Money transaction costs.
