@@ -38,6 +38,14 @@ jobs:
           restore-keys: |
             public-nse-index-options-2022-2024-
 
+      - name: Restore secondary NSE cache
+        uses: actions/cache@v4
+        with:
+          path: data/cache/nse_reconciliation_raw
+          key: nse-reconciliation-2022-2024-p5-v1
+          restore-keys: |
+            nse-reconciliation-2022-2024-p5-
+
       - name: Verify code tests
         env:
           PYTHONPATH: .
