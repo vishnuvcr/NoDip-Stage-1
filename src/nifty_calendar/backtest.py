@@ -44,13 +44,21 @@ def normalize(df: pd.DataFrame) -> pd.DataFrame:
     out["strike"] = pd.to_numeric(out["strike"], errors="coerce")
     out["open"] = pd.to_numeric(out["open"], errors="coerce")
     out["close"] = pd.to_numeric(out["close"], errors="coerce")
+
     if "lot_size" not in out.columns:
-        out["lot_size"] = pd.NA
-    out["lot_size"] = pd.to_numeric(out["lot_size"], errors="coerce")
+        out["lot_size"] = pd.Series(pd.NA, index=out.index, dtype="Int64")
+    else:
+        out["lot_size"] = pd.to_numeric(out["lot_size"], errors="coerce").astype("Int64")
+
+    # Avoid assigning an empty DatetimeArray into an integer column when no
+    # rows are missing. This is a pandas 3.x compatibility issue.
     missing_lot = out["lot_size"].isna() & out["expiry"].notna()
-    out.loc[missing_lot, "lot_size"] = out.loc[missing_lot, "expiry"].map(
-        historical_nifty_lot_size
-    )
+    if missing_lot.any():
+        fallback = out.loc[missing_lot, "expiry"].map(
+            historical_nifty_lot_size
+        ).astype("Int64")
+        out.loc[missing_lot, "lot_size"] = fallback
+
     out["option_type"] = out["option_type"].astype(str).str.upper()
     out["symbol"] = out["symbol"].astype(str).str.upper()
     return out
