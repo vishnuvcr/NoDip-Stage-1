@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import argparse
-import io
 from pathlib import Path
 import re
 
@@ -9,15 +8,28 @@ import pandas as pd
 import requests
 
 
-BASE = "https://raw.githubusercontent.com/NagarajuGunda/NSEIndexOptionsData/main"
+REPO_API = "https://api.github.com/repos/NagarajuGunda/NSEIndexOptionsData/contents"
+RAW_BASE = "https://raw.githubusercontent.com/NagarajuGunda/NSEIndexOptionsData/main"
+
+
+def list_month_files(year: int):
+    r = requests.get(f"{REPO_API}/{year}/nifty", timeout=60)
+    r.raise_for_status()
+    items = r.json()
+    files = []
+    for item in items:
+        name = item.get("name", "")
+        if item.get("type") == "file" and name.endswith(".parquet") and name[:-8].isdigit():
+            files.append(int(name[:-8]))
+    return sorted(files)
 
 
 def download_month(year: int, month: int, out_dir: Path) -> Path:
     out = out_dir / f"{year}_{month:02d}.parquet"
     if out.exists() and out.stat().st_size > 100_000:
         return out
-    url = f"{BASE}/{year}/nifty/{month:02d}.parquet"
-    r = requests.get(url, timeout=120)
+    url = f"{RAW_BASE}/{year}/nifty/{month:02d}.parquet"
+    r = requests.get(url, timeout=180)
     r.raise_for_status()
     out_dir.mkdir(parents=True, exist_ok=True)
     out.write_bytes(r.content)
@@ -59,8 +71,14 @@ def main():
     spot_parts = []
 
     for year in args.years:
-        for month in range(1, 13):
+        months = list_month_files(year)
+        if not months:
+            raise RuntimeError(f"No NIFTY monthly parquet files found for {year}")
+        print(f"{year}: available months {months}")
+
+        for month in months:
             path = download_month(year, month, args.raw_dir)
+            print(f"Reading {path}")
             df = pd.read_parquet(path)
             df["Date/Time"] = pd.to_datetime(df["Date/Time"])
             df["Ticker"] = df["Ticker"].astype(str)
@@ -83,13 +101,10 @@ def main():
             opt["date"] = opt["Date/Time"].dt.normalize()
             opt["time"] = opt["Date/Time"].dt.strftime("%H:%M")
 
-            # Strategy entry is the 09:15 market-open print.
             opens = opt[opt["time"].eq("09:15")][
                 ["date", "symbol", "expiry", "strike", "option_type", "Open"]
             ].rename(columns={"Open": "open"})
 
-            # Strategy exit is the expiry-session close; for general daily records
-            # use the last available bar close of each contract/day.
             closes = (
                 opt.sort_values("Date/Time")
                 .groupby(
@@ -118,8 +133,6 @@ def main():
 
     spot = pd.concat(spot_parts, ignore_index=True)
     spot["date"] = spot["Date/Time"].dt.normalize()
-    # The source contains 1-minute bars; take the 09:15 bar OPEN as the daily
-    # market-open reference, exactly matching the locked entry rule.
     spot["time"] = spot["Date/Time"].dt.strftime("%H:%M")
     spot = (
         spot[spot["time"].eq("09:15")]
