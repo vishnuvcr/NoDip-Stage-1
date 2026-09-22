@@ -25,3 +25,12 @@
 - Robustness work added exact leg-specific slippage sensitivity, documented brokerage/statutory cost treatment, exchange-charge sensitivity and a reproducible trade-cost analysis script.
 - Current phase state: P0-P4 complete; P5 robustness/independent reconciliation in progress; P6 manuscript pending.
 - Latest user instruction: "Ok proceed".
+
+
+## 2026-09-23 — P5 independent reconciliation initiated
+- User confirmed continuation of the research.
+- A dedicated P5 branch was created: research-nifty-4leg-calendar-p5-reconciliation.
+- Added a full candidate-cycle audit that records the primary rejection reason, selected common strike, missing legs and primary leg prices.
+- Added an independent NSE bhavcopy reconciliation script covering the full candidate set and an independent Yahoo NIFTY spot-open cross-check.
+- Added manual-run and push-triggered GitHub Actions workflows with cached primary and secondary data.
+- The first P5 execution is currently running on GitHub Actions; no independent-source result has been interpreted yet.
