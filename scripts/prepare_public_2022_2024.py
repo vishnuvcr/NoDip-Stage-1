@@ -78,7 +78,7 @@ def parse_options_vectorized(opt: pd.DataFrame) -> pd.DataFrame:
     out["expiry"] = pd.to_datetime(
         parsed["expiry"], format="%d%b%y", errors="coerce"
     )
-    out["option_type"] = parsed["option"].astype(str)
+    out["option_type"] = parsed["option"].map({"C": "CE", "P": "PE"})
     out["strike"] = pd.to_numeric(parsed["strike"], errors="coerce")
     out["symbol"] = "NIFTY"
     out["date"] = out["Date/Time"].dt.normalize()
