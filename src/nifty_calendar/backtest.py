@@ -2,14 +2,44 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
+
 import pandas as pd
 
 
 REQUIRED_FO = {
-    "date", "symbol", "expiry", "strike", "option_type",
-    "open", "close", "lot_size"
+    "date",
+    "symbol",
+    "expiry",
+    "strike",
+    "option_type",
+    "open",
+    "close",
 }
 REQUIRED_SPOT = {"date", "open"}
+
+
+def historical_nifty_lot_size(expiry: pd.Timestamp) -> int:
+    """Historical NIFTY weekly-contract lot sizes from NSE circular change dates.
+
+    Weekly contracts:
+      < 2021-08-05: 75
+      2021-08-05 through 2024-05-01: 50
+      2024-05-02 through 2025-01-01: 25
+      2025-01-02 through 2026-01-05: 75
+      >= 2026-01-06: 65
+
+    The function is a fallback only when the source row does not carry a lot size.
+    """
+    e = pd.Timestamp(expiry)
+    if e < pd.Timestamp("2021-08-05"):
+        return 75
+    if e < pd.Timestamp("2024-05-02"):
+        return 50
+    if e < pd.Timestamp("2025-01-02"):
+        return 25
+    if e < pd.Timestamp("2026-01-06"):
+        return 75
+    return 65
 
 
 def load_table(path: Path) -> pd.DataFrame:
@@ -25,14 +55,22 @@ def normalize(df: pd.DataFrame) -> pd.DataFrame:
     out["strike"] = pd.to_numeric(out["strike"], errors="coerce")
     out["open"] = pd.to_numeric(out["open"], errors="coerce")
     out["close"] = pd.to_numeric(out["close"], errors="coerce")
+    if "lot_size" not in out.columns:
+        out["lot_size"] = pd.NA
     out["lot_size"] = pd.to_numeric(out["lot_size"], errors="coerce")
+    missing_lot = out["lot_size"].isna() & out["expiry"].notna()
+    out.loc[missing_lot, "lot_size"] = out.loc[missing_lot, "expiry"].map(historical_nifty_lot_size)
     out["option_type"] = out["option_type"].astype(str).str.upper()
     out["symbol"] = out["symbol"].astype(str).str.upper()
     return out
 
 
-def nearest_common_strike(day: pd.DataFrame, expiry_near: pd.Timestamp,
-                          expiry_far: pd.Timestamp, spot_open: float) -> float:
+def nearest_common_strike(
+    day: pd.DataFrame,
+    expiry_near: pd.Timestamp,
+    expiry_far: pd.Timestamp,
+    spot_open: float,
+) -> float:
     subset = day[
         (day["symbol"] == "NIFTY")
         & (day["expiry"].isin([expiry_near, expiry_far]))
@@ -48,8 +86,13 @@ def nearest_common_strike(day: pd.DataFrame, expiry_near: pd.Timestamp,
     return min(common, key=lambda k: (abs(k - spot_open), k))
 
 
-def leg_row(fo: pd.DataFrame, date: pd.Timestamp, expiry: pd.Timestamp,
-            strike: float, opt: str) -> pd.Series:
+def leg_row(
+    fo: pd.DataFrame,
+    date: pd.Timestamp,
+    expiry: pd.Timestamp,
+    strike: float,
+    opt: str,
+) -> pd.Series:
     m = fo[
         (fo["date"] == date)
         & (fo["symbol"] == "NIFTY")
@@ -67,6 +110,11 @@ def leg_row(fo: pd.DataFrame, date: pd.Timestamp, expiry: pd.Timestamp,
 
 def build_trades(fo: pd.DataFrame, spot: pd.DataFrame) -> pd.DataFrame:
     expiries = sorted(fo.loc[fo["symbol"] == "NIFTY", "expiry"].dropna().unique())
+    expiries = [
+        pd.Timestamp(e)
+        for e in expiries
+        if pd.Timestamp(e) >= pd.Timestamp("2021-08-05")
+    ]
     spot_days = set(spot["date"].dropna())
 
     trades = []
@@ -108,7 +156,11 @@ def build_trades(fo: pd.DataFrame, spot: pd.DataFrame) -> pd.DataFrame:
         if any(pd.isna(x["close"]) for x in exits.values()):
             continue
 
-        # One lot per leg. Each contract's historically applicable lot size is used.
+        # Use the actual lot size for each contract/expiry.
+        for x in list(legs.values()) + list(exits.values()):
+            if pd.isna(x["lot_size"]):
+                x["lot_size"] = historical_nifty_lot_size(pd.Timestamp(x["expiry"]))
+
         pnl_points = (
             (float(exits["near_pe"]["close"]) - float(legs["near_pe"]["open"]))
             + (float(legs["near_ce"]["open"]) - float(exits["near_ce"]["close"]))
@@ -117,33 +169,39 @@ def build_trades(fo: pd.DataFrame, spot: pd.DataFrame) -> pd.DataFrame:
         )
 
         pnl_inr = (
-            (float(exits["near_pe"]["close"]) - float(legs["near_pe"]["open"])) * float(legs["near_pe"]["lot_size"])
-            + (float(legs["near_ce"]["open"]) - float(exits["near_ce"]["close"])) * float(legs["near_ce"]["lot_size"])
-            + (float(exits["far_ce"]["close"]) - float(legs["far_ce"]["open"])) * float(legs["far_ce"]["lot_size"])
-            + (float(legs["far_pe"]["open"]) - float(exits["far_pe"]["close"])) * float(legs["far_pe"]["lot_size"])
+            (float(exits["near_pe"]["close"]) - float(legs["near_pe"]["open"]))
+            * float(legs["near_pe"]["lot_size"])
+            + (float(legs["near_ce"]["open"]) - float(exits["near_ce"]["close"]))
+            * float(legs["near_ce"]["lot_size"])
+            + (float(exits["far_ce"]["close"]) - float(legs["far_ce"]["open"]))
+            * float(legs["far_ce"]["lot_size"])
+            + (float(legs["far_pe"]["open"]) - float(exits["far_pe"]["close"]))
+            * float(legs["far_pe"]["lot_size"])
         )
 
-        trades.append({
-            "entry_date": entry_date,
-            "near_expiry": near_expiry,
-            "far_expiry": far_expiry,
-            "spot_open": spot_open,
-            "strike": strike,
-            "entry_near_pe": float(legs["near_pe"]["open"]),
-            "entry_near_ce": float(legs["near_ce"]["open"]),
-            "entry_far_ce": float(legs["far_ce"]["open"]),
-            "entry_far_pe": float(legs["far_pe"]["open"]),
-            "exit_near_pe": float(exits["near_pe"]["close"]),
-            "exit_near_ce": float(exits["near_ce"]["close"]),
-            "exit_far_ce": float(exits["far_ce"]["close"]),
-            "exit_far_pe": float(exits["far_pe"]["close"]),
-            "lot_near_pe": float(legs["near_pe"]["lot_size"]),
-            "lot_near_ce": float(legs["near_ce"]["lot_size"]),
-            "lot_far_ce": float(legs["far_ce"]["lot_size"]),
-            "lot_far_pe": float(legs["far_pe"]["lot_size"]),
-            "pnl_points": pnl_points,
-            "pnl_inr": pnl_inr,
-        })
+        trades.append(
+            {
+                "entry_date": entry_date,
+                "near_expiry": near_expiry,
+                "far_expiry": far_expiry,
+                "spot_open": spot_open,
+                "strike": strike,
+                "entry_near_pe": float(legs["near_pe"]["open"]),
+                "entry_near_ce": float(legs["near_ce"]["open"]),
+                "entry_far_ce": float(legs["far_ce"]["open"]),
+                "entry_far_pe": float(legs["far_pe"]["open"]),
+                "exit_near_pe": float(exits["near_pe"]["close"]),
+                "exit_near_ce": float(exits["near_ce"]["close"]),
+                "exit_far_ce": float(exits["far_ce"]["close"]),
+                "exit_far_pe": float(exits["far_pe"]["close"]),
+                "lot_near_pe": int(legs["near_pe"]["lot_size"]),
+                "lot_near_ce": int(legs["near_ce"]["lot_size"]),
+                "lot_far_ce": int(legs["far_ce"]["lot_size"]),
+                "lot_far_pe": int(legs["far_pe"]["lot_size"]),
+                "pnl_points": pnl_points,
+                "pnl_inr": pnl_inr,
+            }
+        )
 
     return pd.DataFrame(trades)
 
