@@ -2,7 +2,7 @@
 
 ## Current research status — 2026-09-23
 
-**Strategy locked. P0/P1 complete. P2/P3 active. CI diagnostics are being corrected before numerical performance is accepted.**
+**Strategy locked. P0/P1 complete. P2/P3 active. Public 2022-2024 data acquisition now completes in CI; the first mechanical run produced zero valid trades, so the trade-selection/data mapping is under verification. No performance result is accepted yet.**
 
 Active branch: `research-nifty-4leg-calendar-v1`
 
@@ -33,8 +33,6 @@ Active branch: `research-nifty-4leg-calendar-v1`
 - [Main execution runner](https://github.com/vishnuvcr/NoDip-Stage-1/blob/main/.github/workflows/execute-nifty-calendar.yml)
 - [Draft execution PR #1](https://github.com/vishnuvcr/NoDip-Stage-1/pull/1)
 
-The first historical execution source is the public `NSEIndexOptionsData` archive for 2022-2024. It contains NIFTY minute data and embedded NIFTY spot data. The preparation script converts 09:15 opens and expiry-session final closes into the frozen backtest schema.
+The first historical execution source is the public `NSEIndexOptionsData` archive for 2022-2024. It contains NIFTY minute data and embedded NIFTY spot data. The preparation script converts 09:15 opens and expiry-session final closes into the frozen backtest schema and now prints source-ticker parsing diagnostics.
 
-Gross P&L, slippage, brokerage and statutory-cost layers remain separate. No unverified historical performance is presented as a trading result.
-
-Latest CI note: package-import and setup-python cache issues have been corrected and are logged in the branch error log. A new execution is being started from main against the corrected research branch.
+No gross or net performance number is presented until the zero-trade condition is resolved and the selected contracts are spot-checked against the source.
