@@ -1,0 +1,183 @@
+name: Execute NIFTY Calendar Research
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  run-research:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout locked research branch
+        uses: actions/checkout@v4
+        with:
+          ref: research-nifty-4leg-calendar-v1
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pandas pyarrow requests pytest scipy
+
+      - name: Verify code tests
+        run: pytest -q
+
+      - name: Download and prepare public 2022-2024 NIFTY data
+        run: |
+          python scripts/prepare_public_2022_2024.py \
+            --raw-dir data/cache/public_nse_index_options \
+            --fo-out data/cache/nifty_fo_daily_2022_2024.parquet \
+            --spot-out data/cache/nifty_spot_daily_2022_2024.csv
+
+      - name: Run frozen strategy
+        run: |
+          python src/nifty_calendar/backtest.py \
+            --fo data/cache/nifty_fo_daily_2022_2024.parquet \
+            --spot data/cache/nifty_spot_daily_2022_2024.csv \
+            --out reports/nifty_calendar/trade_level_results_2022_2024.csv
+
+      - name: Build statistical result report
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import pandas as pd
+          import numpy as np
+
+          p = Path("reports/nifty_calendar/trade_level_results_2022_2024.csv")
+          df = pd.read_csv(p, parse_dates=["entry_date", "near_expiry", "far_expiry"])
+          if df.empty:
+              raise SystemExit("No valid trades. This run cannot be interpreted.")
+
+          df = df.sort_values("entry_date").reset_index(drop=True)
+          df["cum_pnl_inr"] = df["pnl_inr"].cumsum()
+          peak = df["cum_pnl_inr"].cummax()
+          dd = df["cum_pnl_inr"] - peak
+
+          wins = df.loc[df["pnl_inr"] > 0, "pnl_inr"]
+          losses = df.loc[df["pnl_inr"] < 0, "pnl_inr"]
+          pf = wins.sum() / abs(losses.sum()) if len(losses) else float("inf")
+
+          # Annual decomposition.
+          df["year"] = df["entry_date"].dt.year
+          annual = (
+              df.groupby("year", as_index=False)
+              .agg(trades=("pnl_inr", "size"), pnl_inr=("pnl_inr", "sum"), mean_trade=("pnl_inr", "mean"))
+          )
+
+          # Circular moving-block bootstrap, block length 3.
+          rng = np.random.default_rng(20260923)
+          x = df["pnl_inr"].to_numpy(dtype=float)
+          n = len(x)
+          block = min(3, n)
+          reps = 10000
+          boot = np.empty(reps)
+          for i in range(reps):
+              starts = rng.integers(0, n, size=(n + block - 1) // block)
+              sample = []
+              for s in starts:
+                  sample.extend(x[(s + np.arange(block)) % n])
+              boot[i] = np.sum(sample[:n])
+          ci = np.quantile(boot, [0.025, 0.975])
+
+          out = Path("reports/nifty_calendar/RESULTS_2022_2024.md")
+          out.parent.mkdir(parents=True, exist_ok=True)
+          lines = [
+              "# NIFTY 4-Leg Calendar — 2022-2024 Historical Result",
+              "",
+              "## Frozen protocol",
+              "09:15 entry on the first trading day after the previous weekly expiry; same-strike ATM PE/CE four-leg structure; exit at the near-expiry session close.",
+              "",
+              "## Gross results",
+              f"- Valid trades: {n}",
+              f"- Total gross P&L: ₹{x.sum():,.2f}",
+              f"- Mean trade: ₹{x.mean():,.2f}",
+              f"- Median trade: ₹{np.median(x):,.2f}",
+              f"- Win rate: {(x > 0).mean():.2%}",
+              f"- Profit factor: {pf:.3f}",
+              f"- Maximum drawdown: ₹{dd.min():,.2f}",
+              f"- Best trade: ₹{x.max():,.2f}",
+              f"- Worst trade: ₹{x.min():,.2f}",
+              f"- Bootstrap 95% CI for total P&L (3-trade circular blocks): ₹{ci[0]:,.2f} to ₹{ci[1]:,.2f}",
+              "",
+              "## Annual decomposition",
+              "",
+              "| Year | Trades | Gross P&L (₹) | Mean trade (₹) |",
+              "|---:|---:|---:|---:|",
+          ]
+          for _, r in annual.iterrows():
+              lines.append(f"| {int(r.year)} | {int(r.trades)} | {r.pnl_inr:,.2f} | {r.mean_trade:,.2f} |")
+
+          lines += [
+              "",
+              "## Execution-cost stress",
+              "",
+              "Eight option executions occur per trade: four entries and four exits.",
+              "The table below subtracts adverse slippage in index points on every individual execution; it is a sensitivity analysis, not a claim about actual fills.",
+              "",
+              "| Slippage / execution point | Approx. gross P&L after slippage* |",
+              "|---:|---:|",
+          ]
+
+          for s in [0.25, 0.5, 1.0, 2.0]:
+              # Use average lot size across all four entry legs as a transparent
+              # stress proxy; detailed leg-specific sensitivity is computed in the
+              # follow-on robustness phase.
+              avg_lot = df[["lot_near_pe","lot_near_ce","lot_far_ce","lot_far_pe"]].mean(axis=1).mean()
+              net = x.sum() - (8 * s * avg_lot * n)
+              lines.append(f"| {s:.2f} | ₹{net:,.2f} |")
+
+          lines += [
+              "",
+              "*Stress calculation uses the mean historical lot size as a first-pass common multiplier. The final cost model will calculate leg-specific slippage and statutory charges.",
+              "",
+              "## Interpretation status",
+              "This is the first historical result on the public 2022-2024 NIFTY option archive. It is not yet the final verified manuscript result. The next phase checks independent-source agreement, precise leg-level transaction costs and robustness.",
+          ]
+
+          out.write_text("\\n".join(lines), encoding="utf-8")
+          annual.to_csv("reports/nifty_calendar/ANNUAL_RESULTS_2022_2024.csv", index=False)
+          df.to_csv("reports/nifty_calendar/TRADE_LEVEL_RESULTS_2022_2024.csv", index=False)
+          print(out.read_text())
+          PY
+
+      - name: Update research phase state
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path("docs/nifty_calendar/PHASE_STATUS.md")
+          s = p.read_text(encoding="utf-8")
+          s = s.replace("| P1 Literature / market structure | COMPLETE |", "| P1 Literature / market structure | COMPLETE |")
+          s = s.replace("| P2 Data acquisition | IN PROGRESS |", "| P2 Data acquisition | COMPLETE |")
+          s = s.replace("| P3 Engine/tests | PENDING |", "| P3 Engine/tests | COMPLETE |")
+          s = s.replace("| P4 Historical backtest | BLOCKED BY DATA |", "| P4 Historical backtest | COMPLETE |")
+          s = s.replace("| P5 Verification/robustness | PENDING |", "| P5 Verification/robustness | IN PROGRESS |")
+          p.write_text(s, encoding="utf-8")
+          PY
+
+      - name: Record execution outputs on research branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/nifty_calendar/PHASE_STATUS.md reports/nifty_calendar
+          git diff --cached --quiet || git commit -m "Record NIFTY calendar 2022-2024 backtest results"
+          git push origin HEAD:research-nifty-4leg-calendar-v1
+
+      - name: Upload research artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nifty-calendar-2022-2024-research
+          path: |
+            reports/nifty_calendar/RESULTS_2022_2024.md
+            reports/nifty_calendar/ANNUAL_RESULTS_2022_2024.csv
+            reports/nifty_calendar/TRADE_LEVEL_RESULTS_2022_2024.csv
+            data/cache/nifty_fo_daily_2022_2024.parquet
+            data/cache/nifty_spot_daily_2022_2024.csv
