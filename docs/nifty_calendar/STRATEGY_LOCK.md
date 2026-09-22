@@ -3,6 +3,7 @@
 Status: FROZEN FOR BACKTEST
 Branch: research-nifty-4leg-calendar-v1
 Lock date: 2026-09-23
+Specification amendment: 2026-09-23 — historical expiry calendar explicitly versioned
 
 ## Rules
 
@@ -22,7 +23,8 @@ Lock date: 2026-09-23
 10. Quantity: one contract of each leg (one lot) with the historically applicable lot size. P&L is reported both in index points and INR.
 11. No discretionary filters, stop-loss, target, adjustment, averaging, strike shift, or signal overlay.
 12. No overlapping positions: one strategy cycle per weekly expiry sequence.
-13. The primary frozen definition uses the single entry-time spot ATM strike for all four legs. The screenshots are treated as illustrative examples, not as a separate hidden strike-selection rule.
+13. The primary frozen definition uses the single entry-time spot ATM strike for all four legs. The supplied screenshots are illustrative examples, not a separate hidden strike-selection rule.
+14. Historical expiry day is taken from the exchange's actual contract/expiry records. NIFTY weekly expiry was Thursday before the 2025 changeover and Tuesday thereafter; the engine must not assume Tuesday across the full history. Contracts expiring on or before 31-Aug-2025 kept the Thursday schedule; the revised Tuesday schedule began with new September 2025 weekly contracts.
 
 ## Execution cost layers
 
@@ -34,4 +36,4 @@ The research will publish:
 
 ## Data integrity
 
-Daily OHLC is sufficient for this frozen 09:15-open / expiry-close protocol because both entry and exit are defined at daily bar endpoints. Intraday data will be used for spot/open validation when available and for a secondary execution-sensitivity check; it is not allowed to silently replace a missing official daily contract record.
+Daily OHLC is sufficient for the frozen 09:15-open / expiry-close protocol because both entry and exit are defined at daily bar endpoints. Intraday data will be used for spot/open validation when available and for a secondary execution-sensitivity check; it is not allowed to silently replace a missing official daily contract record.
