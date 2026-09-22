@@ -4,17 +4,16 @@ This repository is the research home for the frozen NIFTY four-leg weekly/three-
 
 ## Current research status — 2026-09-23
 
-**Strategy is locked. Historical backtest is not yet numerically claimed.**
+**Strategy locked. P0 and P1 are complete. P2 data acquisition and P3 engine implementation are in progress. No historical performance number is claimed yet.**
 
 Active branch: `research-nifty-4leg-calendar-v1`
 
 Key frozen rules:
 - Entry: first trading day after the previous NIFTY weekly expiry.
 - Entry timestamp: 09:15 IST market-open.
-- Near expiry: first weekly expiry after entry.
+- ATM: nearest listed strike to the 09:15 NIFTY spot open.
+- Legs: buy near-weekly ATM PE; sell near-weekly ATM CE; buy the same-strike far-weekly ATM CE; sell the same-strike far-weekly ATM PE.
 - Far expiry: three weekly intervals after the near expiry.
-- ATM: nearest listed strike to the 09:15 NIFTY spot open, carried across all four legs.
-- Legs: buy near ATM PE; sell near ATM CE; buy far ATM CE; sell far ATM PE.
 - Exit: all four legs at the near-expiry trading-day close.
 - No adjustment, rolling, target or stop-loss.
 
@@ -27,9 +26,10 @@ Key frozen rules:
 - [Sources](https://github.com/vishnuvcr/NoDip-Stage-1/blob/research-nifty-4leg-calendar-v1/docs/nifty_calendar/SOURCES.md)
 - [Error log](https://github.com/vishnuvcr/NoDip-Stage-1/blob/research-nifty-4leg-calendar-v1/docs/nifty_calendar/ERROR_LOG.md)
 - [Conversation log](https://github.com/vishnuvcr/NoDip-Stage-1/blob/research-nifty-4leg-calendar-v1/docs/nifty_calendar/CONVERSATION_LOG.md)
+- [Manual backtest workflow](https://github.com/vishnuvcr/NoDip-Stage-1/blob/research-nifty-4leg-calendar-v1/.github/workflows/nifty-calendar-backtest.yml)
 
 ## Research policy
 
 Official NSE historical data is preferred and independent/open datasets are used for validation. Raw exchange-owned bulk archives are not committed unless redistribution is verified. Derived trade-level datasets, manifests, hashes, code and final research outputs are versioned.
 
-The study must report gross P&L separately from slippage and transaction-cost-adjusted P&L, and it will not present unverified historical performance as a trading result.
+The study will report gross P&L separately from slippage and transaction-cost-adjusted P&L, and it will not present unverified historical performance as a trading result.
