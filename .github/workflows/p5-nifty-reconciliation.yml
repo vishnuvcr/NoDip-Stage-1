@@ -57,25 +57,25 @@ jobs:
 
       - name: Rebuild primary 2022-2024 dataset
         run: |
-          python scripts/prepare_public_2022_2024.py             --raw-dir data/cache/public_nse_index_options             --fo-out data/cache/nifty_fo_daily_2022_2024.parquet             --spot-out data/cache/nifty_spot_daily_2022_2024.csv
+          python scripts/prepare_public_2022_2024.py --raw-dir data/cache/public_nse_index_options             --fo-out data/cache/nifty_fo_daily_2022_2024.parquet             --spot-out data/cache/nifty_spot_daily_2022_2024.csv
 
       - name: Run frozen primary backtest
         env:
           PYTHONPATH: .
         run: |
-          python src/nifty_calendar/backtest.py             --fo data/cache/nifty_fo_daily_2022_2024.parquet             --spot data/cache/nifty_spot_daily_2022_2024.csv             --out reports/nifty_calendar/trade_level_results_2022_2024.csv
+          python src/nifty_calendar/backtest.py --fo data/cache/nifty_fo_daily_2022_2024.parquet             --spot data/cache/nifty_spot_daily_2022_2024.csv             --out reports/nifty_calendar/trade_level_results_2022_2024.csv
 
       - name: Build detailed primary cycle audit
         env:
           PYTHONPATH: .
         run: |
-          python scripts/audit_cycle_rejections.py             --fo data/cache/nifty_fo_daily_2022_2024.parquet             --spot data/cache/nifty_spot_daily_2022_2024.csv             --out reports/nifty_calendar/CYCLE_AUDIT_2022_2024.csv
+          python scripts/audit_cycle_rejections.py --fo data/cache/nifty_fo_daily_2022_2024.parquet             --spot data/cache/nifty_spot_daily_2022_2024.csv             --out reports/nifty_calendar/CYCLE_AUDIT_2022_2024.csv
 
       - name: Reconcile all cycles against NSE bhavcopy plus Yahoo spot
         env:
           PYTHONPATH: .
         run: |
-          python scripts/reconcile_rejections_nse.py             --audit reports/nifty_calendar/CYCLE_AUDIT_2022_2024.csv             --out reports/nifty_calendar/P5_SECONDARY_RECONCILIATION_2022_2024.csv             --rows-out data/cache/nifty_secondary_reconciliation_2022_2024.csv             --cache-dir data/cache/nse_reconciliation_raw
+          python scripts/reconcile_rejections_nse.py --audit reports/nifty_calendar/CYCLE_AUDIT_2022_2024.csv             --out reports/nifty_calendar/P5_SECONDARY_RECONCILIATION_2022_2024.csv             --rows-out data/cache/nifty_secondary_reconciliation_2022_2024.csv             --cache-dir data/cache/nse_reconciliation_raw
 
       - name: Write P5 reconciliation report
         run: |
