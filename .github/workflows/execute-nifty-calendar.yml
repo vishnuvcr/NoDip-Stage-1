@@ -3,6 +3,8 @@ name: Execute NIFTY Calendar Research
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - ".github/workflows/diagnose-public-tickers.yml"
   workflow_dispatch:
 
 permissions:
@@ -136,12 +138,10 @@ jobs:
               "| Slippage / execution point | Approx. total P&L after stress (₹) |",
               "|---:|---:|",
           ]
-
           for s in [0.25, 0.5, 1.0, 2.0]:
               avg_lot = df[["lot_near_pe","lot_near_ce","lot_far_ce","lot_far_pe"]].mean(axis=1).mean()
               net = x.sum() - (8 * s * avg_lot * n)
               lines.append(f"| {s:.2f} | ₹{net:,.2f} |")
-
           lines += [
               "",
               "*First-pass slippage stress uses the mean historical lot size as a common multiplier. The robustness phase will calculate leg-specific execution costs.",
@@ -149,7 +149,6 @@ jobs:
               "## Interpretation status",
               "This is the first historical result on the public 2022-2024 NIFTY option archive. It is not yet the final verified manuscript result; independent-source agreement and full transaction-cost validation remain required.",
           ]
-
           out.write_text("\\n".join(lines), encoding="utf-8")
           annual.to_csv("reports/nifty_calendar/ANNUAL_RESULTS_2022_2024.csv", index=False)
           df.to_csv("reports/nifty_calendar/TRADE_LEVEL_RESULTS_2022_2024.csv", index=False)
