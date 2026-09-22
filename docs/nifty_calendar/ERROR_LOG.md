@@ -23,3 +23,10 @@
 - Impact: the 2022 run stopped on a 404 for 2022/nifty/12.parquet.
 - Correction: the script now queries the public repository directory and processes only files that actually exist.
 - Prevention: discover remote file manifests instead of inferring filenames from calendar assumptions.
+
+## 2026-09-23 — Public NIFTY ticker schema mismatch
+- Event: the public NIFTY mirror uses NIFTY04JAN24C18300 / NIFTY04JAN24P18300, with a single C/P, while the parser expected CE/PE.
+- Impact: the first successful data-preparation run produced a zero-trade ledger even though the source contained millions of option rows.
+- Detection: dedicated ticker-diagnostic workflow verified 5,137,099 rows and 773 unique option tickers in one public month, with 0/773 matches under the old regex.
+- Correction: parser changed to single-letter C/P and vectorized string extraction; preparation now aborts on zero parsed contracts instead of silently producing a zero-trade backtest.
+- Prevention: public-source schema diagnostics are now part of the workflow and must pass before numerical interpretation.
