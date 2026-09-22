@@ -1,13 +1,6 @@
 name: P5 NIFTY Calendar Independent Reconciliation
 
 on:
-  push:
-    branches: [research-nifty-4leg-calendar-p5-reconciliation]
-    paths:
-      - ".github/workflows/p5-nifty-reconciliation.yml"
-      - "scripts/audit_cycle_rejections.py"
-      - "scripts/reconcile_rejections_nse.py"
-      - "src/nifty_calendar/**"
   workflow_dispatch:
 
 concurrency:
