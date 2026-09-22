@@ -26,6 +26,6 @@ def test_public_cp_ticker_schema():
     )
     out = parse_options_vectorized(raw)
     assert len(out) == 3
-    assert set(out["option_type"]) == {"C", "P"}
+    assert set(out["option_type"]) == {"CE", "PE"}
     assert set(out["strike"]) == {18300.0, 18350.0}
     assert str(out.iloc[0]["expiry"].date()) == "2024-01-04"
