@@ -28,7 +28,17 @@ jobs:
           python -m pip install --upgrade pip
           pip install pandas pyarrow requests pytest scipy
 
+      - name: Restore public-data cache
+        uses: actions/cache@v4
+        with:
+          path: data/cache/public_nse_index_options
+          key: public-nse-index-options-2022-2024-v1
+          restore-keys: |
+            public-nse-index-options-2022-2024-
+
       - name: Verify code tests
+        env:
+          PYTHONPATH: .
         run: pytest -q
 
       - name: Download and prepare public 2022-2024 NIFTY data
@@ -39,6 +49,8 @@ jobs:
             --spot-out data/cache/nifty_spot_daily_2022_2024.csv
 
       - name: Run frozen strategy
+        env:
+          PYTHONPATH: .
         run: |
           python src/nifty_calendar/backtest.py \
             --fo data/cache/nifty_fo_daily_2022_2024.parquet \
@@ -66,14 +78,12 @@ jobs:
           losses = df.loc[df["pnl_inr"] < 0, "pnl_inr"]
           pf = wins.sum() / abs(losses.sum()) if len(losses) else float("inf")
 
-          # Annual decomposition.
           df["year"] = df["entry_date"].dt.year
           annual = (
               df.groupby("year", as_index=False)
               .agg(trades=("pnl_inr", "size"), pnl_inr=("pnl_inr", "sum"), mean_trade=("pnl_inr", "mean"))
           )
 
-          # Circular moving-block bootstrap, block length 3.
           rng = np.random.default_rng(20260923)
           x = df["pnl_inr"].to_numpy(dtype=float)
           n = len(x)
@@ -121,26 +131,23 @@ jobs:
               "## Execution-cost stress",
               "",
               "Eight option executions occur per trade: four entries and four exits.",
-              "The table below subtracts adverse slippage in index points on every individual execution; it is a sensitivity analysis, not a claim about actual fills.",
+              "The table below subtracts adverse slippage in index points on every individual execution. It is a sensitivity analysis, not a claim about actual fills.",
               "",
-              "| Slippage / execution point | Approx. gross P&L after slippage* |",
+              "| Slippage / execution point | Approx. total P&L after stress (₹) |",
               "|---:|---:|",
           ]
 
           for s in [0.25, 0.5, 1.0, 2.0]:
-              # Use average lot size across all four entry legs as a transparent
-              # stress proxy; detailed leg-specific sensitivity is computed in the
-              # follow-on robustness phase.
               avg_lot = df[["lot_near_pe","lot_near_ce","lot_far_ce","lot_far_pe"]].mean(axis=1).mean()
               net = x.sum() - (8 * s * avg_lot * n)
               lines.append(f"| {s:.2f} | ₹{net:,.2f} |")
 
           lines += [
               "",
-              "*Stress calculation uses the mean historical lot size as a first-pass common multiplier. The final cost model will calculate leg-specific slippage and statutory charges.",
+              "*First-pass slippage stress uses the mean historical lot size as a common multiplier. The robustness phase will calculate leg-specific execution costs.",
               "",
               "## Interpretation status",
-              "This is the first historical result on the public 2022-2024 NIFTY option archive. It is not yet the final verified manuscript result. The next phase checks independent-source agreement, precise leg-level transaction costs and robustness.",
+              "This is the first historical result on the public 2022-2024 NIFTY option archive. It is not yet the final verified manuscript result; independent-source agreement and full transaction-cost validation remain required.",
           ]
 
           out.write_text("\\n".join(lines), encoding="utf-8")
@@ -155,10 +162,9 @@ jobs:
           from pathlib import Path
           p = Path("docs/nifty_calendar/PHASE_STATUS.md")
           s = p.read_text(encoding="utf-8")
-          s = s.replace("| P1 Literature / market structure | COMPLETE |", "| P1 Literature / market structure | COMPLETE |")
           s = s.replace("| P2 Data acquisition | IN PROGRESS |", "| P2 Data acquisition | COMPLETE |")
-          s = s.replace("| P3 Engine/tests | PENDING |", "| P3 Engine/tests | COMPLETE |")
-          s = s.replace("| P4 Historical backtest | BLOCKED BY DATA |", "| P4 Historical backtest | COMPLETE |")
+          s = s.replace("| P3 Engine/tests | IN PROGRESS |", "| P3 Engine/tests | COMPLETE |")
+          s = s.replace("| P4 Historical backtest | PENDING |", "| P4 Historical backtest | COMPLETE |")
           s = s.replace("| P5 Verification/robustness | PENDING |", "| P5 Verification/robustness | IN PROGRESS |")
           p.write_text(s, encoding="utf-8")
           PY
