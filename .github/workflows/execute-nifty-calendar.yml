@@ -17,7 +17,7 @@ jobs:
       - name: Checkout locked research branch
         uses: actions/checkout@v4
         with:
-          ref: research-nifty-4leg-calendar-v1
+          ref: research-nifty-4leg-calendar-p5-reconciliation
           fetch-depth: 0
 
       - name: Set up Python
@@ -58,6 +58,87 @@ jobs:
             --fo data/cache/nifty_fo_daily_2022_2024.parquet \
             --spot data/cache/nifty_spot_daily_2022_2024.csv \
             --out reports/nifty_calendar/trade_level_results_2022_2024.csv
+
+      - name: Build detailed primary cycle audit
+        env:
+          PYTHONPATH: .
+        run: |
+          python scripts/audit_cycle_rejections.py             --fo data/cache/nifty_fo_daily_2022_2024.parquet             --spot data/cache/nifty_spot_daily_2022_2024.csv             --out reports/nifty_calendar/CYCLE_AUDIT_2022_2024.csv
+
+      - name: Reconcile all cycles against NSE bhavcopy plus Yahoo spot
+        env:
+          PYTHONPATH: .
+        run: |
+          python scripts/reconcile_rejections_nse.py             --audit reports/nifty_calendar/CYCLE_AUDIT_2022_2024.csv             --out reports/nifty_calendar/P5_SECONDARY_RECONCILIATION_2022_2024.csv             --rows-out data/cache/nifty_secondary_reconciliation_2022_2024.csv             --cache-dir data/cache/nse_reconciliation_raw
+
+      - name: Write P5 reconciliation report
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import pandas as pd
+
+          audit = pd.read_csv("reports/nifty_calendar/CYCLE_AUDIT_2022_2024.csv")
+          recon = pd.read_csv("reports/nifty_calendar/P5_SECONDARY_RECONCILIATION_2022_2024.csv")
+          complete = recon[recon["secondary_status"].eq("SECONDARY_COMPLETE")].copy()
+          recovered = recon[recon["comparison_status"].eq("RECOVERED_BY_SECONDARY")].copy()
+          matched = recon[recon["comparison_status"].eq("PRIMARY_VALID_SECONDARY_COMPLETE")].copy()
+
+          lines = [
+              "# P5 Independent Reconciliation — NIFTY 4-Leg Calendar — 2022-2024",
+              "",
+              "## Source design",
+              "Primary source: public NIFTY options mirror used by the locked backtest.",
+              "Secondary contract source: NSE daily F&O bhavcopy.",
+              "Independent spot cross-check: Yahoo Finance NIFTY 50 daily session OPEN.",
+              "",
+              "## Coverage",
+              f"- Candidate cycles: {len(audit)}",
+              f"- Primary valid: {(audit['primary_reason'].eq('VALID')).sum()}",
+              f"- Primary rejected: {(audit['primary_reason'].ne('VALID')).sum()}",
+              f"- Secondary complete: {len(complete)}",
+              f"- Recovered by secondary: {len(recovered)}",
+              f"- Primary-valid and secondary-complete: {len(matched)}",
+              "",
+              "## Primary rejection reasons",
+              "",
+              "| Reason | Cycles |",
+              "|---|---:|",
+          ]
+          for reason, count in audit.loc[audit["primary_reason"].ne("VALID"), "primary_reason"].value_counts().items():
+              lines.append(f"| {reason} | {int(count)} |")
+
+          if len(complete):
+              x = pd.to_numeric(complete["secondary_pnl_inr"], errors="coerce").dropna()
+              lines += [
+                  "",
+                  "## Secondary P&L",
+                  f"- Complete cycles: {len(x)}",
+                  f"- Total P&L: ₹{x.sum():,.2f}",
+                  f"- Mean trade: ₹{x.mean():,.2f}",
+                  f"- Win rate: {(x > 0).mean():.2%}",
+              ]
+
+          diff = pd.to_numeric(matched["secondary_max_abs_price_diff"], errors="coerce").dropna()
+          spot_diff = pd.to_numeric(recon["spot_abs_diff"], errors="coerce").dropna()
+          lines += ["", "## Cross-source checks"]
+          if len(diff):
+              lines.append(f"- Matched-cycle option price difference: median ₹{diff.median():.4f}; p95 ₹{diff.quantile(.95):.4f}; max ₹{diff.max():.4f}.")
+          if len(spot_diff):
+              lines.append(f"- Yahoo-vs-primary NIFTY open difference: median {spot_diff.median():.4f}; p95 {spot_diff.quantile(.95):.4f}; max {spot_diff.max():.4f} index points.")
+
+          lines += [
+              "",
+              "## Interpretation",
+              "Primary rejections are treated as genuine non-executions only when the independent NSE source also fails the frozen contract requirements. Secondary-complete cycles are data-coverage recoveries.",
+          ]
+          Path("reports/nifty_calendar/P5_RECONCILIATION_REPORT_2022_2024.md").write_text("\n".join(lines), encoding="utf-8")
+          recovered[["entry_date","near_expiry","far_expiry","primary_reason","primary_strike","secondary_strike","secondary_spot_open","secondary_pnl_inr"]].to_csv(
+              "reports/nifty_calendar/SECONDARY_RECOVERED_TRADES_2022_2024.csv", index=False
+          )
+          complete[["entry_date","near_expiry","far_expiry","secondary_strike","secondary_pnl_inr"]].to_csv(
+              "reports/nifty_calendar/SECONDARY_FULL_TRADE_LEDGER_2022_2024.csv", index=False
+          )
+          PY
 
       - name: Build statistical result report
         run: |
@@ -172,9 +253,9 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add docs/nifty_calendar/PHASE_STATUS.md reports/nifty_calendar
-          git diff --cached --quiet || git commit -m "Record NIFTY calendar 2022-2024 backtest results"
-          git push origin HEAD:research-nifty-4leg-calendar-v1
+          git add docs/nifty_calendar/PHASE_STATUS.md reports/nifty_calendar data/cache/nifty_secondary_reconciliation_2022_2024.csv
+          git diff --cached --quiet || git commit -m "Record P5 NIFTY calendar reconciliation results"
+          git push origin HEAD:research-nifty-4leg-calendar-p5-reconciliation
 
       - name: Upload research artifact
         uses: actions/upload-artifact@v4
@@ -186,3 +267,9 @@ jobs:
             reports/nifty_calendar/TRADE_LEVEL_RESULTS_2022_2024.csv
             data/cache/nifty_fo_daily_2022_2024.parquet
             data/cache/nifty_spot_daily_2022_2024.csv
+            reports/nifty_calendar/CYCLE_AUDIT_2022_2024.csv
+            reports/nifty_calendar/P5_SECONDARY_RECONCILIATION_2022_2024.csv
+            reports/nifty_calendar/P5_RECONCILIATION_REPORT_2022_2024.md
+            reports/nifty_calendar/SECONDARY_RECOVERED_TRADES_2022_2024.csv
+            reports/nifty_calendar/SECONDARY_FULL_TRADE_LEDGER_2022_2024.csv
+            data/cache/nifty_secondary_reconciliation_2022_2024.csv
