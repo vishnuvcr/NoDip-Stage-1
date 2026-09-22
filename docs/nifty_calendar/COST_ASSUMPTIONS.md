@@ -6,14 +6,25 @@ The validated trade ledger runs from 2022-01-28 through 2024-08-30. Therefore al
 
 ## Broker
 
-Paytm Money F&O FAQ:
-- Brokerage = Rs 10 per unique executed F&O order.
-- Eight completed option executions per strategy cycle => Rs 80 brokerage per cycle.
+The historical sample must not use a single Paytm Money brokerage rate for all clients.
 
-Source:
-https://www.paytmmoney.com/stocks/customer/fno-faq/onboarding-and-kyc/account-segment-activation/how-to-activate-fo-from-mobile-app-web
+Paytm Money's 25-Aug-2023 official pricing announcement states:
+- Accounts opened before 05-Aug-2022: ₹10 per executed Intraday/F&O order.
+- Accounts opened from 05-Aug-2022 through 24-Aug-2023: ₹15 per executed Intraday/F&O order.
+- Accounts opened from 25-Aug-2023: ₹20 per executed order.
+- The later Paytm Money pricing update states that brokerage was aligned to a flat ₹20 across segments from 15-Jan-2025.
 
-Paytm Money pricing page:
+The 2022-2024 study does not know the user's account cohort, so the research reports ₹10, ₹15 and ₹20 per executed order as three brokerage scenarios. Each strategy cycle has eight executions, so brokerage alone is ₹80, ₹120 or ₹160 per completed cycle.
+
+Sources:
+- https://www.paytmmoney.com/blog/brokerage-charges-increase-from-25th-aug-23-existing-users-will-continue-on-old-brokerage-charges/
+- https://www.paytmmoney.com/blog/all-new-paytm-money-updates-revisions-and-more/
+- https://www.paytmmoney.com/stocks/customer/fno-faq/onboarding-and-kyc/account-segment-activation/how-to-activate-fo-from-mobile-app-web
+
+Current Paytm Money F&O FAQ:
+- The current FAQ page says ₹10 per unique executed F&O order.
+- The pricing page says statutory/regulatory/exchange charges are levied at actuals.
+
 - Statutory, regulatory and exchange charges are levied at actuals as stipulated from time to time.
 - Because the historical Paytm-specific exchange pass-through rate is not fully exposed on the public pricing page, the research does not pretend to know an exact historical client rate.
 
