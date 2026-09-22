@@ -67,3 +67,10 @@
 - Event: GitHub Actions run 35789188159 (run 14) started successfully and remains in progress at the public-data preparation step; run 35789173734 (run 13) was also triggered by the preceding workflow edit.
 - Impact: no P5 reconciliation outputs are yet committed to the research branch, so the 44.0% coverage figure remains the only verified coverage result.
 - Handling: do not interpret the P5 hypothesis as confirmed until the independent NSE reconciliation completes.
+
+
+## 2026-09-23 — P5 workflow recursion from broad path filters
+- Event: the P5 branch workflow initially triggered on changes under docs/ and reports/ and then committed its own output files back to the same branch.
+- Impact: several overlapping P5 workflow runs were started while the research files were being updated.
+- Correction: the P5 workflow now triggers only for its workflow file, the two reconciliation scripts, and the NIFTY calendar source package; outputs committed by the workflow no longer retrigger it. Concurrency cancellation was also added.
+- Prevention: phase workflows must never watch the output paths they themselves commit.
