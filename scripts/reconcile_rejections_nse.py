@@ -158,7 +158,8 @@ def secondary_cycle(cycle: pd.Series, daily: dict[pd.Timestamp, pd.DataFrame], y
     entry = cycle["entry_date"]
     near = cycle["near_expiry"]
     far = cycle["far_expiry"]
-    spot = float(yahoo) if yahoo is not None else float(cycle["spot_open"])
+    primary_spot = float(cycle["spot_open"])
+    secondary_spot = float(yahoo) if yahoo is not None else primary_spot
     entry_df = daily.get(pd.Timestamp(entry))
     exit_df = daily.get(pd.Timestamp(near))
 
@@ -166,9 +167,9 @@ def secondary_cycle(cycle: pd.Series, daily: dict[pd.Timestamp, pd.DataFrame], y
         "entry_date": entry,
         "near_expiry": near,
         "far_expiry": far,
-        "secondary_spot_open": spot,
-        "primary_spot_open": cycle["spot_open"],
-        "spot_abs_diff": abs(spot - float(cycle["spot_open"])),
+        "secondary_spot_open": secondary_spot,
+        "primary_spot_open": primary_spot,
+        "spot_abs_diff": abs(secondary_spot - primary_spot),
         "primary_reason": cycle["primary_reason"],
         "primary_strike": cycle["primary_strike"],
         "secondary_strike": "",
@@ -184,7 +185,9 @@ def secondary_cycle(cycle: pd.Series, daily: dict[pd.Timestamp, pd.DataFrame], y
         row["secondary_status"] = "SECONDARY_SOURCE_GAP"
         return row
 
-    strike = choose_common_strike(entry_df, near, far, spot)
+    # Preserve the frozen protocol's primary spot source for strike selection.
+    # Yahoo is an independent diagnostic only; it must not redefine the trade.
+    strike = choose_common_strike(entry_df, near, far, primary_spot)
     if strike is None:
         row["secondary_status"] = "SECONDARY_CONFIRMS_NO_COMMON_STRIKE"
         return row
@@ -211,8 +214,9 @@ def secondary_cycle(cycle: pd.Series, daily: dict[pd.Timestamp, pd.DataFrame], y
             prices[f"entry_{name}"] = float(m.iloc[0]["open"])
             p = m.iloc[0]["open"]
             prim_col = f"primary_{name}_open"
-            if prim_col in cycle.index and pd.notna(cycle[prim_col]) and pd.notna(p):
-                diffs.append(abs(float(cycle[prim_col]) - float(p)))
+            prim_val = pd.to_numeric(pd.Series([cycle.get(prim_col, None)]), errors="coerce").iloc[0]
+            if pd.notna(prim_val) and pd.notna(p):
+                diffs.append(abs(float(prim_val) - float(p)))
 
         m2 = rows_for(exit_df, near, exp, strike, opt)
         if len(m2) != 1 or m2["close"].isna().sum() != 0:
