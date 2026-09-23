@@ -54,8 +54,8 @@ def _common_strikes(
     ]
     near_all = subset[subset["expiry"] == near]
     far_all = subset[subset["expiry"] == far]
-    near_exec = sorted(near_all.loc[near_all["open"].notna(), "strike"].dropna().unique())
-    far_exec = sorted(far_all.loc[far_all["open"].notna(), "strike"].dropna().unique())
+    near_exec = sorted(near_all.loc[near_all["open"].gt(0), "strike"].dropna().unique())
+    far_exec = sorted(far_all.loc[far_all["open"].gt(0), "strike"].dropna().unique())
     common = sorted(set(near_exec).intersection(far_exec))
     return near_exec, far_exec, common
 
