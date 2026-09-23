@@ -190,3 +190,7 @@
 - Impact: local syntax execution could not be used as an independent check.
 - Correction: GitHub Actions remains the authoritative execution environment for P10, consistent with earlier P5/P8 network constraints.
 - Prevention: keep CI execution as the reproducibility path when the model runtime has no external network access.
+
+## 2026-09-23 — P10 entry-day offset workflow failure
+Run ID: 35840948323
+Step failure requires inspection before any numerical interpretation.
