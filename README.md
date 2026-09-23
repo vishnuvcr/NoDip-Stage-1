@@ -2,7 +2,7 @@
 
 ## Current research status — 2026-09-23
 
-**P0-P10 complete. P9 event-driven timing remains discarded. P10 tested seven fixed entry sessions relative to the previous expiry; no offset is promoted directly from OOS. P11 reached the fresh-data gate and is closed for this dataset because no completed cycle exists after the P10 cutoff.**
+**P0-P14 retrospective research complete. P9 event-driven timing remains discarded. P10 completed the seven-offset timing screen. P11/P13 were blocked by stale source data. P12 introduced the frozen far-expiry selector. P14 completed a genuinely fresh official-NSE validation on three post-cutoff weekly cycles. Current status: PAPER MONITORING ONLY — INSUFFICIENT FRESH SAMPLE.**
 
 ## Frozen validated reference
 
@@ -162,9 +162,54 @@ Important: the 2025+ evaluation period was already exposed during P10, so P12 is
 - [P12 conclusion](reports/nifty_calendar/P12_FINAL_RESEARCH_CONCLUSION.md)
 - [P12 summary](reports/nifty_calendar/P12_FAR_EXPIRY_SUMMARY.csv)
 - [P12 cost sensitivity](reports/nifty_calendar/P12_FAR_EXPIRY_COST_SENSITIVITY.csv)
+## P12 — Far-expiry selection extension
+
+P12 tested the user's new structure with far expiries F+1/F+2/F+3/F+4 and froze an entry-only far-expiry selector:
+
+`(near CE - near PE + far PE - far CE) / NIFTY spot open`
+
+On the already-exposed 2025+ evaluation period, the adaptive rule produced 77 trades, gross P&L ₹144,277.50, PF 2.763 and net P&L ₹30,311.14 at 2-point adverse slippage. This was exploratory, not fresh confirmatory OOS.
+
+- [P12 plan](reports/nifty_calendar/P12_FAR_EXPIRY_SELECTION_PLAN.md)
+- [P12 report](reports/nifty_calendar/P12_FAR_EXPIRY_SELECTION_REPORT.md)
+- [P12 conclusion](reports/nifty_calendar/P12_FINAL_RESEARCH_CONCLUSION.md)
+- [P12 summary](reports/nifty_calendar/P12_FAR_EXPIRY_SUMMARY.csv)
+
+## P13 — Fresh-data gate
+
+P13 correctly refused to reuse old observations because the pinned Hugging Face daily source ended at 2026-06-29 while the frozen cutoff was 2026-08-26. Fresh cycles: **0**.
+
+- [P13 report](reports/nifty_calendar/P13_FRESH_FAR_EXPIRY_VALIDATION_REPORT.md)
+- [P13 conclusion](reports/nifty_calendar/P13_FINAL_RESEARCH_CONCLUSION.md)
+
+## P14 — Official NSE fresh validation
+
+P14 re-tested the exact frozen P12 selector on three genuinely fresh post-cutoff weekly cycles using official NSE F&O UDiFF bhavcopy archives.
+
+| Metric | Fresh P14 result |
+|---|---:|
+| Completed weekly cycles | 3 |
+| Adaptive trades | 3 |
+| Adaptive gross P&L | ₹6,714.50 |
+| Net @ 0-point slippage | ₹6,096.46 |
+| Net @ 0.5-point slippage | ₹5,316.46 |
+| Net @ 1-point slippage | ₹4,536.46 |
+| Net @ 2-point slippage | ₹2,976.46 |
+| Far expiry selected | F+1 on 3/3 cycles |
+
+The three-cycle sample is too small for a reliable statistical inference, and the selector did not actually switch among far horizons in the fresh sample. Therefore the research result is **PAPER MONITORING ONLY — INSUFFICIENT FRESH SAMPLE**.
+
+- [P14 plan](docs/nifty_calendar/P14_OFFICIAL_NSE_FRESH_VALIDATION_PLAN.md)
+- [P14 source manifest](reports/nifty_calendar/P14_NSE_SOURCE_MANIFEST.csv)
+- [P14 fresh ledger](reports/nifty_calendar/P14_OFFICIAL_NSE_FRESH_LEDGER.csv)
+- [P14 summary](reports/nifty_calendar/P14_OFFICIAL_NSE_FRESH_SUMMARY.csv)
+- [P14 costs](reports/nifty_calendar/P14_OFFICIAL_NSE_FRESH_COSTS.csv)
+- [P14 report](reports/nifty_calendar/P14_OFFICIAL_NSE_FRESH_VALIDATION_REPORT.md)
+- [P14 conclusion](reports/nifty_calendar/P14_FINAL_RESEARCH_CONCLUSION.md)
+- [Final manuscript](reports/nifty_calendar/FINAL_RESEARCH_MANUSCRIPT_2026.md)
 ## Research stop condition
 
-P0-P10 are closed. P11 is closed at the fresh-data availability gate. No additional entry-day offsets or parameter searches are performed on the existing sample. A future run may resume P11 only after genuinely fresh post-cutoff option data are added to the pinned cache.
+P0-P14 retrospective research is closed. No additional historical far-expiry horizons, score weights, CBR thresholds or timing parameters will be searched on the existing sample. The next activity is prospective paper monitoring of the frozen P12/P14 selector as new weekly cycles complete.
 
 ## P14 — Official NSE fresh far-expiry validation
 
