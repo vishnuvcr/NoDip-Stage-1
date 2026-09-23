@@ -90,4 +90,4 @@ If the current fresh dataset is too short, the result is PAPER-MONITORING ONLY /
 ## Status
 
 P10: COMPLETE.
-P11: IN PROGRESS.
+P11: BLOCKED — FRESH DATA UNAVAILABLE.
