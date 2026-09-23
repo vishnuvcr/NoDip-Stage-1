@@ -142,3 +142,17 @@ A targeted audit on 2026-04-01 showed:
 Because the frozen P6 selection rule chooses the nearest common executable strike to spot, sparse far-expiry coverage can make the selected strike materially non-ATM even though it is mathematically the nearest remaining common strike. The first apparent P9 event trade on 2026-04-01 selected strike 20,500 while NIFTY spot was about 22,900.
 
 Therefore the primary-source event-performance output is treated as **data-quality diagnostic evidence only**, not as a strategy performance result. The secondary Rissin/Upstox-derived 1-minute source is being used to test whether the anomaly is source-specific.
+
+
+## Secondary-source P9 result
+
+The Rissin/Upstox 1-minute source was used for the final OOS timing comparison after the primary source failed far-expiry coverage QC.
+
+- Population: 86 post-2024 executable P8 cycles.
+- Fixed 09:15 control: 26 trades; gross ₹40,506.25; win rate 80.77%; PF 5.029.
+- Event-driven: 70 trades; gross ₹37,291.40; win rate 62.86%; PF 1.576.
+- Incremental event-only trades: 44; gross ₹-3,214.85; PF 0.941.
+- Original gate-fail dates that only qualified later: 24; gross ₹-13,964.60; PF 0.665.
+- Event-driven net at 0.05% exchange stress: ₹9,222.87 / ₹-10,837.13 / ₹-30,897.13 / ₹-71,017.13 at 0 / 0.5 / 1 / 2 points adverse slippage.
+
+P9 conclusion: event-driven timing is not promoted.
