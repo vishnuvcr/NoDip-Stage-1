@@ -3,7 +3,7 @@
 - OOS cycles: 86
 - Source gaps: 13
 - Fixed trades: 0
-- Event trades: 0
+- Event trades: 1
 - Paired dates: 0
 
 Frozen CBR <= 1.20. 1-minute close -> next-minute open. Costs use the P8 modeled stress assumptions.
