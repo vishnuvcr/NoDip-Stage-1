@@ -1,0 +1,70 @@
+name: P14 official NSE fresh validation
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/p14-official-nse-fresh-validation.yml'
+      - 'scripts/p14_official_nse_fresh_validation.py'
+      - 'docs/nifty_calendar/P14_OFFICIAL_NSE_FRESH_VALIDATION_PLAN.md'
+
+concurrency:
+  group: p14-official-nse-fresh-validation
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - name: Checkout P14 branch
+        uses: actions/checkout@v4
+        with:
+          ref: research-nifty-4leg-calendar-p14-official-nse-fresh-validation
+          fetch-depth: 0
+
+      - name: Restore NSE fresh-data cache
+        uses: actions/cache@v4
+        with:
+          path: data/cache/p14_nse
+          key: p14-nse-fresh-2026-08-27-2026-09-23-${{ runner.os }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: python -m pip install --disable-pip-version-check pandas numpy requests tabulate pyarrow
+
+      - name: Validate syntax
+        run: python -m py_compile scripts/p14_official_nse_fresh_validation.py
+
+      - name: Run P14 official NSE validation
+        run: python scripts/p14_official_nse_fresh_validation.py
+
+      - name: Commit P14 outputs
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git fetch origin research-nifty-4leg-calendar-p14-official-nse-fresh-validation
+          git reset --hard origin/research-nifty-4leg-calendar-p14-official-nse-fresh-validation
+          python scripts/p14_official_nse_fresh_validation.py
+          git add reports/nifty_calendar/P14_* docs/nifty_calendar/P14_* docs/nifty_calendar/PHASE_STATUS.md README.md
+          git diff --cached --quiet || git commit -m 'Complete P14 official NSE fresh validation'
+          git push origin HEAD:research-nifty-4leg-calendar-p14-official-nse-fresh-validation
+
+      - name: Log failure
+        if: failure()
+        run: |
+          set -euo pipefail
+          printf '\n## 2026-09-23 — P14 official NSE fresh validation failure\nRun ID: %s\nStep failure requires inspection before numerical interpretation.\n' "$GITHUB_RUN_ID" >> docs/nifty_calendar/ERROR_LOG.md
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+vishnuvcr@users.noreply.github.com'
+          git add docs/nifty_calendar/ERROR_LOG.md
+          git diff --cached --quiet || git commit -m 'Log P14 official NSE validation failure'
+          git push origin HEAD:research-nifty-4leg-calendar-p14-official-nse-fresh-validation
