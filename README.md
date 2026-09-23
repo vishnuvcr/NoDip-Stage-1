@@ -1,3 +1,25 @@
+### Final validated result
+
+| Metric | Result |
+|---|---:|
+| Candidate cycles | 134 |
+| Strict frozen-protocol cycles | 84 |
+| Strict coverage | 62.7% |
+| Primary-valid and independently reproduced | 57 |
+| Primary rejects recovered at same strike | 27 |
+| Source-specific strike-reselection sensitivity cycles | 28 |
+| Primary rejects still non-executable | 20 |
+| Primary-valid source discrepancies | 2 |
+| Gross P&L | ₹83,030.00 |
+| Mean cycle | ₹988.45 |
+| Median cycle | ₹598.75 |
+| Win rate | 61.90% |
+| Profit factor | 2.942 |
+| Maximum drawdown | ₹8,022.50 |
+| Bootstrap 95% interval | ₹31,147.19 to ₹139,293.78 |
+
+The strict result excludes source-specific strike re-selection and treats zero-open/non-traded option rows as non-executable. The prior 132-cycle union is retained only as a superseded validation intermediate.
+
 # NoDip Stage 1 — NIFTY 4-Leg Calendar Research
 
 ## Current research status — 2026-09-23
