@@ -203,7 +203,7 @@ def main():
     ledger=evaluate(cycles,trading,daily,spots)
     summaries=[]; paired=[]
     for sample in ['DEVELOPMENT','OOS']:
-        sample_df=ledger[ledger.sample==sample].copy()
+        sample_df=ledger[ledger['sample']==sample].copy()
         for off in OFFSETS:
             x=sample_df[sample_df.offset==off]
             m=strategy_metrics(x)
