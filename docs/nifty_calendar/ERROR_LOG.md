@@ -90,3 +90,10 @@
 - Additional data-spec correction: independent NSE archive documentation/mirrors show the F&O schema transition in July 2024, not January 2024. The reconciliation code was corrected to use legacy format through 2024-07-05 and UDiFF from 2024-07-08.
 - Correction: the P5 reconciler now tries the independent GitHub mirror SantoshSrinivas79/NSE-FNO-Data-bank, which stores original NSE F&O bhavcopy ZIPs for 2020 onward, before falling back to NSE.
 - Current state: P5 run 12 is in progress with the corrected mirror-first acquisition path.
+
+
+## 2026-09-23 — P5 reconciliation runtime bottleneck
+- Event: the first corrected-source P5 run successfully reached secondary reconciliation, but the step took too long and was cancelled before completion.
+- Root cause: every candidate cycle was being reconciled, including already-valid cycles, and Yahoo spot cross-checks were performed serially.
+- Correction: P5 now reconciles all rejected cycles plus 10 valid control cycles, downloads secondary files with 16 workers, and queries Yahoo spot opens in parallel.
+- Prevention: future cross-source phases will reconcile the disputed subset exhaustively and use a small reproducible control sample for already-valid observations unless full validation is specifically required.
