@@ -223,11 +223,22 @@ def main() -> None:
         selections.append({'sample':sample,'selected_trades':len(sel),'F+1':int((sel['horizon']==1).sum()),'F+2':int((sel['horizon']==2).sum()),'F+3':int((sel['horizon']==3).sum()),'F+4':int((sel['horizon']==4).sum())})
     summ=pd.DataFrame(summaries); costdf=pd.DataFrame(costs); selfreq=pd.DataFrame(selections)
     ledger.to_csv(OUT_LEDGER,index=False); summ.to_csv(OUT_SUMMARY,index=False); costdf.to_csv(OUT_COSTS,index=False); selfreq.to_csv(OUT_SELECTION,index=False)
+    paired=[]
+    for sample in ['DEVELOPMENT','OOS']:
+        a=ledger[(ledger['sample']==sample)&(ledger['status']=='ADAPTIVE_SELECTED')][['cycle_id','pnl_inr','lot_near','lot_far','entry_date','near_expiry','entry_near_pe','entry_near_ce','entry_far_ce','entry_far_pe','exit_near_pe','exit_near_ce','exit_far_ce','exit_far_pe']].copy()
+        for h in HORIZONS:
+            x=ledger[(ledger['sample']==sample)&(ledger['horizon']==h)&(ledger['status']=='EXECUTABLE')][['cycle_id','pnl_inr','lot_near','lot_far','entry_date','near_expiry','entry_near_pe','entry_near_ce','entry_far_ce','entry_far_pe','exit_near_pe','exit_near_ce','exit_far_ce','exit_far_pe']].copy()
+            x=x.rename(columns={'pnl_inr':'fixed_pnl'})
+            z=a.merge(x,on='cycle_id',suffixes=('_adaptive','_fixed'))
+            if not z.empty:
+                z['delta']=z['pnl_inr']-z['fixed_pnl']
+                paired.append({'sample':sample,'comparison':f'ADAPTIVE_vs_{LABELS[h]}','paired_cycles':len(z),'mean_delta_inr':float(z['delta'].mean()),'median_delta_inr':float(z['delta'].median()),'adaptive_higher':int((z['delta']>0).sum()),'fixed_higher':int((z['delta']<0).sum()),'same':int((z['delta']==0).sum())})
+    pairdf=pd.DataFrame(paired); pairdf.to_csv(ROOT/'reports/nifty_calendar/P12_ADAPTIVE_PAIRED_COMPARISONS.csv',index=False)
     report=['# P12 Far-Expiry Selection Research Report','', '## Frozen structure','- Entry session: D+1 after previous listed expiry.','- Entry time: 09:15 IST.','- Near expiry: next listed expiry.','- Candidate far expiries: F+1 to F+4 subsequent listed expiries.','- Position: short near CE, long near PE, long far CE, short far PE.','- Same ATM strike across candidates, chosen from the near-expiry 09:15 strike closest to spot; 25-point ATM QC.','- Exit: near-expiry close.','', '## Primary adaptive selection criterion','- Eligibility: same ATM strike, all four entry legs positive, positive entry volume.','- Score = (near CE - near PE + far PE - far CE) / spot open.','- Select the far expiry with the highest score.','- Score uses entry data only; no future close/P&L is used.','', '## Results']
     for _,r in summ.iterrows(): report.append(f"- {r.strategy} {r['sample']}: {int(r.executable_trades)} trades, gross ₹{r.gross:,.2f}, win {r.win:.1%}, PF {r.pf:.3f}, DD ₹{abs(r.dd):,.2f}, net@2pt ₹{float(costdf[(costdf.sample==r['sample'])&(costdf.strategy==r.strategy)&(costdf.slippage_points==2)]['net_pnl_inr'].iloc[0]) if not costdf[(costdf.sample==r['sample'])&(costdf.strategy==r.strategy)&(costdf.slippage_points==2)].empty else 0:,.2f}.")
     report += ['', '## Adaptive selection frequency']
     for _,r in selfreq.iterrows(): report.append(f"- {r['sample']}: F+1={int(r['F+1'])}, F+2={int(r['F+2'])}, F+3={int(r['F+3'])}, F+4={int(r['F+4'])}.")
-    report += ['', '## Cost sensitivity', costdf.to_markdown(index=False), '', '## Bootstrap intervals']
+    report += ['', '## Cost sensitivity', costdf.to_markdown(index=False), '', '## Adaptive paired comparisons vs fixed horizons', pairdf.to_markdown(index=False), '', '## Bootstrap intervals']
     for _,r in summ.iterrows(): report.append(f"- {r['strategy']} {r['sample']}: total P&L bootstrap 95% CI ₹{r.bootstrap_total_ci_low:,.2f} to ₹{r.bootstrap_total_ci_high:,.2f}.")
     report += ['', '## Limitations','- The public daily source provides end-of-day option OHLCV; historical bid/ask quotes are not available in this source.','- Modeled slippage/costs are sensitivities, not observed Paytm Money fills.','- Adaptive selection is a pre-registered entry-time rule; it is not optimized against OOS P&L.','', '## Phase conclusion','- P12 is closed after fixed F+1/F+2/F+3/F+4 comparison and the frozen adaptive selector. No additional far-expiry horizons or score weights are searched in this phase.']
     OUT_REPORT.write_text('\n'.join(report)+'\n',encoding='utf-8')
