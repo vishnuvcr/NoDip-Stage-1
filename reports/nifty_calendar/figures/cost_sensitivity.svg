@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="460">
+<rect width="100%" height="100%" fill="white"/>
+<text x="500.0" y="28" text-anchor="middle" font-family="Arial" font-size="18" font-weight="bold">Net P&amp;L at 0.50-point slippage and 0.05% exchange-charge sensitivity</text>
+<text x="15" y="230.0" transform="rotate(-90 15 230.0)" text-anchor="middle" font-family="Arial" font-size="12">₹</text>
+<line x1="75" y1="55.0" x2="970" y2="55.0" stroke="#dddddd"/>
+<text x="67" y="59.0" text-anchor="end" font-family="Arial" font-size="10">80,818</text>
+<line x1="75" y1="225.0" x2="970" y2="225.0" stroke="#dddddd"/>
+<text x="67" y="229.0" text-anchor="end" font-family="Arial" font-size="10">40,409</text>
+<line x1="75" y1="395.0" x2="970" y2="395.0" stroke="#dddddd"/>
+<text x="67" y="399.0" text-anchor="end" font-family="Arial" font-size="10">0</text>
+<line x1="75" y1="395.0" x2="970.0" y2="395.0" stroke="#777" stroke-width="1.2"/>
+<rect x="104.8" y="55.0" width="238.7" height="340.0" fill="#4c78a8"/>
+<text x="224.2" y="413" text-anchor="middle" font-family="Arial" font-size="12">₹10/order • 0.05% exch</text>
+<text x="224.2" y="49.0" text-anchor="middle" font-family="Arial" font-size="10">80,818</text>
+<rect x="403.2" y="81.2" width="238.7" height="313.8" fill="#4c78a8"/>
+<text x="522.5" y="413" text-anchor="middle" font-family="Arial" font-size="12">₹15/order • 0.05% exch</text>
+<text x="522.5" y="75.2" text-anchor="middle" font-family="Arial" font-size="10">74,588</text>
+<rect x="701.5" y="107.4" width="238.7" height="287.6" fill="#4c78a8"/>
+<text x="820.8" y="413" text-anchor="middle" font-family="Arial" font-size="10">₹68,357</text>
+</svg>
