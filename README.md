@@ -2,7 +2,7 @@
 
 ## Current research status — 2026-09-23
 
-**P0-P9 complete. P10 entry-day offset research is now in progress. The P9 event-driven intraday-entry idea remains discarded. P11 forward/paper validation is planned after the new timing-session study.**
+**P0-P10 complete. P9 event-driven timing remains discarded. P10 tested seven fixed entry sessions relative to the previous expiry; no offset is promoted directly from OOS. P11 forward/paper validation is planned after development-only offset selection and fresh unseen validation.**
 
 ## Frozen validated reference
 
@@ -80,20 +80,45 @@ The first public source acquisition succeeded for 192/201 required expiry files,
 
 ## P10 — Entry-day offset research
 
-The frozen 09:15 + CBR<=1.20 criteria are being tested on seven trading-session offsets relative to the previous expiry:
+The frozen 09:15 + CBR<=1.20 criteria were tested on seven trading-session offsets relative to the previous expiry: D-1, D0, D+1, D+2, D+3, D+4, D+5.
 
-D-1, D0, D+1, D+2, D+3, D+4, D+5.
+### Authoritative OOS result
 
-Development: 2022-2024. Unseen validation: 2025 onward. OOS is not used to choose an offset.
+| Offset | Trades | Gross P&L | PF | Net at 0.5 pt | Net at 1 pt | Net at 2 pt |
+|---|---:|---:|---:|---:|---:|---:|
+| D-1 | 44 | ₹90,808.25 | 2.922 | ₹61,646.23 | ₹49,046.23 | ₹23,846.23 |
+| D0 | 42 | ₹133,757.75 | 11.925 | ₹105,830.36 | ₹93,850.36 | ₹69,890.36 |
+| D+1 | 36 | ₹99,992.75 | 4.540 | ₹76,971.90 | ₹66,691.90 | ₹46,131.90 |
+| D+2 | 44 | ₹129,107.75 | 8.100 | ₹101,127.53 | ₹88,547.53 | ₹63,387.53 |
+| D+3 | 36 | ₹50,454.25 | 1.993 | ₹27,869.18 | ₹17,629.18 | ₹-2,850.82 |
+| D+4 | 33 | ₹80,699.00 | 3.834 | ₹60,177.50 | ₹50,837.50 | ₹32,157.50 |
+| D+5 | 19 | ₹17,240.00 | 2.359 | ₹5,865.22 | ₹485.22 | ₹-10,274.78 |
+
+The authoritative OOS population contains 88 cycles and 88 distinct previous-expiry dates after the mapping audit.
+
+### Paired OOS robustness vs D+1
+
+- D-1: mean ₹-104.37; bootstrap 95% CI ₹-1,403.35 to ₹1,114.14.
+- D0: mean ₹+383.69; CI ₹-797.17 to ₹+1,480.94.
+- D+2: mean ₹+330.85; CI ₹-445.32 to ₹+1,099.05.
+- D+3: mean ₹-562.94; CI ₹-1,480.49 to ₹+308.59.
+- D+4: mean ₹-219.25; CI ₹-1,179.47 to ₹+716.87.
+- D+5: mean ₹-940.37; CI ₹-1,975.86 to ₹-69.96.
+
+No offset is promoted directly from the OOS screen. D0 and D+2 remain development-only candidates for a separate selection/validation phase; D+5 shows a negative paired result.
+
+### P10 records
 
 - Plan: docs/nifty_calendar/P10_ENTRY_DAY_OFFSET_PLAN.md
-- Trigger: docs/nifty_calendar/P10_TRIGGER.md
-- Workflow: .github/workflows/p10-entry-day-offsets.yml
+- Final conclusion: reports/nifty_calendar/P10_FINAL_RESEARCH_CONCLUSION.md
+- Paired bootstrap: reports/nifty_calendar/P10_OOS_PAIRED_BOOTSTRAP.md
+- Detailed report: reports/nifty_calendar/P10_ENTRY_DAY_OFFSET_REPORT.md
+- Ledger: reports/nifty_calendar/P10_ENTRY_DAY_OFFSET_LEDGER.csv
 
 ## Next phase
 
-P11 is planned as forward/paper-execution validation after any development-selected offset survives unseen OOS validation, using timestamped executable quotes, observed spread, brokerage/statutory charges, slippage and a pre-registered paper ledger.
+P11 is planned as forward/paper-execution validation after a development-only offset selection rule and a fresh unseen temporal holdout, using timestamped executable quotes, observed spread, brokerage/statutory charges, slippage and a pre-registered paper ledger.
 
 ## Research stop condition
 
-P10 will stop after the seven pre-registered offsets are evaluated on development and unseen OOS samples with cost/slippage sensitivity. No additional timing offsets will be searched in this phase.
+P10 is closed. No additional entry-day offsets will be searched in this phase.
