@@ -1,0 +1,90 @@
+name: P7 NIFTY Loss Trades Audit
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [research-nifty-4leg-calendar-p7-loss-audit]
+    paths:
+      - ".github/workflows/p7-loss-audit.yml"
+      - "scripts/audit_loss_trades.py"
+
+concurrency:
+  group: nifty-calendar-p7-loss-audit
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  loss-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout P7 branch
+        uses: actions/checkout@v4
+        with:
+          ref: research-nifty-4leg-calendar-p7-loss-audit
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pandas numpy pytest
+
+      - name: Run repository tests
+        env:
+          PYTHONPATH: .
+        run: pytest -q
+
+      - name: Run loss-trade audit
+        run: |
+          python scripts/audit_loss_trades.py             --recon reports/nifty_calendar/P5_SECONDARY_RECONCILIATION_2022_2024.csv             --secondary-ledger reports/nifty_calendar/SECONDARY_TRADE_LEVEL_RESULTS_2022_2024.csv             --out-loss-ledger reports/nifty_calendar/LOSS_TRADE_AUDIT_2022_2024.csv             --out-report reports/nifty_calendar/LOSS_AUDIT_REPORT_2022_2024.md             --out-filter-sensitivity reports/nifty_calendar/LOSS_FILTER_SENSITIVITY_2022_2024.csv             --out-cost-sensitivity reports/nifty_calendar/LOSS_FILTER_COST_SENSITIVITY_2022_2024.csv
+
+      - name: Verify audit outputs
+        run: |
+          test -s reports/nifty_calendar/LOSS_TRADE_AUDIT_2022_2024.csv
+          test -s reports/nifty_calendar/LOSS_AUDIT_REPORT_2022_2024.md
+          test -s reports/nifty_calendar/LOSS_FILTER_SENSITIVITY_2022_2024.csv
+          test -s reports/nifty_calendar/LOSS_FILTER_COST_SENSITIVITY_2022_2024.csv
+
+      - name: Update P7 status
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path("docs/nifty_calendar/PHASE_STATUS.md")
+          s = p.read_text(encoding="utf-8")
+          if "| P7 Loss-trades audit |" not in s:
+              s += "\n| P7 Loss-trades audit | COMPLETE | 32 strict losing trades audited; leg-level attribution, loss-signature analysis and exploratory entry-state filters completed |\n"
+          else:
+              import re
+              s = re.sub(
+                  r"\| P7 Loss-trades audit \|.*",
+                  "| P7 Loss-trades audit | COMPLETE | 32 strict losing trades audited; leg-level attribution, loss-signature analysis and exploratory entry-state filters completed |",
+                  s,
+              )
+          p.write_text(s, encoding="utf-8")
+          PY
+
+      - name: Commit P7 audit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add reports/nifty_calendar/LOSS_TRADE_AUDIT_2022_2024.csv                   reports/nifty_calendar/LOSS_AUDIT_REPORT_2022_2024.md                   reports/nifty_calendar/LOSS_FILTER_SENSITIVITY_2022_2024.csv                   reports/nifty_calendar/LOSS_FILTER_COST_SENSITIVITY_2022_2024.csv                   docs/nifty_calendar/PHASE_STATUS.md
+          git diff --cached --quiet || git commit -m "Complete P7 loss trades audit"
+          git fetch origin research-nifty-4leg-calendar-p7-loss-audit
+          git rebase origin/research-nifty-4leg-calendar-p7-loss-audit
+          git push origin HEAD:research-nifty-4leg-calendar-p7-loss-audit
+
+      - name: Upload P7 audit artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nifty-calendar-p7-loss-audit-2022-2024
+          path: |
+            reports/nifty_calendar/LOSS_TRADE_AUDIT_2022_2024.csv
+            reports/nifty_calendar/LOSS_AUDIT_REPORT_2022_2024.md
+            reports/nifty_calendar/LOSS_FILTER_SENSITIVITY_2022_2024.csv
+            reports/nifty_calendar/LOSS_FILTER_COST_SENSITIVITY_2022_2024.csv
