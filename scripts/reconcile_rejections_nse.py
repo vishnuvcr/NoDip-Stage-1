@@ -385,9 +385,13 @@ def main() -> None:
     out["comparison_status"] = out.apply(
         lambda r: (
             "PRIMARY_VALID_SECONDARY_COMPLETE"
-            if r["primary_reason"] == "VALID" and r["secondary_status"] == "SECONDARY_COMPLETE"
-            else "RECOVERED_BY_SECONDARY"
-            if r["primary_reason"] != "VALID" and r["secondary_status"] == "SECONDARY_COMPLETE"
+            if r["primary_reason"] == "VALID" and r["secondary_status"] == "SECONDARY_EXACT_STRIKE_COMPLETE"
+            else "RECOVERED_BY_SECONDARY_EXACT"
+            if r["primary_reason"] != "VALID" and r["secondary_status"] == "SECONDARY_EXACT_STRIKE_COMPLETE"
+            else "GRID_ALTERNATIVE_RECOVERY"
+            if r["primary_reason"] != "VALID" and r["secondary_status"] == "SECONDARY_GRID_ALTERNATIVE_COMPLETE"
+            else "PRIMARY_VALID_GRID_DIAGNOSTIC"
+            if r["primary_reason"] == "VALID" and r["secondary_status"] == "SECONDARY_GRID_ALTERNATIVE_COMPLETE"
             else "PRIMARY_REJECTED_SECONDARY_NONEXECUTABLE"
             if r["primary_reason"] != "VALID"
             else "PRIMARY_VALID_SECONDARY_NONEXECUTABLE"
