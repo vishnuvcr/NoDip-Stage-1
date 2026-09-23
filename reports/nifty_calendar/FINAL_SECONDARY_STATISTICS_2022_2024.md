@@ -1,44 +1,46 @@
-# Final Secondary-Source Statistics — NIFTY 4-Leg Calendar — 2022-2024
+# Final Strict Frozen-Protocol Statistics — NIFTY 4-Leg Calendar — 2022-2024
 
 ## Population
+
 - Candidate cycles: 134
-- Complete independent-secondary cycles: 132
-- Coverage: 98.5%
-- Primary rejects recovered: 75/75
-- Primary-valid and secondary-complete: 57/59
-- Primary-valid and secondary-non-executable: 2
+- Strict frozen-protocol independently validated cycles: 84
+- Strict coverage: 62.7%
+- Primary-valid and independently reproduced: 57
+- Primary rejects recovered at the same strike: 27
+- Primary rejects recovered only after independent strike re-selection: 28
+- Primary rejects still non-executable on the independent source: 20
+- Primary-valid cycles not independently reproduced: 2
 
 ## Gross performance
-- Gross P&L: ₹188,237.50
-- Mean trade: ₹1,426.04
-- Median trade: ₹580.63
-- Win rate: 59.09% (78/132)
-- Profit factor: 1.889
-- Maximum drawdown: ₹57,380.00
-- Best trade: ₹62,080.00
-- Worst trade: ₹-31,597.50
-- Circular 3-trade block bootstrap 95% interval for total gross P&L: ₹6,927.47 to ₹408,770.34
+
+- Gross P&L: ₹83,030.00
+- Mean trade: ₹988.45
+- Median trade: ₹598.75
+- Win rate: 61.90% (52/84)
+- Profit factor: 2.942
+- Maximum drawdown: ₹8,022.50
+- Best trade: ₹18,742.50
+- Worst trade: ₹-5,363.75
+- Circular 3-cycle block-bootstrap 95% interval: ₹31,147.19 to ₹139,293.78
 
 ## Annual decomposition
 
-| Year | Trades | Gross P&L (₹) | Mean trade (₹) |
-|---:|---:|---:|---:|
-| 2022 | 46 | 78,342.50 | 1,703.10 |
-| 2023 | 51 | 106,780.00 | 2,093.73 |
-| 2024 | 35 | 3,115.00 | 89.00 |
-
-## Source-selection decomposition
-- Same-strike recovered primary rejects: 27 cycles; gross P&L ₹-29,192.50.
-- Independently re-selected recovered primary rejects: 48 cycles; gross P&L ₹161,846.25.
-- Primary-valid matched cycles: 57 cycles; gross P&L ₹55,583.75.
+| Year | Trades | Gross P&L (₹) | Mean trade (₹) | Win rate |
+|---:|---:|---:|---:|---:|
+| 2022 | 15 | 1,200.00 | 80.00 | 46.67% |
+| 2023 | 38 | 42,175.00 | 1,109.87 | 63.16% |
+| 2024 | 31 | 39,655.00 | 1,279.19 | 67.74% |
 
 ## Cost sensitivity at 0.05000% exchange-charge assumption
 
 | Brokerage / order | 0 pt | 0.50 pt | 1.00 pt | 2.00 pt |
 |---:|---:|---:|---:|---:|
-| ₹10 | ₹166,171.23 | ₹141,821.23 | ₹117,471.23 | ₹68,771.23 |
-| ₹15 | ₹159,940.83 | ₹135,590.83 | ₹111,240.83 | ₹62,540.83 |
-| ₹20 | ₹153,710.43 | ₹129,360.43 | ₹105,010.43 | ₹56,310.43 |
+| ₹10 | ₹69,136.41 | ₹54,136.41 | ₹39,136.41 | ₹9,136.41 |
+| ₹15 | ₹65,171.61 | ₹50,171.61 | ₹35,171.61 | ₹5,171.61 |
+| ₹20 | ₹61,206.81 | ₹46,206.81 | ₹31,206.81 | ₹1,206.81 |
 
 ## Interpretation
-The initial 44.0% primary-source coverage was a data-coverage limitation. Independent reconstruction covers 132/134 candidate cycles. The study remains descriptive: daily OHLC does not establish live bid/ask execution, synchronized fills, queue priority or future expected return.
+
+The 84-cycle figure is the final main estimate because it retains the frozen primary strike-selection rule. The 28 cycles that require source-specific strike re-selection are reported separately and are not merged into the main estimate. The 20 unresolved primary rejects and 2 primary-valid source discrepancies remain part of the study limitations.
+
+This is descriptive historical evidence, not a forecast or a claim about future realized trading returns.
