@@ -32,7 +32,7 @@ OUT_STATUS=ROOT/'docs/nifty_calendar/PHASE_STATUS.md'
 def load_all(cache:Path):
     frames=[]; dates=set(); exps=set()
     for y in YEARS:
-        path=hf_hub_download(repo_id='rissin/nse-options-intraday',revision='c97e450a27e945983519cda2bc24301afa7efac1',filename=f'historical_daily/NIFTY/NIFTY_{y}.parquet',repo_type='dataset',cache_dir=str(cache))
+        path=hf_hub_download(repo_id='rissin/nse-options-intraday',filename=f'historical_daily/NIFTY/NIFTY_{y}.parquet',repo_type='dataset',cache_dir=str(cache))
         df=pd.read_parquet(path)
         df['date']=pd.to_datetime(df['date'],errors='coerce').dt.normalize()
         df['expiry']=pd.to_datetime(df['expiry'],errors='coerce').dt.normalize()
