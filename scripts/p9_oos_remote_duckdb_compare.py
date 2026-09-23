@@ -128,15 +128,13 @@ def main():
     con=duckdb.connect()
     con.execute("SET TimeZone='Asia/Kolkata'")
     manifest=pd.read_csv(MANIFEST)
-    # Build direct URLs from the OOS ledger instead of relying on repository file listing.
-    # The listing endpoint can lag Xet-backed files; direct public paths are the canonical dataset layout.
-    pmap={str(x):HF+f'options/NIFTY/{x}.parquet' for x in set(cycles['near_expiry']).union(set(cycles['far_expiry']))}
-    idx_path=index_url()
-    cycles=pd.read_csv(OOS); cycles=cycles[cycles.status.eq('EXECUTABLE')].copy()
+    cycles=pd.read_csv(OOS)
+    cycles=cycles[cycles.status.eq('EXECUTABLE')].copy()
     for cc in ['entry_date','near_expiry','far_expiry']:
         cycles[cc]=pd.to_datetime(cycles[cc]).dt.strftime('%Y-%m-%d')
-    for c in ['entry_date','near_expiry','far_expiry']:
-        cycles[c]=pd.to_datetime(cycles[c]).dt.strftime('%Y-%m-%d')
+    # Direct public URLs avoid relying on Hugging Face file-list enumeration.
+    pmap={str(x):HF+f'options/NIFTY/{x}.parquet' for x in set(cycles['near_expiry']).union(set(cycles['far_expiry']))}
+    idx_path=index_url()
     rows=[]
     for c in cycles.to_dict('records'):
         ed,ne,fe=c['entry_date'],c['near_expiry'],c['far_expiry']
