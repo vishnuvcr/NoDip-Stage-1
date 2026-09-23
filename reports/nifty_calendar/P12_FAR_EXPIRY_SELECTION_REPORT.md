@@ -75,6 +75,18 @@
 | OOS         | ADAPTIVE   |               1   |      74471.1  |
 | OOS         | ADAPTIVE   |               2   |      30311.1  |
 
+## Adaptive paired comparisons vs fixed horizons
+| sample      | comparison      |   paired_cycles |   mean_delta_inr |   median_delta_inr |   adaptive_higher |   fixed_higher |   same |
+|:------------|:----------------|----------------:|-----------------:|-------------------:|------------------:|---------------:|-------:|
+| DEVELOPMENT | ADAPTIVE_vs_F+1 |             153 |          664.542 |              0     |                45 |              2 |    106 |
+| DEVELOPMENT | ADAPTIVE_vs_F+2 |             152 |          525.345 |             22.5   |                77 |             50 |     25 |
+| DEVELOPMENT | ADAPTIVE_vs_F+3 |             129 |          659.496 |            112.5   |                70 |             43 |     16 |
+| DEVELOPMENT | ADAPTIVE_vs_F+4 |              75 |          494.717 |            257.5   |                43 |             24 |      8 |
+| OOS         | ADAPTIVE_vs_F+1 |              72 |         1463.86  |              0     |                13 |              0 |     59 |
+| OOS         | ADAPTIVE_vs_F+2 |              73 |         2263.15  |            776.25  |                45 |             20 |      8 |
+| OOS         | ADAPTIVE_vs_F+3 |              64 |         1627.28  |            309.375 |                35 |             23 |      6 |
+| OOS         | ADAPTIVE_vs_F+4 |              42 |          834.262 |             60     |                21 |             17 |      4 |
+
 ## Bootstrap intervals
 - F+1 DEVELOPMENT: total P&L bootstrap 95% CI ₹-20,483.34 to ₹94,692.59.
 - F+2 DEVELOPMENT: total P&L bootstrap 95% CI ₹-37,470.16 to ₹147,153.06.
