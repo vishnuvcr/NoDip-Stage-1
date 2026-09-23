@@ -52,8 +52,10 @@ def load_rissin_daily(cycles: pd.DataFrame, cache_dir: Path) -> tuple[list[pd.Ti
         df["strike"]=pd.to_numeric(df["strike"],errors="coerce")
         df["open"]=pd.to_numeric(df["open"],errors="coerce")
         df["close"]=pd.to_numeric(df["close"],errors="coerce")
-        df["volume"]=pd.to_numeric(df["volume"],errors="coerce")
-        df=df[(df["underlying"].astype(str).str.upper()=="NIFTY") & (df["granularity"].astype(str)=="1d")]
+            df["volume"]=pd.to_numeric(df["volume"],errors="coerce")
+        df["underlying"]=df["underlying"].astype(str).str.upper()
+        df["option_type"]=df["option_type"].astype(str).str.upper()
+        df=df[(df["underlying"]=="NIFTY") & (df["granularity"].astype(str).str.lower()=="1d")]
         # Keep only contract rows needed by this phase.
         df=df[["date","expiry","strike","option_type","open","close","volume"]].copy()
         for d,g in df.groupby(df["date"].dt.normalize()):
@@ -107,7 +109,7 @@ def read_day(mirror_root: Path, rel: str, exps: set[str]) -> pd.DataFrame:
 
 def choose(day: pd.DataFrame, near:str, far:str, spot:float):
     if day is None or day.empty: return None
-    x=day[(day.expiry.isin(pd.to_datetime([near,far])))&(day.option_type.isin(['CE','PE']))&(day.open>0)&(day.contracts>0)].copy()
+    x=day[(day.expiry.isin(pd.to_datetime([near,far])))&(day.option_type.isin(['CE','PE']))&(day.open>0)&(day.volume>0)].copy()
     if x.empty:return None
     n=x[(x.expiry==pd.Timestamp(near))].pivot_table(index='strike',columns='option_type',values='open',aggfunc='last')
     f=x[(x.expiry==pd.Timestamp(far))].pivot_table(index='strike',columns='option_type',values='open',aggfunc='last')
