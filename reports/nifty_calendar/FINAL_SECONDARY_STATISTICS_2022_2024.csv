@@ -1,2 +1,2 @@
 candidate_cycles,strict_frozen_cycles,strict_coverage,gross_pnl_inr,mean_trade_inr,median_trade_inr,win_rate,profit_factor,max_drawdown_inr,best_trade_inr,worst_trade_inr,bootstrap_ci_lo_inr,bootstrap_ci_hi_inr,primary_valid_secondary_complete,recovered_exact,reselected_sensitivity,unresolved_primary_rejects,primary_valid_secondary_nonexec
-134,84,0.6268656716417911,26391.249999999985,314.1815476190474,550.6249999999986,0.5952380952380952,1.286542167693602,-35255.0,18742.5,-27052.5,-41761.593749999985,89870.15624999988,57,27,48,0,2
+134,84,0.6268656716417911,83029.99999999999,988.4523809523807,598.7500000000011,0.6190476190476191,2.942335809111643,-8022.499999999999,18742.5,-5363.75,31147.187499999978,139293.78125,57,27,28,20,2

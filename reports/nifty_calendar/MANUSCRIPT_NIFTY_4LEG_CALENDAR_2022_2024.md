@@ -7,7 +7,7 @@ This study evaluates a frozen four-leg NIFTY 50 option structure using a pre-spe
 
 A primary public option archive produced 59 apparently executable cycles from 134 candidate cycles. Independent reconciliation against a public mirror of NSE F&O bhavcopy archives audited all 134 candidates. During verification, zero option OPEN values associated with zero contract volume were identified as non-executable observations; those rows were not treated as fills. After this correction, 84 cycles are independently constructible at the same strike selected by the frozen primary protocol. A further 28 cycles can be reconstructed only after a source-specific strike re-selection, so they are retained as sensitivity evidence rather than included in the strict frozen-protocol result. Twenty primary-rejected cycles remain non-executable on the independent source, and two primary-valid cycles do not reproduce on the independent source.
 
-Across the 84-cycle strict frozen-protocol validation sample, gross P&L is ₹26,391.25, mean cycle P&L ₹314.18, median cycle P&L ₹550.62, win rate 59.52%, profit factor 1.287, and maximum drawdown ₹35,255.00. The 20,000-replication circular three-cycle block bootstrap 95% interval for total gross P&L is ₹-41,761.59 to ₹89,870.16. These statistics are descriptive historical results and do not establish future expected returns or live execution performance.
+Across the 84-cycle strict frozen-protocol validation sample, gross P&L is ₹83,030.00, mean cycle P&L ₹988.45, median cycle P&L ₹598.75, win rate 61.90%, profit factor 2.942, and maximum drawdown ₹8,022.50. The 20,000-replication circular three-cycle block bootstrap 95% interval for total gross P&L is ₹31,147.19 to ₹139,293.78. These statistics are descriptive historical results and do not establish future expected returns or live execution performance.
 
 ## Research questions and aims
 
@@ -70,8 +70,8 @@ Yahoo Finance NIFTY 50 daily OPEN values are used only as a diagnostic cross-che
 |---|---:|
 | Primary-valid and independently executable | 57 |
 | Primary rejects recovered at the same primary strike | 27 |
-| Primary rejects recovered only after source-specific strike re-selection | 48 |
-| Primary rejects still non-executable | 0 |
+| Primary rejects recovered only after source-specific strike re-selection | 28 |
+| Primary rejects still non-executable | 20 |
 | Primary-valid but not independently reproducible | 2 |
 
 Thus, the strict frozen-protocol independent validation sample is 84 cycles (62.7% of all candidates). The 28 source-specific re-selections are reported separately and are not used as the main performance estimate.
@@ -102,30 +102,30 @@ Paytm Money's public historical exchange pass-through is not sufficiently expose
 | Candidate cycles | 134 | 134 |
 | Executable cycles | 59 | 84 |
 | Coverage | 44.0% | 62.7% |
-| Gross P&L | ₹52,827.50 | ₹26,391.25 |
-| Mean cycle | ₹895.38 | ₹314.18 |
-| Median cycle | ₹866.25 | ₹550.62 |
-| Win rate | 64.41% | 59.52% |
-| Profit factor | 2.549 | 1.287 |
-| Max drawdown | ₹5,650.00 | ₹35,255.00 |
+| Gross P&L | ₹52,827.50 | ₹83,030.00 |
+| Mean cycle | ₹895.38 | ₹988.45 |
+| Median cycle | ₹866.25 | ₹598.75 |
+| Win rate | 64.41% | 61.90% |
+| Profit factor | 2.549 | 2.942 |
+| Max drawdown | ₹5,650.00 | ₹8,022.50 |
 | Best cycle | ₹20,081.25 | ₹18,742.50 |
-| Worst cycle | ₹-5,650.00 | ₹-27,052.50 |
-| Bootstrap 95% interval | ₹13,151.84 to ₹100,043.59 | ₹-41,761.59 to ₹89,870.16 |
+| Worst cycle | ₹-5,650.00 | ₹-5,363.75 |
+| Bootstrap 95% interval | ₹13,151.84 to ₹100,043.59 | ₹31,147.19 to ₹139,293.78 |
 
 ### Annual decomposition
 
 | Year | Cycles | Gross P&L (₹) | Mean cycle (₹) | Win rate |
 |---:|---:|---:|---:|---:|
-| 2022 | 14 | 2,107.50 | 150.54 | 50.00% |
+| 2022 | 15 | 1,200.00 | 80.00 | 46.67% |
 | 2023 | 38 | 42,175.00 | 1,109.87 | 63.16% |
-| 2024 | 32 | -17,891.25 | -559.10 | 59.38% |
+| 2024 | 31 | 39,655.00 | 1,279.19 | 67.74% |
 
 ### Source-reconciliation decomposition
 
 - Primary-valid cycles independently reproduced: 57, gross P&L ₹55,583.75.
-- Primary-rejected cycles recovered at the same strike: 27, gross P&L ₹-29,192.50.
-- Primary-rejected cycles recovered only after source-specific re-selection: 48, gross P&L ₹161,846.25.
-- Primary-rejected cycles still non-executable: 0.
+- Primary-rejected cycles recovered at the same strike: 27, gross P&L ₹27,446.25.
+- Primary-rejected cycles recovered only after source-specific re-selection: 28, gross P&L ₹6,487.50.
+- Primary-rejected cycles still non-executable: 20.
 - Primary-valid cycles not independently reproducible: 2.
 
 The strict estimate therefore includes only the 57 independently reproducible primary-valid cycles and the 27 primary-rejected cycles recovered at the same primary strike. The 28 reselected cycles are not counted in the strict result.
@@ -134,9 +134,9 @@ The strict estimate therefore includes only the 57 independently reproducible pr
 
 | Brokerage / order | 0 pt | 0.50 pt | 1.00 pt | 2.00 pt |
 |---:|---:|---:|---:|---:|
-| ₹10 | ₹12,538.67 | ₹-2,411.33 | ₹-17,361.33 | ₹-47,261.33 |
-| ₹15 | ₹8,573.87 | ₹-6,376.13 | ₹-21,326.13 | ₹-51,226.13 |
-| ₹20 | ₹4,609.07 | ₹-10,340.93 | ₹-25,290.93 | ₹-55,190.93 |
+| ₹10 | ₹69,136.41 | ₹54,136.41 | ₹39,136.41 | ₹9,136.41 |
+| ₹15 | ₹65,171.61 | ₹50,171.61 | ₹35,171.61 | ₹5,171.61 |
+| ₹20 | ₹61,206.81 | ₹46,206.81 | ₹31,206.81 | ₹1,206.81 |
 
 ## Discussion
 
@@ -170,7 +170,7 @@ Daily OHLC establishes daily bar endpoints but not synchronized bid/ask fills ac
 
 ## Conclusion
 
-The validated final historical result is the 84-cycle strict frozen-protocol sample. Gross P&L is ₹26,391.25, win rate 59.52%, profit factor 1.287, and maximum drawdown ₹35,255.00. Under the 0.05000% exchange-charge sensitivity, the ₹20/order brokerage case remains positive through the tested 2.00-point adverse-slippage scenario at approximately ₹-55,190.93.
+The validated final historical result is the 84-cycle strict frozen-protocol sample. Gross P&L is ₹83,030.00, win rate 61.90%, profit factor 2.942, and maximum drawdown ₹8,022.50. Under the 0.05000% exchange-charge sensitivity, the ₹20/order brokerage case remains positive through the tested 2.00-point adverse-slippage scenario at approximately ₹1,206.81.
 
 This is a historical descriptive result. It does not establish a persistent future trading edge, an expected return, or a promise of executable live fills.
 
