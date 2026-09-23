@@ -111,3 +111,10 @@
 - Impact: the raw 671.8 MB source files were not persisted in the Actions cache for reuse by a later scan.
 - Correction: the workflow was updated to cache the actual Hugging Face dataset directory under a stable cache key and to run parquet schema validation plus the first event-driven timing scan.
 - Prevention: verify the cache path against the actual downloader destination before declaring raw data cached.
+
+## 2026-09-23 — P9 DuckDB OOS scanner implementation errors
+- Event: the first DuckDB OOS scan completed its workflow step and committed outputs, but the ledger showed 83/86 cycles failing inside the analysis with `KeyError: 'timestamp'`. One cycle also raised `AttributeError: 'dict' object has no attribute 'ce'`.
+- Root cause: empty entry-day near/far pivots were not rejected before the timestamp merge, and the exit helper returned dictionaries that were accessed as objects.
+- Impact: the first DuckDB numerical output is rejected and must not be interpreted.
+- Correction: the scanner now checks for empty/missing timestamp columns before `merge_asof` and accesses exit dictionaries by key.
+- Prevention: zero-row and empty-arm cases remain explicit non-trade states rather than exceptions.
