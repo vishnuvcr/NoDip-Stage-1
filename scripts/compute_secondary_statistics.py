@@ -10,13 +10,12 @@ import pandas as pd
 def circular_block_bootstrap(x: np.ndarray, reps: int = 20000, block: int = 3, seed: int = 20260923) -> tuple[float, float]:
     rng = np.random.default_rng(seed)
     n = len(x)
-    out = np.empty(reps)
-    for i in range(reps):
-        starts = rng.integers(0, n, size=(n + block - 1) // block)
-        sample: list[float] = []
-        for start in starts:
-            sample.extend(x[(start + np.arange(block)) % n])
-        out[i] = np.sum(sample[:n])
+    nb = int(np.ceil(n / block))
+    starts = rng.integers(0, n, size=(reps, nb))
+    offsets = np.arange(block)
+    idx = (starts[:, :, None] + offsets[None, None, :]) % n
+    vals = x[idx].reshape(reps, nb * block)[:, :n]
+    out = vals.sum(axis=1)
     return tuple(np.quantile(out, [0.025, 0.975]))
 
 
@@ -28,46 +27,46 @@ def main() -> None:
     ap.add_argument("--out-annual", required=True, type=Path)
     args = ap.parse_args()
 
-    df = pd.read_csv(args.ledger, parse_dates=["entry_date", "near_expiry", "far_expiry"])
-    if df.empty:
-        raise SystemExit("Secondary ledger is empty")
-    df = df.sort_values("entry_date").reset_index(drop=True)
-
+    df = pd.read_csv(args.ledger, parse_dates=["entry_date", "near_expiry", "far_expiry"]).sort_values("entry_date").reset_index(drop=True)
+    if len(df) != 132:
+        raise SystemExit(f"Expected 132 complete secondary cycles, got {len(df)}")
     x = df["pnl_inr"].to_numpy(float)
-    wins = x[x > 0]
-    losses = x[x < 0]
     cum = np.cumsum(x)
     dd = cum - np.maximum.accumulate(cum)
-    pf = wins.sum() / abs(losses.sum()) if len(losses) else float("inf")
+    wins = x[x > 0]
+    losses = x[x < 0]
+    pf = wins.sum() / abs(losses.sum())
     ci_lo, ci_hi = circular_block_bootstrap(x)
 
-    annual = (
-        df.assign(year=df["entry_date"].dt.year)
-        .groupby("year", as_index=False)
-        .agg(
-            trades=("pnl_inr", "size"),
-            gross_pnl=("pnl_inr", "sum"),
-            mean_trade=("pnl_inr", "mean"),
-        )
+    annual = df.assign(year=df["entry_date"].dt.year).groupby("year", as_index=False).agg(
+        trades=("pnl_inr", "size"),
+        gross_pnl=("pnl_inr", "sum"),
+        mean_trade=("pnl_inr", "mean"),
     )
-
     costs = pd.read_csv(args.costs)
+    rows = costs[costs["exchange_rate"].eq(0.0005)].copy().sort_values("brokerage_per_order")
 
     report = [
         "# Final Secondary-Source Statistics — NIFTY 4-Leg Calendar — 2022-2024",
         "",
-        "## Population and gross performance",
-        f"- Complete independently reconciled cycles: {len(df)} of 134 candidates",
-        "- Secondary-source coverage: 98.5% (132/134)",
+        "## Population",
+        "- Candidate cycles: 134",
+        "- Complete independent-secondary cycles: 132",
+        "- Coverage: 98.5%",
+        "- Primary rejects recovered: 75/75",
+        "- Primary-valid cycles also complete: 57/59",
+        "- Primary-valid cycles not constructible on secondary: 2",
+        "",
+        "## Gross performance",
         f"- Gross P&L: ₹{x.sum():,.2f}",
         f"- Mean trade: ₹{x.mean():,.2f}",
         f"- Median trade: ₹{np.median(x):,.2f}",
-        f"- Win rate: {(x > 0).mean():.2%} ({int((x > 0).sum())}/{len(x)})",
+        f"- Win rate: {(x > 0).mean():.2%} ({int((x > 0).sum())}/132)",
         f"- Profit factor: {pf:.3f}",
         f"- Maximum drawdown: ₹{dd.min():,.2f}",
         f"- Best trade: ₹{x.max():,.2f}",
         f"- Worst trade: ₹{x.min():,.2f}",
-        f"- Circular 3-trade block bootstrap 95% interval for total gross P&L: ₹{ci_lo:,.2f} to ₹{ci_hi:,.2f}",
+        f"- Circular 3-trade block bootstrap 95% interval: ₹{ci_lo:,.2f} to ₹{ci_hi:,.2f}",
         "",
         "## Annual decomposition",
         "",
@@ -75,36 +74,27 @@ def main() -> None:
         "|---:|---:|---:|---:|",
     ]
     for _, r in annual.iterrows():
+        report.append(f"| {int(r.year)} | {int(r.trades)} | {r.gross_pnl:,.2f} | {r.mean_trade:,.2f} |")
+
+    report += [
+        "",
+        "## Cost sensitivity at 0.05000% exchange-charge rate",
+        "",
+        "| Brokerage / order | 0 pt | 0.50 pt | 1.00 pt | 2.00 pt |",
+        "|---:|---:|---:|---:|---:|",
+    ]
+    for _, r in rows.iterrows():
         report.append(
-            f"| {int(r.year)} | {int(r.trades)} | {r.gross_pnl:,.2f} | {r.mean_trade:,.2f} |"
+            f"| ₹{r.brokerage_per_order:.0f} | {r.net_no_slippage_inr:,.2f} | "
+            f"{r['net_0.50pt_slippage_inr']:,.2f} | {r['net_1.00pt_slippage_inr']:,.2f} | "
+            f"{r['net_2.00pt_slippage_inr']:,.2f} |"
         )
 
     report += [
         "",
-        "## Cost sensitivity",
-        "",
-        "| Brokerage / order | Exchange rate | Net, 0 pt slippage | Net, 0.50 pt | Net, 1.00 pt | Net, 2.00 pt |",
-        "|---:|---:|---:|---:|---:|---:|",
+        "## Interpretation",
+        "The 132-cycle secondary result is a descriptive historical reconstruction using an independent public contract mirror and independent spot-open diagnostic. It does not establish a future expected return or live four-leg execution quality.",
     ]
-    for _, r in costs.iterrows():
-        report.append(
-            f"| ₹{r.brokerage_per_order:.0f} | {r.exchange_rate:.5f} | "
-            f"₹{r.net_no_slippage_inr:,.2f} | ₹{r['net_0.50pt_slippage_inr']:,.2f} | "
-            f"₹{r['net_1.00pt_slippage_inr']:,.2f} | ₹{r['net_2.00pt_slippage_inr']:,.2f} |"
-        )
-
-    report += [
-        "",
-        "## Source interpretation",
-        "- All 75 cycles rejected by the primary public dataset were complete on the independent public mirror of NSE F&O bhavcopy archives.",
-        "- 57 of 59 primary-valid cycles were also complete on the independent source.",
-        "- 2 primary-valid cycles were not constructible on the secondary source because that source contained no common strike for the frozen same-strike structure.",
-        "- These source discrepancies are not treated as evidence of actual market non-trading; they are retained as data-source limitations.",
-        "",
-        "## Statistical caution",
-        "The bootstrap interval is a dependence-aware resampling diagnostic, not a proof of stationarity or future performance. The historical daily OHLC convention also does not model bid/ask execution, queue position, market impact or order-leg synchronization.",
-    ]
-
     args.out_report.parent.mkdir(parents=True, exist_ok=True)
     args.out_report.write_text("\n".join(report), encoding="utf-8")
     args.out_annual.parent.mkdir(parents=True, exist_ok=True)
