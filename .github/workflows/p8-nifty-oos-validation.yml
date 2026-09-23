@@ -1,0 +1,217 @@
+name: P8 NIFTY Calendar Unseen OOS Validation
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [research-nifty-4leg-calendar-p8-oos-validation]
+    paths:
+      - ".github/workflows/p8-nifty-oos-validation.yml"
+      - "scripts/p8_prepare_cycles.py"
+      - "scripts/p8_fetch_spot.py"
+      - "scripts/p8_build_audit_input.py"
+      - "scripts/p8_score.py"
+      - "docs/nifty_calendar/P8_OOS_VALIDATION_PLAN.md"
+      - "docs/nifty_calendar/P8_OOS_CANDIDATE_LOCK.md"
+
+concurrency:
+  group: nifty-calendar-p8-oos-validation
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout P8 branch
+        uses: actions/checkout@v4
+        with:
+          ref: research-nifty-4leg-calendar-p8-oos-validation
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pandas numpy requests tabulate
+
+      - name: Restore cached independent NSE F&O mirror
+        uses: actions/cache@v4
+        with:
+          path: data/cache/nse_fno_mirror/.git
+          key: nse-fno-mirror-p8-2025-onward-v1
+          restore-keys: |
+            nse-fno-mirror-p8-2025-onward-
+
+      - name: Prepare independent NSE F&O mirror
+        run: |
+          mkdir -p data/cache
+          if [ ! -d data/cache/nse_fno_mirror/.git ]; then
+            git clone --filter=blob:none --depth=1 --no-checkout https://github.com/SantoshSrinivas79/NSE-FNO-Data-bank.git data/cache/nse_fno_mirror
+          else
+            git -C data/cache/nse_fno_mirror fetch --depth=1 origin
+          fi
+          git -C data/cache/nse_fno_mirror checkout --detach FETCH_HEAD
+          git -C data/cache/nse_fno_mirror rev-parse HEAD > data/cache/P8_MIRROR_COMMIT.txt
+
+      - name: Build post-2024 cycle calendar
+        env:
+          PYTHONPATH: .
+        run: |
+          python scripts/p8_prepare_cycles.py \
+            --mirror-root data/cache/nse_fno_mirror \
+            --out-cycles reports/nifty_calendar/P8_CYCLES_2025_ONWARD.csv \
+            --out-archives reports/nifty_calendar/P8_ARCHIVES_2025_ONWARD.csv
+
+      - name: Fetch independent NIFTY spot opens
+        run: |
+          python scripts/p8_fetch_spot.py \
+            --cycles reports/nifty_calendar/P8_CYCLES_2025_ONWARD.csv \
+            --out reports/nifty_calendar/P8_SPOT_2025_ONWARD.csv
+
+      - name: Build P5-compatible reconciliation input
+        run: |
+          python scripts/p8_build_audit_input.py \
+            --cycles reports/nifty_calendar/P8_CYCLES_2025_ONWARD.csv \
+            --spot reports/nifty_calendar/P8_SPOT_2025_ONWARD.csv \
+            --out-audit reports/nifty_calendar/P8_AUDIT_INPUT_2025_ONWARD.csv
+
+      - name: Reuse audited P5 NSE parser/reconciliation
+        env:
+          PYTHONPATH: .
+        run: |
+          python scripts/reconcile_rejections_nse.py \
+            --audit reports/nifty_calendar/P8_AUDIT_INPUT_2025_ONWARD.csv \
+            --out reports/nifty_calendar/P8_SECONDARY_RECONCILIATION_2025_ONWARD.csv \
+            --rows-out data/cache/P8_NSE_ROWS_2025_ONWARD.csv \
+            --cache-dir data/cache/p8_nse_raw \
+            --mirror-root data/cache/nse_fno_mirror
+
+      - name: Score frozen P7 candidate on unseen data
+        run: |
+          python scripts/p8_score.py \
+            --cycles reports/nifty_calendar/P8_CYCLES_2025_ONWARD.csv \
+            --spot reports/nifty_calendar/P8_SPOT_2025_ONWARD.csv \
+            --rows data/cache/P8_NSE_ROWS_2025_ONWARD.csv \
+            --out-ledger reports/nifty_calendar/P8_OOS_TRADE_LEDGER_2025_ONWARD.csv \
+            --out-costs reports/nifty_calendar/P8_OOS_COST_SENSITIVITY_2025_ONWARD.csv \
+            --out-report reports/nifty_calendar/P8_OOS_VALIDATION_REPORT_2025_ONWARD.md
+
+      - name: Add frozen mirror provenance
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path("reports/nifty_calendar/P8_OOS_VALIDATION_REPORT_2025_ONWARD.md")
+          sha = Path("data/cache/P8_MIRROR_COMMIT.txt").read_text().strip()
+          with p.open("a", encoding="utf-8") as f:
+              f.write("\n\n## Frozen mirror provenance\n")
+              f.write("NSE F&O mirror commit: " + sha + "\n")
+              f.write("Validation boundary is the committed mirror snapshot used by this workflow.\n")
+          PY
+
+      - name: Update phase and research logs after successful validation
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import datetime as dt
+          stamp = dt.date.today().isoformat()
+
+          status = Path("docs/nifty_calendar/PHASE_STATUS.md")
+          s = status.read_text(encoding="utf-8")
+          if "| P8 Unseen post-2024 validation |" not in s:
+              s += "\n| P8 Unseen post-2024 validation | COMPLETE | Frozen 1.20 gate evaluated unchanged on the post-2024 temporal sample; see P8 OOS report |"
+          s = s.replace(
+              "Last updated: 2026-09-23  — P0-P7 complete for 2022-2024 study; candidate entry gate reserved for post-2024 validation",
+              "Last updated: 2026-09-23 — P0-P8 validation completed; P6 remains frozen and P7 was tested only as a separate OOS candidate"
+          )
+          status.write_text(s, encoding="utf-8")
+
+          plan = Path("docs/nifty_calendar/RESEARCH_PLAN.md")
+          ps = plan.read_text(encoding="utf-8")
+          if "### P8 — Unseen post-2024 validation" not in ps:
+              ps += "\n\n### P8 — Unseen post-2024 validation\nStatus: COMPLETE.\nThe 1.20 P7 candidate threshold was frozen before the post-2024 scoring run. P8 performed one temporal holdout evaluation without threshold re-optimization. The OOS ledger, cost sensitivity and validation report are committed on the P8 branch.\n"
+          plan.write_text(ps, encoding="utf-8")
+
+          conv = Path("docs/nifty_calendar/CONVERSATION_LOG.md")
+          cs = conv.read_text(encoding="utf-8")
+          cs += "\n\n## " + stamp + " — P8 unseen post-2024 validation\n- P8 branch: research-nifty-4leg-calendar-p8-oos-validation.\n- Candidate threshold fixed before OOS scoring: calendar-balance ratio <= 1.20.\n- OOS period starts 2025-01-01; weekly expiry regime switches to Tuesday from 2025-09-02.\n- Independent NSE F&O mirror and independent NIFTY spot-open inputs were used.\n- Brokerage, statutory costs, exchange-charge stress and adverse slippage were modeled.\n- No second threshold or additional filter was searched.\n"
+          conv.write_text(cs, encoding="utf-8")
+
+          readme = Path("README.md")
+          rs = readme.read_text(encoding="utf-8")
+          block = "\n\n## P8 unseen post-2024 validation\nThe P7 candidate gate (far CE / near CE) / (far PE / near PE) <= 1.20 was frozen and evaluated unchanged on the post-2024 temporal holdout. P6 remains frozen.\n- P8 plan: docs/nifty_calendar/P8_OOS_VALIDATION_PLAN.md\n- P8 candidate lock: docs/nifty_calendar/P8_OOS_CANDIDATE_LOCK.md\n- P8 OOS report: reports/nifty_calendar/P8_OOS_VALIDATION_REPORT_2025_ONWARD.md\n- P8 OOS ledger: reports/nifty_calendar/P8_OOS_TRADE_LEDGER_2025_ONWARD.csv\n- P8 cost sensitivity: reports/nifty_calendar/P8_OOS_COST_SENSITIVITY_2025_ONWARD.csv\n"
+          if "## P8 unseen post-2024 validation" not in rs:
+              readme.write_text(rs + block, encoding="utf-8")
+          PY
+
+      - name: Log P8 tooling correction
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path("docs/nifty_calendar/ERROR_LOG.md")
+          s = p.read_text(encoding="utf-8")
+          marker = "P8 low-level archive duplication tool block"
+          if marker not in s:
+              s += "\n\n## 2026-09-23 — P8 low-level archive duplication tool block\n- Event: an attempted new low-level archive-extraction file was rejected by the tool safety layer before any repository write.\n- Impact: no research data or code was changed by the rejected operation.\n- Correction: P8 reuses the audited P5 NSE parser/reconciliation path instead of duplicating the archive-reading implementation.\n- Prevention: reuse validated ingestion components where possible rather than creating a second low-level parser.\n"
+          p.write_text(s, encoding="utf-8")
+          PY
+
+      - name: Commit P8 results and phase state
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            reports/nifty_calendar/P8_CYCLES_2025_ONWARD.csv \
+            reports/nifty_calendar/P8_ARCHIVES_2025_ONWARD.csv \
+            reports/nifty_calendar/P8_SPOT_2025_ONWARD.csv \
+            reports/nifty_calendar/P8_AUDIT_INPUT_2025_ONWARD.csv \
+            reports/nifty_calendar/P8_SECONDARY_RECONCILIATION_2025_ONWARD.csv \
+            reports/nifty_calendar/P8_OOS_VALIDATION_REPORT_2025_ONWARD.md \
+            reports/nifty_calendar/P8_OOS_TRADE_LEDGER_2025_ONWARD.csv \
+            reports/nifty_calendar/P8_OOS_COST_SENSITIVITY_2025_ONWARD.csv \
+            data/cache/P8_MIRROR_COMMIT.txt \
+            docs/nifty_calendar/PHASE_STATUS.md \
+            docs/nifty_calendar/RESEARCH_PLAN.md \
+            docs/nifty_calendar/CONVERSATION_LOG.md \
+            docs/nifty_calendar/ERROR_LOG.md \
+            README.md
+          git diff --cached --quiet || git commit -m "Complete P8 unseen NIFTY calendar validation"
+          git fetch origin research-nifty-4leg-calendar-p8-oos-validation
+          git rebase origin/research-nifty-4leg-calendar-p8-oos-validation
+          git push origin HEAD:research-nifty-4leg-calendar-p8-oos-validation
+
+      - name: Upload P8 validation artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nifty-calendar-p8-oos-validation
+          path: |
+            reports/nifty_calendar/P8_OOS_VALIDATION_REPORT_2025_ONWARD.md
+            reports/nifty_calendar/P8_OOS_TRADE_LEDGER_2025_ONWARD.csv
+            reports/nifty_calendar/P8_OOS_COST_SENSITIVITY_2025_ONWARD.csv
+            reports/nifty_calendar/P8_SECONDARY_RECONCILIATION_2025_ONWARD.csv
+            data/cache/P8_MIRROR_COMMIT.txt
+
+      - name: Log workflow failure
+        if: failure()
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import os
+          p = Path("docs/nifty_calendar/ERROR_LOG.md")
+          with p.open("a", encoding="utf-8") as f:
+              f.write("\n## 2026-09-23 — P8 workflow failure\n")
+              f.write("Run ID: " + os.getenv("GITHUB_RUN_ID", "unknown") + "\n")
+              f.write("Attempt: " + os.getenv("GITHUB_RUN_ATTEMPT", "unknown") + "\n")
+              f.write("Branch: " + os.getenv("GITHUB_REF_NAME", "unknown") + "\n")
+              f.write("Interpretation is blocked until the failed step is inspected.\n")
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/nifty_calendar/ERROR_LOG.md
+          git diff --cached --quiet || git commit -m "Log P8 workflow failure"
+          git push origin HEAD:research-nifty-4leg-calendar-p8-oos-validation
