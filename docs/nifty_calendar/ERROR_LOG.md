@@ -129,3 +129,10 @@
 - Branch: research-nifty-4leg-calendar-p5-reconciliation
 - Event: push
 - The failed step should be inspected in GitHub Actions logs before interpreting any P5 result.
+
+
+## 2026-09-23 — P5 legacy mirror month-case bug
+- Event: the legacy NSE mirror filename was generated with a fully lowercase month, for example fo07jan2022bhav.csv.zip, while the independent mirror stores fo07JAN2022bhav.csv.zip.
+- Impact: only the already-cached UDiFF-period files were reconciled; most 2022-2024 legacy dates remained source gaps.
+- Correction: legacy filenames now use lowercase fo/bhav with an uppercase three-letter month, matching the mirror repository exactly.
+- Prevention: derive source filenames from an observed repository manifest before running bulk reconciliation.
