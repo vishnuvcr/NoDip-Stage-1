@@ -123,3 +123,9 @@
 - Impact: most 2022-2024 legacy dates returned HTTP 404, leaving only 8 parsed dates and 4 secondary-complete cycles in the P5 run; this was a source-path bug, not evidence that the contracts were unavailable.
 - Correction: the legacy mirror filename is now preserved with the lowercase "fo" prefix. The 2024 UDiFF filenames retain their mixed-case "BhavCopy..." form.
 - Prevention: source filename case and path conventions are now validated against repository tree manifests before full execution.
+
+## 2026-09-23 — P5 workflow failure
+- Run ID: 35815071723; attempt: 1
+- Branch: research-nifty-4leg-calendar-p5-reconciliation
+- Event: push
+- The failed step should be inspected in GitHub Actions logs before interpreting any P5 result.
