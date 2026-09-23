@@ -136,8 +136,20 @@ Outputs:
 - reports/nifty_calendar/P10_FINAL_RESEARCH_CONCLUSION.md
 
 ### P11 — Forward / paper-execution validation
-Status: PLANNED.
-Freeze any development-selected offset only after unseen validation. Record timestamped quotes, actual fills, spreads, slippage, costs and residual loss mechanisms without retuning on the same observation stream.
+Status: COMPLETE / BLOCKED BY DATA AVAILABILITY.
+The pinned public option source ended before the fresh cutoff; no fresh post-P10 cycle was available. No P10 observations were reused.
+
+### P12 — Far-expiry selection research
+Status: COMPLETE — EXPLORATORY.
+Tested F+1, F+2, F+3 and F+4 far expiries using the new four-leg orientation and a frozen entry-only normalized-credit selector.
+
+### P13 — Fresh far-expiry validation on pinned public source
+Status: COMPLETE — INSUFFICIENT FRESH SAMPLE.
+The public source still ended at 2026-06-29, so zero post-2026-08-26 cycles were available.
+
+### P14 — Official NSE fresh far-expiry validation
+Status: COMPLETE — FRESH SAMPLE TOO SMALL.
+The frozen P12 selector was evaluated on three completed post-cutoff cycles from official NSE daily F&O bhavcopy data. No score, horizon or threshold was retuned. The correct status is prospective paper monitoring, not live approval.
 
 ## Current statistical outputs from P8
 
@@ -156,4 +168,4 @@ Historical and forward analyses must keep brokerage, statutory charges, exchange
 
 ## Research stop condition
 
-Research stops after the defined phases P10/P11, or earlier if data quality cannot support a defensible conclusion. Failed validation is recorded as a scientific outcome, not silently repaired.
+P0-P14 are closed. The current research stops after official-NSE fresh validation. No further far-expiry horizons, selector weights or parameter searches are performed on the existing sample. Future work is prospective paper monitoring and re-validation only when additional completed post-cutoff cycles become available. Failed validation is recorded as a scientific outcome, not silently repaired.
