@@ -41,6 +41,13 @@ def perf(frame: pd.DataFrame, pnl_col: str = "pnl_inr") -> dict:
 
 def add_features(df: pd.DataFrame, recon: pd.DataFrame) -> pd.DataFrame:
     out = df.copy()
+    numeric_cols = [
+        "lot_near", "lot_far", "entry_near_pe", "exit_near_pe",
+        "entry_near_ce", "exit_near_ce", "entry_far_ce", "exit_far_ce",
+        "entry_far_pe", "exit_far_pe", "pnl_inr",
+    ]
+    for col in numeric_cols:
+        out[col] = pd.to_numeric(out[col], errors="coerce")
     ln = out["lot_near"].astype(float)
     lf = out["lot_far"].astype(float)
 
