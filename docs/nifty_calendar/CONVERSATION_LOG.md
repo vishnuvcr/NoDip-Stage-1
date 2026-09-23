@@ -97,3 +97,11 @@
 - No-lookahead rule: quote/tick data may use contemporaneous executable prices; with 1-minute OHLC-only data, signal at minute close and execute at the next available minute price.
 - P9 is data-blocked because the repository does not yet contain timestamped intraday multi-expiry option quotes sufficient to reconstruct the four legs.
 - A manual GitHub Actions workflow and detailed P9 research plan were added to the dedicated branch.
+## 2026-09-23 — P9 primary-source timing QC rejection and secondary validation
+- User said "Ok proceed" after the P9 execution became stuck.
+- Review of the completed remote DuckDB scan showed the analysis step ran, but the generated P9 event result is not scientifically usable.
+- The 2026-04-01 source-alignment audit shows NIFTY around 22,843 at 09:15 and 22,899 on the daily open reference, while the primary timing output selected strike 20,500 because far-expiry data were extremely sparse.
+- The primary fixed comparator also produced zero trades and therefore did not reproduce the authoritative P8 fixed-gate reference.
+- Decision: reject the primary P9 performance output; do not tune CBR or infer strategy performance from it.
+- P9 plan updated to require secondary option-source validation, explicit ATM-distance QC, complete four-leg contemporaneous panels, and the P8 fixed ledger as the fixed-time reference.
+- Rissin secondary-source OOS validation is now running with cached option and NIFTY index data.
