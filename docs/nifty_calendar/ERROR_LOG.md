@@ -168,3 +168,14 @@
 - Correction: the f-string was rewritten with normal Python quotes; the workflow commit step also now uses plain `\${GITHUB_REF_NAME}` shell expansion after fetch/reset.
 - Impact: no numerical cutoff-sensitivity result was produced by the failed run.
 - Prevention: validate generated Python syntax in CI before interpreting downstream results, and avoid double-escaping source-code quotes during repository writes.
+
+## 2026-09-23 — P9 first Rissin result superseded by deterministic ATM QC
+- Event: the initial Rissin run reported 26 fixed-source trades and 70 event trades before enforcing the contract-definition ATM-distance check.
+- Impact: those pre-QC figures are not the authoritative P9 result because some selected common strikes were more than one strike interval from spot.
+- Correction: re-ran the identical secondary-source population with the frozen 50-point NIFTY strike interval and a deterministic maximum ATM distance of 25 points. The authoritative result is 14 fixed diagnostic trades and 65 event trades.
+- Prevention: source-quality/contract-definition filters must execute before any performance metrics are persisted as final results.
+
+## 2026-09-23 — P9 latest-entry sensitivity completed after syntax correction
+- Event: corrected workflow run 35838201255 completed successfully after two earlier syntax-failure/cancellation attempts.
+- Result: 15:00/15:15/15:30/15:40 produced 63/64/65/65 event trades; all were negative at 0.5-point adverse slippage and beyond.
+- Interpretation: the cutoff analysis is a pre-registered robustness table; no cutoff was selected for profitability.
