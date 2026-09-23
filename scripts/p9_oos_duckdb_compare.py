@@ -69,8 +69,11 @@ def signal_from(near,far,spot,start,end):
         if x.empty:return pd.DataFrame()
         x.columns=[f'{p}_{a}_{b}' for a,b in x.columns]
         return x.reset_index()
-    x=piv(n,'near').merge(piv(f,'far'),on=['timestamp','strike'],how='inner')
-    if x.empty:return None
+    a=piv(n,'near'); b=piv(f,'far')
+    if a.empty or b.empty or 'timestamp' not in a.columns or 'timestamp' not in b.columns:return None
+    x=a.merge(b,on=['timestamp','strike'],how='inner')
+    if x.empty or 'timestamp' not in x.columns:return None
+    if spot.empty or 'timestamp' not in spot.columns:return None
     x=pd.merge_asof(x.sort_values('timestamp'),spot.sort_values('timestamp'),on='timestamp',direction='backward',tolerance=pd.Timedelta(minutes=1))
     x=x[x.spot_close.notna()].copy()
     if x.empty:return None
@@ -114,7 +117,7 @@ def exits(near,far,strike):
         return {'ce':float(h.CE),'pe':float(h.PE)}
     n=last(near); f=last(far)
     if n is None or f is None:return None
-    return {'exit_near_ce':n.ce,'exit_near_pe':n.pe,'exit_far_ce':f.ce,'exit_far_pe':f.pe}
+    return {'exit_near_ce':n['ce'],'exit_near_pe':n['pe'],'exit_far_ce':f['ce'],'exit_far_pe':f['pe']}
 
 def main():
     con=duckdb.connect()
