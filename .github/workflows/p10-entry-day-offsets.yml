@@ -44,6 +44,9 @@ jobs:
           restore-keys: |
             p10-rissin-historical-daily-
 
+      - name: Validate P10 Python syntax
+        run: python -m py_compile scripts/p10_entry_day_offsets.py
+
       - name: Run P10 seven-offset study
         env:
           PYTHONPATH: .
