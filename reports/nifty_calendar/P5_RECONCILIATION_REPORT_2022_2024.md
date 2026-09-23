@@ -36,10 +36,13 @@ Independent spot cross-check: Yahoo Finance NIFTY 50 daily session OPEN for each
 
 ## Secondary P&L
 
-- Exact-strike secondary cycles: 123
-- Secondary total P&L across complete cycles: ₹-323,470.00
-- Secondary mean trade: ₹-2,629.84
-- Secondary win rate: 53.66%
+- Complete independent cycles: 132
+- Complete independent gross P&L: ₹-299,485.00
+- Mean trade: ₹-2,268.83
+- Win rate: 54.55%
+- Exact-primary-strike subset: 123 cycles; gross P&L ₹-323,470.00
+- Secondary-grid-alternative subset: 9 cycles; gross P&L ₹23,985.00
+- Primary-valid control subset: 57 cycles; gross P&L ₹49,408.75
 
 ## Cross-source price and spot checks
 - Matched-cycle maximum absolute option price difference: median ₹7.6000; p95 ₹27.2300; max ₹55.8500.
