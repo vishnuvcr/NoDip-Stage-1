@@ -265,7 +265,6 @@ def main() -> None:
     ap.add_argument("--out", required=True, type=Path)
     ap.add_argument("--rows-out", required=True, type=Path)
     ap.add_argument("--cache-dir", required=True, type=Path)
-    ap.add_argument("--valid-sample", type=int, default=10, help="Number of primary-valid control cycles to reconcile in addition to all rejects.")
     ap.add_argument("--rejected-only", action="store_true",
                     help="Reconcile every rejected cycle and skip primary-valid cycles.")
     ap.add_argument("--valid-sample", type=int, default=0,
@@ -296,6 +295,7 @@ def main() -> None:
         scope = audit.copy()
 
     audit = scope
+    recon_set = audit.copy()
     if audit.empty:
         raise SystemExit("Selected reconciliation scope is empty")
 
