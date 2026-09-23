@@ -1,4 +1,5 @@
 name: P9 Rissin latest-entry sensitivity
+# P9 operational cutoff robustness check
 
 on:
   push:
