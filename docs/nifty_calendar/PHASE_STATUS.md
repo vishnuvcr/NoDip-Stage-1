@@ -13,3 +13,6 @@ Last updated: 2026-09-23  — P0-P7 complete for 2022-2024 study
 | P6 Final manuscript | COMPLETE | Final strict 84-cycle frozen-protocol manuscript, figures, statistics, trade-level appendix, cost sensitivity and validation checks committed |
 
 | P7 Loss-trades audit | COMPLETE | 32 strict losing trades audited; leg-level attribution, loss-signature analysis and exploratory entry-state filters completed |
+
+
+| P7 Loss audit / entry tuning | IN PROGRESS | Auditing all strict-sample losses and testing a single interpretable entry-time term-structure balance gate; P6 remains frozen |
