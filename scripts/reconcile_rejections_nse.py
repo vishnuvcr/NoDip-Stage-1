@@ -202,23 +202,19 @@ def secondary_cycle(cycle: pd.Series, daily: dict[pd.Timestamp, pd.DataFrame], y
         return row
 
     primary_strike = pd.to_numeric(pd.Series([cycle.get("primary_strike", None)]), errors="coerce").iloc[0]
-    # For cycles where the primary source selected a strike, validate that exact
-    # frozen-protocol strike against the independent source. Do not silently
-    # substitute a different strike.
-    if pd.notna(primary_strike):
-        strike = float(primary_strike)
-        row["secondary_strike"] = strike
-        row["strike_mode"] = "EXACT_PRIMARY_STRIKE"
-    else:
-        # When the primary source found no common strike, the independent source
-        # may expose a common listed strike. That is a data-grid diagnostic only;
-        # its P&L is not treated as an exact replication of the primary selection.
-        strike = choose_common_strike(entry_df, near, far, primary_spot)
-        if strike is None:
-            row["secondary_status"] = "SECONDARY_CONFIRMS_NO_COMMON_STRIKE"
-            return row
-        row["secondary_strike"] = strike
-        row["strike_mode"] = "SECONDARY_GRID_ALTERNATIVE"
+    # Independently re-apply the frozen ATM/common-strike rule using the
+    # secondary spot-open diagnostic. This strike drives the independent P&L.
+    strike = choose_common_strike(entry_df, near, far, secondary_spot)
+    if strike is None:
+        row["secondary_status"] = "SECONDARY_CONFIRMS_NO_COMMON_STRIKE"
+        row["strike_mode"] = "NO_COMMON_STRIKE"
+        return row
+    row["secondary_strike"] = strike
+    row["strike_mode"] = (
+        "SAME_AS_PRIMARY_STRIKE"
+        if pd.notna(primary_strike) and float(primary_strike) == float(strike)
+        else "SECONDARY_RESELECTED_STRIKE"
+    )
     legs = {
         "near_pe": (near, "PE"),
         "near_ce": (near, "CE"),
@@ -274,11 +270,7 @@ def secondary_cycle(cycle: pd.Series, daily: dict[pd.Timestamp, pd.DataFrame], y
         + (prices["entry_far_pe"] - prices["exit_far_pe"]) * fs
     )
     row["secondary_pnl_inr"] = pnl
-    row["secondary_status"] = (
-        "SECONDARY_EXACT_STRIKE_COMPLETE"
-        if row["strike_mode"] == "EXACT_PRIMARY_STRIKE"
-        else "SECONDARY_GRID_ALTERNATIVE_COMPLETE"
-    )
+    row["secondary_status"] = "SECONDARY_COMPLETE"
     row["secondary_strike"] = strike
     return row
 
@@ -385,13 +377,11 @@ def main() -> None:
     out["comparison_status"] = out.apply(
         lambda r: (
             "PRIMARY_VALID_SECONDARY_COMPLETE"
-            if r["primary_reason"] == "VALID" and r["secondary_status"] == "SECONDARY_EXACT_STRIKE_COMPLETE"
+            if r["primary_reason"] == "VALID" and r["secondary_status"] == "SECONDARY_COMPLETE"
             else "RECOVERED_BY_SECONDARY_EXACT"
-            if r["primary_reason"] != "VALID" and r["secondary_status"] == "SECONDARY_EXACT_STRIKE_COMPLETE"
-            else "GRID_ALTERNATIVE_RECOVERY"
-            if r["primary_reason"] != "VALID" and r["secondary_status"] == "SECONDARY_GRID_ALTERNATIVE_COMPLETE"
-            else "PRIMARY_VALID_GRID_DIAGNOSTIC"
-            if r["primary_reason"] == "VALID" and r["secondary_status"] == "SECONDARY_GRID_ALTERNATIVE_COMPLETE"
+            if r["primary_reason"] != "VALID" and r["secondary_status"] == "SECONDARY_COMPLETE" and r["strike_mode"] == "SAME_AS_PRIMARY_STRIKE"
+            else "RECOVERED_BY_SECONDARY_RESELECTED"
+            if r["primary_reason"] != "VALID" and r["secondary_status"] == "SECONDARY_COMPLETE"
             else "PRIMARY_REJECTED_SECONDARY_NONEXECUTABLE"
             if r["primary_reason"] != "VALID"
             else "PRIMARY_VALID_SECONDARY_NONEXECUTABLE"
