@@ -165,3 +165,23 @@ Important: the 2025+ evaluation period was already exposed during P10, so P12 is
 ## Research stop condition
 
 P0-P10 are closed. P11 is closed at the fresh-data availability gate. No additional entry-day offsets or parameter searches are performed on the existing sample. A future run may resume P11 only after genuinely fresh post-cutoff option data are added to the pinned cache.
+
+## P14 — Official NSE fresh far-expiry validation
+
+P14 re-tested the frozen P12 far-expiry selector using official NSE F&O daily UDiFF bhavcopy data strictly after the P10/P12 cutoff of 2026-08-26.
+
+| Strategy | Fresh trades | Gross P&L | Net @ 2-pt slippage |
+|---|---:|---:|---:|
+| F+1 | 3 | ₹6,714.50 | ₹2,976.46 |
+| F+2 | 3 | ₹3,081.00 | −₹709.34 |
+| F+3 | 3 | ₹6,100.25 | ₹2,260.39 |
+| F+4 | 0 | — | — |
+| Adaptive | 3 | ₹6,714.50 | ₹2,976.46 |
+
+The frozen adaptive selector chose **F+1 on all three fresh cycles**. Because only three completed cycles were available, this is descriptive evidence only and does not establish statistical robustness or live readiness.
+
+- [P14 plan](docs/nifty_calendar/P14_OFFICIAL_NSE_FRESH_VALIDATION_PLAN.md)
+- [P14 report](reports/nifty_calendar/P14_OFFICIAL_NSE_FRESH_VALIDATION_REPORT.md)
+- [P14 conclusion](reports/nifty_calendar/P14_FINAL_RESEARCH_CONCLUSION.md)
+- [P14 source manifest](reports/nifty_calendar/P14_NSE_SOURCE_MANIFEST.csv)
+- [P14 trade ledger](reports/nifty_calendar/P14_OFFICIAL_NSE_FRESH_LEDGER.csv)
