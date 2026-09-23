@@ -165,14 +165,15 @@ def main():
             net=float(y.apply(lambda r:net_cost(r,slip),axis=1).sum()) if not y.empty else 0.0
             costs.append({'strategy':label,'slippage_points':slip,'net_pnl_inr':net})
     sel=ledger[ledger['status'].eq('ADAPTIVE_SELECTED')].copy()
-    freq={f'F+{h}':int((sel.horizon==h).sum()) for h in HORIZONS}
+    freq={f'F+{h}':int((sel['horizon']==h).sum()) if 'horizon' in sel.columns else 0 for h in HORIZONS}
     OUT_LEDGER.parent.mkdir(parents=True,exist_ok=True)
     ledger.to_csv(OUT_LEDGER,index=False); pd.DataFrame(summary).to_csv(OUT_SUMMARY,index=False); pd.DataFrame(costs).to_csv(OUT_COSTS,index=False); pd.DataFrame([freq|{'selected_trades':len(sel),'latest_source_date':str(max_date.date()),'cutoff':str(CUTOFF.date())}]).to_csv(ROOT/'reports/nifty_calendar/P13_ADAPTIVE_SELECTION.csv',index=False)
     report=['# P13 Fresh Far-Expiry Validation Report','', '## Frozen rule','- D+1 entry, 09:15 market-open proxy, near expiry next listed expiry.','- Far candidates F+1 through F+4.','- Adaptive score = (near CE - near PE + far PE - far CE) / spot open.','- Choose highest score using entry information only.','- No threshold/weight/horizon tuning was performed in P13.','', '## Fresh-data gate',f'- P10/P12 cutoff: {CUTOFF.date()}',f'- Latest source trading date: {max_date.date()}',f'- Fresh completed cycles: {len(fresh)}','', '## Results']
     for r in summary:
         m=pd.DataFrame(costs); z=m[(m.strategy==r['strategy'])&(m.slippage_points==2)]; n2=float(z.net_pnl_inr.iloc[0]) if not z.empty else 0.0
         report.append(f"- {r['strategy']}: {int(r['executable_trades'])} trades, gross ₹{r['gross']:,.2f}, PF {r['pf']:.3f}, win {r['win']:.1%}, DD ₹{abs(r['dd']):,.2f}, net@2pt ₹{n2:,.2f}.")
-    report += ['', '## Adaptive selection frequency',f"- {freq}", '', '## Data-quality interpretation', '- This is the first evaluation of the frozen P12 rule on dates strictly after 2026-08-26 available in the current dataset.', '- The entry uses the same daily-open proxy used by P12; it is not a historical bid/ask or exact exchange tick-fill reconstruction.', '', '## Decision']
+    status_counts=ledger['status'].value_counts(dropna=False).to_dict() if 'status' in ledger.columns else {}
+    report += ['', '## Adaptive selection frequency',f"- {freq}", '', '## Fresh ledger status counts',f"- {status_counts}", '', '## Data-quality interpretation', '- This is the first evaluation of the frozen P12 rule on dates strictly after 2026-08-26 available in the current dataset.', '- The entry uses the same daily-open proxy used by P12; it is not a historical bid/ask or exact exchange tick-fill reconstruction.', '', '## Decision']
     n=len(sel); net2=float(pd.DataFrame(costs).query("strategy=='ADAPTIVE' and slippage_points==2").net_pnl_inr.iloc[0]) if n else 0.0
     if n<8: decision='INSUFFICIENT FRESH SAMPLE — CONTINUE PROSPECTIVE PAPER MONITORING'
     elif net2<=0: decision='FROZEN RULE FAILED FRESH 2-POINT COST GATE'
