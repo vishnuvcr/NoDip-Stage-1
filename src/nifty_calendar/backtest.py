@@ -77,8 +77,8 @@ def nearest_common_strike(
     ]
     near = subset[subset["expiry"] == expiry_near]
     far = subset[subset["expiry"] == expiry_far]
-    n = set(near.loc[near["open"].notna(), "strike"].unique())
-    f = set(far.loc[far["open"].notna(), "strike"].unique())
+    n = set(near.loc[near["open"].gt(0), "strike"].unique())
+    f = set(far.loc[far["open"].gt(0), "strike"].unique())
     common = sorted(n.intersection(f))
     if not common:
         raise ValueError("No common executable strike for both expiries")
@@ -177,7 +177,7 @@ def build_trades(fo: pd.DataFrame, spot: pd.DataFrame) -> pd.DataFrame:
             audit["missing_exit_leg"] += 1
             continue
 
-        if any(pd.isna(x["open"]) for x in legs.values()):
+        if any(pd.isna(x["open"]) or float(x["open"]) <= 0 for x in legs.values()):
             audit["missing_entry_leg"] += 1
             continue
         if any(pd.isna(x["close"]) for x in exits.values()):
