@@ -9,10 +9,9 @@ Independent spot cross-check: Yahoo Finance NIFTY 50 daily session OPEN for each
 - Candidate strategy cycles: 134
 - Primary valid cycles: 59
 - Primary rejected cycles: 75
-- Secondary exact-primary-strike complete cycles: 123
-- Secondary grid-alternative complete cycles: 9
-- Primary rejects recovered at the exact frozen strike: 66
-- Primary rejects with only a secondary-grid alternative: 9
+- Secondary fully executable cycles: 132
+- Primary rejects recovered at the same strike as the primary source: 27
+- Primary rejects recovered after independent secondary strike re-selection: 48
 - Primary-valid cycles also complete on secondary: 57
 - Reconciliation scope: all 134 candidate cycles.
 
@@ -29,23 +28,25 @@ Independent spot cross-check: Yahoo Finance NIFTY 50 daily session OPEN for each
 
 | Status | Cycles |
 |---|---:|
-| RECOVERED_BY_SECONDARY_EXACT | 66 |
 | PRIMARY_VALID_SECONDARY_COMPLETE | 57 |
-| GRID_ALTERNATIVE_RECOVERY | 9 |
+| RECOVERED_BY_SECONDARY_RESELECTED | 48 |
+| RECOVERED_BY_SECONDARY_EXACT | 27 |
 | PRIMARY_VALID_SECONDARY_NONEXECUTABLE | 2 |
 
 ## Secondary P&L
 
 - Complete independent cycles: 132
-- Complete independent gross P&L: ₹-299,485.00
-- Mean trade: ₹-2,268.83
-- Win rate: 54.55%
-- Exact-primary-strike subset: 123 cycles; gross P&L ₹-323,470.00
-- Secondary-grid-alternative subset: 9 cycles; gross P&L ₹23,985.00
-- Primary-valid control subset: 57 cycles; gross P&L ₹49,408.75
+- Complete independent gross P&L: ₹188,237.50
+- Mean trade: ₹1,426.04
+- Median trade: ₹580.63
+- Win rate: 59.09%
+- Profit factor: 1.889
+- Primary rejects recovered at same strike: 27 cycles; gross P&L ₹-29,192.50
+- Primary rejects recovered after re-selection: 48 cycles; gross P&L ₹161,846.25
+- Primary-valid control subset: 57 cycles; gross P&L ₹55,583.75
 
 ## Cross-source price and spot checks
-- Matched-cycle maximum absolute option price difference: median ₹7.6000; p95 ₹27.2300; max ₹55.8500.
+- Matched-cycle maximum absolute option price difference: median ₹8.5000; p95 ₹75.0000; max ₹124.7000.
 - Yahoo-vs-primary NIFTY open difference on candidate entry dates: median 0.0496 index points; p95 22.2598; max 126.8000.
 
 ## Interpretation rule
