@@ -178,3 +178,19 @@
 - Impact: P7 workflow run 4 failed during loss classification with a string-vs-integer comparison.
 - Correction: all required ledger numeric columns are explicitly coerced with pandas.to_numeric before feature construction.
 - Prevention: research audit scripts now validate schema and numeric dtypes at the start of analysis.
+
+
+## 2026-09-23 — P7 ledger provenance mismatch corrected
+- Event: the first P7 run used a manually cached 84-row strict ledger whose content did not match the canonical P6 artifact; its reported total gross P&L was ₹81,117.50 instead of the validated ₹83,030.00.
+- Impact: the first P7 loss-tuning report was numerically inconsistent with P6 and was not accepted as final.
+- Correction: P7 now regenerates the strict 84-cycle ledger from the canonical P5 reconciliation and the canonical 132-cycle secondary trade ledger using the deterministic P6 strict-input builder. The corrected P7 report now starts from ₹83,030.00.
+- Prevention: phase-specific analyses must derive their primary ledger from a canonical upstream transformation rather than manually copied trade rows.
+
+
+## 2026-09-23 — P7 final tuning result
+- Event: canonical P7 loss audit completed successfully.
+- Result: 32/84 trades were losses; 20/32 losses had both near-expiry legs individually adverse; 19/32 losses had both far-expiry legs net favorable.
+- Candidate gate: calendar-balance ratio <= 1.20.
+- Full-sample diagnostic effect: 52/84 trades retained, gross P&L ₹84,981.25, win rate 80.77%, profit factor 8.457, max drawdown ₹3,355.00.
+- Conservative scenario: ₹20/order brokerage, 0.05000% exchange-charge sensitivity, 2.00-point slippage per execution -> ₹34,163.77 modeled cumulative net P&L.
+- Validation boundary: these figures are exploratory in-sample evidence; the candidate is not validated for live use and must be tested unchanged on a genuinely unseen post-2024 sample.
