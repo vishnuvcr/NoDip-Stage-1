@@ -2,7 +2,7 @@
 
 ## Current research status — 2026-09-23
 
-**P0-P8 complete. P9 event-driven entry timing is open; alternate-source audit is complete and acquisition is prepared, but numerical scoring is still blocked until timestamped files are successfully materialized and validated.**
+**P0-P8 complete. P9 event-driven entry timing is open. Alternate-source discovery and the first primary-source acquisition are complete; the first event-driven timing scan is prepared but awaits execution on the corrected workflow.**
 
 ## Frozen validated reference
 
@@ -41,18 +41,28 @@ Source manifest: [reports/nifty_calendar/P9_ALTERNATE_DATA_SOURCES.csv](reports/
 
 Detailed audit: [docs/nifty_calendar/P9_ALTERNATE_DATA_SOURCE_AUDIT.md](docs/nifty_calendar/P9_ALTERNATE_DATA_SOURCE_AUDIT.md)
 
-### Acquisition
+### Primary source acquisition result
 
-A Hugging Face acquisition script and manual GitHub Actions workflow have been added:
+The first GitHub Actions acquisition run successfully downloaded the primary Hugging Face source files needed for the research:
 
-- `scripts/p9_fetch_hf_intraday.py`
-- `.github/workflows/p9-data-acquisition.yml`
+- 170 input research cycles
+- 201 unique near/far expiry files required
+- 192 expiry files downloaded
+- ~671.8 MB downloaded during the runner job
+- 1-minute NIFTY index file downloaded
+- 157/170 cycles (92.35%) have both required near and far expiry files
+- 13/170 cycles are currently source-gapped because one of the needed later-2026 expiry files is absent
 
-The workflow has not yet produced an observed run in the available GitHub connector, so raw intraday files are **not** being represented as already cached. This is an acquisition/runner issue, not evidence that the datasets are unavailable.
+The acquisition manifest is cached as a research record:
+[reports/nifty_calendar/P9_HF_FETCH_MANIFEST.csv](reports/nifty_calendar/P9_HF_FETCH_MANIFEST.csv)
 
-### Execution limitation
+The raw Hugging Face files were downloaded successfully on the CI runner but the first workflow cached only the manifest rather than the raw Hugging Face directory. The workflow has now been corrected to cache the actual Hugging Face raw-file directory under a stable key for subsequent scans.
+
+### Current execution limitation
 
 The public intraday candidates found so far expose OHLCV and expiry/strike identity, but not reliable historical bid/ask quotes in their published schemas. Therefore P9 historical testing will use the pre-registered 1-minute signal-close -> next-minute execution convention with adverse-slippage sensitivity. True bid/ask replay remains a separate execution-validation layer.
+
+The corrected workflow also contains parquet-schema validation and the first event-driven timing scanner. A P9 performance result will not be interpreted until that scan completes successfully.
 
 ## P8 OOS reference
 
