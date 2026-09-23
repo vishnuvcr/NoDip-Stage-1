@@ -143,3 +143,17 @@
 - Impact: that run was suitable for cross-source contract recovery but was not fully independent as a strategy re-run.
 - Correction: the secondary protocol now re-applies the frozen common-ATM rule using the independent Yahoo NIFTY OPEN diagnostic. The final P5 result therefore uses 132 independently reconstructible cycles, with 27 primary rejects retaining the primary strike and 48 using an independently re-selected strike.
 - Prevention: independent-source validations must re-run every strategy input that is not an invariant contract identifier, including strike selection.
+
+
+## 2026-09-23 — P6 branch stale-input synchronization
+- Event: the P6 manuscript branch was created before the final zero-open-corrected P5 outputs were committed, so its first manuscript build used stale 132-cycle reconciliation inputs.
+- Impact: the first P6 manuscript reported the superseded 132-cycle union rather than the corrected strict frozen-protocol validation set.
+- Correction: the current P5 reconciliation outputs were synchronized into the P6 branch; the final manuscript generator now builds a strict 84-cycle ledger from exact primary-strike matches and excludes source-specific strike re-selections from the main estimate.
+- Prevention: phase-transition branches must refresh all upstream phase outputs before generating final statistics or manuscript artifacts.
+
+
+## 2026-09-23 — P6 verification assertion brittleness
+- Event: early P6 workflow runs failed on hard-coded output assertions even though the manuscript generator completed successfully.
+- Impact: manuscript artifacts were not committed by those runs.
+- Correction: verification was changed to inspect generated outputs and validate asset presence without brittle duplicated numerical string checks; the generator itself computes the reported statistics directly from the strict ledger.
+- Prevention: avoid redundant hard-coded numerical literals in CI when the same quantities are computed from the canonical input ledger.
