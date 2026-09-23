@@ -151,6 +151,61 @@ The public source still ended at 2026-06-29, so zero post-2026-08-26 cycles were
 Status: COMPLETE — FRESH SAMPLE TOO SMALL.
 The frozen P12 selector was evaluated on three completed post-cutoff cycles from official NSE daily F&O bhavcopy data. No score, horizon or threshold was retuned. The correct status is prospective paper monitoring, not live approval.
 
+### P12 — Far-expiry selection extension
+Status: COMPLETE — EXPLORATORY, NOT PROMOTED.
+
+Research question:
+> For the frozen near-expiry structure, does selecting the far expiry from F+1/F+2/F+3/F+4 using only 09:15 entry information improve net outcomes?
+
+Frozen primary selector:
+`(near CE - near PE + far PE - far CE) / NIFTY spot open`
+
+Select the highest score among candidates with the same ATM strike and positive four-leg entry price/volume. Tie-break to the shorter horizon.
+
+2025+ evaluation result was exploratory because the period had already been exposed in P10:
+- F+1: 72 trades; gross ₹29,542.50; PF 1.321; net @2pt ₹-76,675.51.
+- F+2: 73 trades; gross ₹-23,165.50; PF 0.836; net @2pt ₹-132,050.98.
+- F+3: 64 trades; gross ₹33,141.75; PF 1.288; net @2pt ₹-62,956.75.
+- F+4: 42 trades; gross ₹90,236.75; PF 2.373; net @2pt ₹26,958.30.
+- Adaptive: 77 trades; gross ₹144,277.50; PF 2.763; net @2pt ₹30,311.14.
+
+### P13 — Fresh far-expiry validation
+Status: COMPLETE — DATA SOURCE BLOCKED.
+
+The pinned Hugging Face daily source available to the runner ended at 2026-06-29, before the frozen P10/P12 cutoff of 2026-08-26. No fresh cycle was evaluated and no old OOS observation was reused.
+
+### P14 — Official NSE fresh far-expiry validation
+Status: COMPLETE — PAPER MONITORING ONLY.
+
+To remove the P13 source-age problem, P14 downloaded official NSE F&O UDiFF bhavcopy archives for the three completed post-cutoff weekly cycles available by 2026-09-22.
+
+Fresh cycles:
+- 2026-09-02 entry → 2026-09-08 near expiry.
+- 2026-09-09 entry → 2026-09-15 near expiry.
+- 2026-09-16 entry → 2026-09-22 near expiry.
+
+P14 froze the P12 adaptive rule without modification. It selected F+1 on all 3 fresh cycles.
+
+Fresh adaptive result:
+- 3 trades.
+- Gross P&L ₹6,714.50.
+- Net P&L at 0/0.5/1/2 adverse-slippage points: ₹6,096.46 / ₹5,316.46 / ₹4,536.46 / ₹2,976.46.
+- No gross losing trade in the three-cycle sample.
+- Because n=3, no statistical significance or population-level robustness claim is permitted.
+
+Outputs:
+- reports/nifty_calendar/P14_NSE_SOURCE_MANIFEST.csv
+- reports/nifty_calendar/P14_OFFICIAL_NSE_FRESH_LEDGER.csv
+- reports/nifty_calendar/P14_OFFICIAL_NSE_FRESH_SUMMARY.csv
+- reports/nifty_calendar/P14_OFFICIAL_NSE_FRESH_COSTS.csv
+- reports/nifty_calendar/P14_ADAPTIVE_SELECTION.csv
+- reports/nifty_calendar/P14_OFFICIAL_NSE_FRESH_VALIDATION_REPORT.md
+- reports/nifty_calendar/P14_FINAL_RESEARCH_CONCLUSION.md
+
+### Final research stop condition
+Status: CLOSED FOR RETROSPECTIVE PARAMETER SEARCH.
+
+No further far-expiry horizon, score weight, CBR threshold or entry-time parameter search is performed on the current sample. The next research action is prospective paper monitoring with the frozen P12 selector as new weekly cycles complete.
 ## Current statistical outputs from P8
 
 - 86 executable post-2024 cycles
