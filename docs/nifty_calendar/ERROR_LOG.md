@@ -138,3 +138,18 @@
 - Impact: the frozen nearest-common-strike rule can select a strike far from the current NIFTY spot simply because the far-expiry source has few contemporaneous strikes. The first apparent event trade used strike 20,500 with NIFTY near 22,900.
 - Handling: the one-trade P9 primary-source result is rejected for performance interpretation until a second option-data source demonstrates adequate multi-strike far-expiry coverage.
 - Prevention: P9 source validation must record ATM-distance and far-expiry coverage at the signal timestamp; sparse-common-strike cases remain a data-quality limitation, not a trading conclusion.
+
+## 2026-09-23 — P9 primary timing output rejected for ATM inconsistency
+- Event: the remote DuckDB P9 scan completed its analysis step and produced one apparent event trade on 2026-04-01.
+- QC failure: the reconstructed event strike was 20,500 while the independently audited intraday NIFTY series was around 22,843 at 09:15 and the corresponding daily spot open was 22,899.
+- Root cause: the primary source has only 2–4 far-expiry rows at several sampled opening/event timestamps, so nearest-common-strike selection is not a valid ATM reconstruction when the far-expiry panel is sparse.
+- Impact: the one-trade primary P9 result is rejected and must not be used for performance inference.
+- Additional issue: the primary scanner's fixed arm produced 0 trades and therefore was not a valid recreation of the authoritative P8 fixed-gate reference.
+- Correction: require explicit ATM-distance QC and four-leg panel coverage before scoring; use the P8 fixed-gate ledger as the reference arm; validate a secondary option source before any P9 performance interpretation.
+- Prevention: sparse-contract panels are treated as source-quality failures, not as eligible trading opportunities.
+
+## 2026-09-23 — P9 remote DuckDB result persistence conflict
+- Event: the remote-predicate analysis step completed successfully, but its GitHub Actions commit step failed during git rebase because generated P9_OOS_DUCKDB_COMPARISON.csv conflicted with a newer branch commit.
+- Impact: workflow conclusion was failure even though the analysis code step succeeded; persisted output required subsequent branch reconciliation.
+- Correction: classify the run as a persistence-layer failure separately from the numerical QC failure and avoid interpreting the generated file as validated research output.
+- Prevention: future generated-output workflows should synchronize to the latest branch before committing generated artifacts, rather than rebasing a local commit that modifies the same generated file.
