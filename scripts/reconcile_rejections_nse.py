@@ -161,8 +161,8 @@ def choose_common_strike(day: pd.DataFrame, near: str, far: str, spot_open: floa
         day["expiry"].isin([pd.Timestamp(near), pd.Timestamp(far)])
         & day["option_type"].isin(["CE", "PE"])
     ]
-    n = set(sub[(sub["expiry"] == pd.Timestamp(near)) & sub["open"].notna()]["strike"].dropna().unique())
-    f = set(sub[(sub["expiry"] == pd.Timestamp(far)) & sub["open"].notna()]["strike"].dropna().unique())
+    n = set(sub[(sub["expiry"] == pd.Timestamp(near)) & sub["open"].gt(0)]["strike"].dropna().unique())
+    f = set(sub[(sub["expiry"] == pd.Timestamp(far)) & sub["open"].gt(0)]["strike"].dropna().unique())
     common = sorted(n & f)
     if not common:
         return None
@@ -230,7 +230,7 @@ def secondary_cycle(cycle: pd.Series, daily: dict[pd.Timestamp, pd.DataFrame], y
 
     for name, (exp, opt) in legs.items():
         m = rows_for(entry_df, entry, exp, strike, opt)
-        if len(m) != 1 or m["open"].isna().sum() != 0:
+        if len(m) != 1 or m["open"].isna().sum() != 0 or float(m.iloc[0]["open"]) <= 0:
             missing_entry.append(name)
         if len(m) == 1:
             prices[f"entry_{name}"] = float(m.iloc[0]["open"])
