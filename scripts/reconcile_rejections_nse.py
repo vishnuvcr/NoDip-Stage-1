@@ -190,6 +190,7 @@ def secondary_cycle(cycle: pd.Series, daily: dict[pd.Timestamp, pd.DataFrame], y
         "secondary_strike": "",
         "secondary_status": "",
         "comparison_status": "",
+        "strike_mode": "",
         "secondary_missing_entry": "",
         "secondary_missing_exit": "",
         "secondary_max_abs_price_diff": "",
@@ -200,14 +201,20 @@ def secondary_cycle(cycle: pd.Series, daily: dict[pd.Timestamp, pd.DataFrame], y
         row["secondary_status"] = "SECONDARY_SOURCE_GAP"
         return row
 
-    # Preserve the frozen protocol's primary spot source for strike selection.
-    # Yahoo is an independent diagnostic only; it must not redefine the trade.
-    strike = choose_common_strike(entry_df, near, far, primary_spot)
+    primary_strike = pd.to_numeric(pd.Series([cycle.get("primary_strike", None)]), errors="coerce").iloc[0]
+    # Independently re-apply the frozen ATM/common-strike rule using the
+    # secondary spot-open diagnostic. This strike drives the independent P&L.
+    strike = choose_common_strike(entry_df, near, far, secondary_spot)
     if strike is None:
         row["secondary_status"] = "SECONDARY_CONFIRMS_NO_COMMON_STRIKE"
+        row["strike_mode"] = "NO_COMMON_STRIKE"
         return row
-
     row["secondary_strike"] = strike
+    row["strike_mode"] = (
+        "SAME_AS_PRIMARY_STRIKE"
+        if pd.notna(primary_strike) and float(primary_strike) == float(strike)
+        else "SECONDARY_RESELECTED_STRIKE"
+    )
     legs = {
         "near_pe": (near, "PE"),
         "near_ce": (near, "CE"),
@@ -371,7 +378,9 @@ def main() -> None:
         lambda r: (
             "PRIMARY_VALID_SECONDARY_COMPLETE"
             if r["primary_reason"] == "VALID" and r["secondary_status"] == "SECONDARY_COMPLETE"
-            else "RECOVERED_BY_SECONDARY"
+            else "RECOVERED_BY_SECONDARY_EXACT"
+            if r["primary_reason"] != "VALID" and r["secondary_status"] == "SECONDARY_COMPLETE" and r["strike_mode"] == "SAME_AS_PRIMARY_STRIKE"
+            else "RECOVERED_BY_SECONDARY_RESELECTED"
             if r["primary_reason"] != "VALID" and r["secondary_status"] == "SECONDARY_COMPLETE"
             else "PRIMARY_REJECTED_SECONDARY_NONEXECUTABLE"
             if r["primary_reason"] != "VALID"
