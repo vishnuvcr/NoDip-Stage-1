@@ -12,6 +12,7 @@ import requests
 ROOT=Path(__file__).resolve().parents[1]
 CUTOFF=pd.Timestamp('2026-08-26')
 START=date(2026,8,27); END=date(2026,9,23)
+FRESH_CYCLE_DATES=[date(2026,9,2),date(2026,9,8),date(2026,9,9),date(2026,9,15),date(2026,9,16),date(2026,9,22)]
 HORIZONS=[1,2,3,4]; LABELS={1:'F+1',2:'F+2',3:'F+3',4:'F+4'}; ATM_QC=25.0
 DATA=ROOT/'data/cache/p14_nse'; OUT=ROOT/'reports/nifty_calendar'
 
@@ -110,7 +111,7 @@ def perf(x):
 
 def main():
     sess=requests.Session(); manifest=[]
-    days=[d for d in daterange(START,END) if d.weekday()<5]
+    days=FRESH_CYCLE_DATES
     def one(d):
         local=requests.Session()
         for attempt in range(3):
@@ -155,15 +156,17 @@ def main():
     all_df=all_df[(all_df.option_type.isin(['CE','PE']))&(all_df.strike.notna())].copy()
     dates=sorted(all_df.date.unique()); exps=sorted(all_df.expiry.unique())
     latest=pd.Timestamp(max(dates))
+    cycle_specs=[
+        ('2026-09-01','2026-09-02','2026-09-08',['2026-09-15','2026-09-22','2026-09-29','2026-10-06']),
+        ('2026-09-08','2026-09-09','2026-09-15',['2026-09-22','2026-09-29','2026-10-06','2026-10-13']),
+        ('2026-09-15','2026-09-16','2026-09-22',['2026-09-29','2026-10-06','2026-10-13','2026-10-20']),
+    ]
+    dates_set={pd.Timestamp(d).date() for d in dates}
     cycles=[]
-    for i in range(1,len(exps)-4):
-        prev,near=exps[i-1],exps[i]; fars=exps[i+1:i+5]
-        if len(fars)<4 or near>latest:continue
-        ds=[d for d in dates if pd.Timestamp(d)>pd.Timestamp(prev) and pd.Timestamp(d)<=pd.Timestamp(near)]
-        if not ds:continue
-        entry=pd.Timestamp(ds[0])
-        if entry<=CUTOFF:continue
-        cycles.append({'cycle_id':f'P14_{entry:%Y%m%d}','previous_expiry':str(prev.date()),'entry_date':str(entry.date()),'near_expiry':str(near.date()),'f1_expiry':str(fars[0].date()),'f2_expiry':str(fars[1].date()),'f3_expiry':str(fars[2].date()),'f4_expiry':str(fars[3].date())})
+    for prev,entry,near,fars in cycle_specs:
+        if pd.Timestamp(entry)<=CUTOFF or pd.Timestamp(near)>latest: continue
+        if pd.Timestamp(entry).date() not in dates_set or pd.Timestamp(near).date() not in dates_set: continue
+        cycles.append({'cycle_id':f'P14_{entry.replace("-","")}', 'previous_expiry':prev, 'entry_date':entry, 'near_expiry':near, 'f1_expiry':fars[0], 'f2_expiry':fars[1], 'f3_expiry':fars[2], 'f4_expiry':fars[3]})
     ledger=[]
     for c in cycles:
         ed=pd.Timestamp(c['entry_date']); near=c['near_expiry']; entry=all_df[all_df.date==ed]; exitd=all_df[all_df.date==pd.Timestamp(near)]; sp=spot_open(entry)
