@@ -37,12 +37,12 @@ Ties are resolved by choosing the shorter far-expiry horizon.
 ## Samples
 
 - Development: entry dates 2022-01-01 through 2024-12-31.
-- OOS: entry dates 2025-01-01 onward through the latest fully completed near expiry in the pinned source.
+- Evaluation holdout: entry dates 2025-01-01 onward through the latest fully completed near expiry in the pinned source. This period was already exposed during earlier P10 research, so P12 results are exploratory rather than confirmatory unseen validation.
 - All four fixed horizons and the adaptive selector are reported on identical eligible cycle populations where possible.
 
-## Secondary sensitivity
+## Secondary diagnostics
 
-Report the historical CBR <= 1.20 condition as a diagnostic overlay, but do not use it to choose the far expiry in the primary experiment. This keeps P12 focused on the user's new far-expiry question rather than importing an old filter as a hidden selection parameter.
+The prior CBR<=1.20 measure is retained only as a descriptive column in the ledger. It is not used as a gate or selection variable in P12.
 
 ## Metrics
 
@@ -57,7 +57,7 @@ For each fixed horizon and the adaptive selector report:
 
 ## Scientific control
 
-Fixed-horizon OOS results are descriptive. The adaptive selector is a pre-specified entry-time rule and is applied mechanically to OOS without using OOS P&L to modify it. No far horizon is promoted merely because its OOS result is the largest.
+Fixed-horizon evaluation-holdout results are descriptive. The adaptive selector is a pre-specified entry-time rule and is applied mechanically without using evaluation-holdout P&L to modify it. Because P12 was initiated after the earlier P10 evaluation period had already been observed, P12 does not provide a fresh confirmatory OOS test. No far horizon is promoted merely because its OOS result is the largest.
 
 ## Stop condition
 
