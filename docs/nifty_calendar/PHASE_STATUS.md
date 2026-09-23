@@ -1,20 +1,10 @@
 # Phase Status
 
-Last updated: 2026-09-23 — P11 stopped at the fresh-data availability gate.
+Last updated: 2026-09-23 — P12 far-expiry research completed.
 
 | Phase | Status | Notes |
 |---|---|---|
-| P0 Specification freeze | COMPLETE | Frozen four-leg calendar structure and 09:15 entry. |
-| P1 Literature / market structure | COMPLETE | Sources, market structure and cost literature reviewed. |
-| P2 Data acquisition | COMPLETE | 2022-2024 source data and later validation datasets cached/validated. |
-| P3 Engine/tests | COMPLETE | Frozen engine and regression controls complete. |
-| P4 Historical backtest | COMPLETE | Original 59-trade result preserved. |
-| P5 Verification/robustness | COMPLETE | Independent reconciliation completed. |
-| P6 Final manuscript | COMPLETE | Strict 84-cycle manuscript completed. |
-| P7 Loss audit / entry tuning | COMPLETE | 32 losses audited; CBR <= 1.20 retained only as candidate. |
-| P8 Unseen post-2024 validation | COMPLETE | Fixed 09:15 CBR gate validated on 2025+ holdout; not live-approved. |
-| P9 Event-driven intraday entry timing | COMPLETE | Event-driven replacement rejected after source QC and cost sensitivity. |
-| P10 Entry-day offset research | COMPLETE | Seven offsets tested; no direct OOS promotion. |
-| P11 Forward / paper-execution validation | BLOCKED — FRESH DATA UNAVAILABLE | No completed cycle exists after the P10 cutoff in the pinned option source; no reuse of P10 OOS data permitted. |
+| P0-P11 | COMPLETE / CLOSED | Prior research phases preserved. |
+| P12 Far-expiry selection | COMPLETE | F+1/F+2/F+3/F+4 fixed horizons and pre-registered entry-credit adaptive selection tested. |
 
-Research stop condition: P11 is closed for this dataset. No further offsets or parameter searches are performed.
+P12 stop condition: no additional far-expiry horizons or adaptive-score weights are searched in this phase.
