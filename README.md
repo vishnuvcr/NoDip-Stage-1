@@ -131,6 +131,37 @@ No offset is promoted directly from the OOS screen. D0 and D+2 remain developmen
 - Detailed report: reports/nifty_calendar/P10_ENTRY_DAY_OFFSET_REPORT.md
 - Ledger: reports/nifty_calendar/P10_ENTRY_DAY_OFFSET_LEDGER.csv
 
+## P12 — Far-expiry selection research
+
+P12 tested the user's new structure with the far expiry set to F+1, F+2, F+3 and F+4 listed expiries after the near expiry.
+
+### Entry-time selection rule
+
+At 09:15, among candidates with the same ATM strike and all four entry legs executable, select the far expiry with the highest normalized entry credit:
+
+(near CE - near PE + far PE - far CE) / spot open
+
+This is an entry-only score; no future P&L is used.
+
+### Evaluation-period result
+
+| Strategy | Trades | Gross P&L | PF | Net @ 2 pt |
+|---|---:|---:|---:|---:|
+| F+1 | 72 | ₹29,543 | 1.321 | -₹76,676 |
+| F+2 | 73 | -₹23,166 | 0.836 | -₹132,051 |
+| F+3 | 64 | ₹33,142 | 1.288 | -₹62,957 |
+| F+4 | 42 | ₹90,237 | 2.373 | ₹26,958 |
+| Adaptive | 77 | ₹144,278 | 2.763 | ₹30,311 |
+
+The adaptive rule selected F+1 on 59/77 evaluation trades, F+2 on 8, F+3 on 6 and F+4 on 4.
+
+Important: the 2025+ evaluation period was already exposed during P10, so P12 is exploratory rather than fresh confirmatory OOS validation. A genuinely new post-P10 holdout is still required before promotion.
+
+- [P12 plan](docs/nifty_calendar/P12_FAR_EXPIRY_SELECTION_PLAN.md)
+- [P12 report](reports/nifty_calendar/P12_FAR_EXPIRY_SELECTION_REPORT.md)
+- [P12 conclusion](reports/nifty_calendar/P12_FINAL_RESEARCH_CONCLUSION.md)
+- [P12 summary](reports/nifty_calendar/P12_FAR_EXPIRY_SUMMARY.csv)
+- [P12 cost sensitivity](reports/nifty_calendar/P12_FAR_EXPIRY_COST_SENSITIVITY.csv)
 ## Research stop condition
 
 P0-P10 are closed. P11 is closed at the fresh-data availability gate. No additional entry-day offsets or parameter searches are performed on the existing sample. A future run may resume P11 only after genuinely fresh post-cutoff option data are added to the pinned cache.
