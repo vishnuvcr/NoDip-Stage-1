@@ -44,7 +44,7 @@ jobs:
         run: python -m pip install --disable-pip-version-check pandas numpy pyarrow huggingface_hub requests tabulate
 
       - name: Confirm P13 script is present
-        run: test -f scripts/p13_fresh_far_expiry_validation.py && echo 'P13 script ready (cost robustness patched)'
+        run: test -f scripts/p13_fresh_far_expiry_validation.py && echo 'P13 script ready (selection diagnostics patched)'
 
       - name: Validate syntax
         run: python -m py_compile scripts/p13_fresh_far_expiry_validation.py
