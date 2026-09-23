@@ -16,6 +16,12 @@ RISSIN_ROOT='upstox_intraday/NIFTY/'
 HF_RISSIN='rissin/nse-options-intraday'
 HF_TM='https://huggingface.co/datasets/thetrademarkk/india-index-options-1m/resolve/main/index/NIFTY.parquet'
 
+# NSE NIFTY weekly/monthly index options use a 50-point strike interval.
+# Therefore a strike is ATM only when it is within half an interval (25 points)
+# of the contemporaneous NIFTY spot. This is a contract-definition QC gate,
+# not a performance-optimized parameter.
+ATM_MAX_DISTANCE_POINTS=25.0
+
 p8_path=ROOT/'scripts/p8_score.py'
 spec=importlib.util.spec_from_file_location('p8',p8_path)
 p8=importlib.util.module_from_spec(spec)
@@ -101,6 +107,10 @@ def choose_signal(z,spot,start='09:15',cutoff='15:30',fixed=False):
         x=x[x.time.eq('09:15')]
     if x.empty:return None
     x=x.groupby('timestamp',as_index=False).head(1).copy()
+    # Enforce the actual ATM definition after selecting the nearest common strike.
+    # Sparse far-expiry panels that have no true ATM common strike are non-trades.
+    x=x[x.atm_distance_points<=ATM_MAX_DISTANCE_POINTS].copy()
+    if x.empty:return None
     x['cbr']=(x.far_close_CE/x.near_close_CE)/(x.far_close_PE/x.near_close_PE)
     hit=x.loc[x.cbr<=1.2].sort_values('timestamp').head(1)
     if hit.empty:return None
@@ -220,7 +230,7 @@ def main():
         report += [f'- Mean event minus fixed: ₹{d.mean():,.2f}',f'- Median event minus fixed: ₹{d.median():,.2f}',f'- Event higher on {int((d>0).sum())}/{len(d)} paired dates']
     e=out[out.event_status.eq('EXECUTABLE')]
     if len(e):
-        report += [f'- Event median ATM distance: {e.event_atm_distance_points.median():.1f} points ({e.event_atm_distance_pct.median():.3f}%)',f'- Event median signal time: {pd.to_datetime(e.event_signal_timestamp).dt.strftime("%H:%M").sort_values().iloc[len(e)//2]}']
+        report += [f'- ATM QC limit: {ATM_MAX_DISTANCE_POINTS:.1f} points (half of the NSE 50-point NIFTY strike interval)',f'- Event median ATM distance: {e.event_atm_distance_points.median():.1f} points ({e.event_atm_distance_pct.median():.3f}%)',f'- Event max ATM distance: {e.event_atm_distance_points.max():.1f} points',f'- Event median signal time: {pd.to_datetime(e.event_signal_timestamp).dt.strftime("%H:%M").sort_values().iloc[len(e)//2]}']
     report += ['', 'Option source: rissin/nse-options-intraday Upstox 1-minute track; spot source: thetrademarkk NIFTY index 1-minute series.', 'Frozen CBR <= 1.20. Signal on minute close, fill next available minute open.']
     REPORT.write_text('\n'.join(report)+'\n',encoding='utf-8')
 
