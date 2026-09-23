@@ -24,17 +24,28 @@ def daterange(a,b):
         yield d; d+=timedelta(days=1)
 
 def fetch_day(sess,d):
-    DATA.mkdir(parents=True,exist_ok=True); path=DATA/f'{d:%Y%m%d}.zip'; url=rec.nse_url(d)
+    DATA.mkdir(parents=True,exist_ok=True)
+    path=DATA/f'{d:%Y%m%d}.zip'
     if path.exists() and path.stat().st_size>1000:
-        return {'date':d.isoformat(),'url':url,'status':'CACHED','bytes':path.stat().st_size,'sha256':hashlib.sha256(path.read_bytes()).hexdigest()}
-    try:
-        r=sess.get(url,headers=rec.HEADERS,timeout=15)
-        if r.status_code!=200 or not r.content.startswith(b'PK'):
-            return {'date':d.isoformat(),'url':url,'status':f'HTTP_{r.status_code}','bytes':len(r.content),'sha256':''}
-        path.write_bytes(r.content)
-        return {'date':d.isoformat(),'url':url,'status':'DOWNLOADED','bytes':len(r.content),'sha256':hashlib.sha256(r.content).hexdigest()}
-    except Exception as e:
-        return {'date':d.isoformat(),'url':url,'status':'ERROR','bytes':0,'sha256':str(e)}
+        return {'date':d.isoformat(),'url':'CACHED','status':'CACHED','bytes':path.stat().st_size,'sha256':hashlib.sha256(path.read_bytes()).hexdigest()}
+    filename=rec.nse_url(d).rsplit('/',1)[-1]
+    urls=[f'https://archives.nseindia.com/content/fo/{filename}',f'https://nsearchives.nseindia.com/content/fo/{filename}']
+    headers={'Accept':'application/zip,application/octet-stream;q=0.9,*/*;q=0.8','Referer':'https://www.nseindia.com/all-reports-derivatives','User-Agent':'Mozilla/5.0 (compatible; NSE-FNO-Data-bank/1.0; +https://github.com/SantoshSrinivas79/NSE-FNO-Data-bank)'}
+    errors=[]
+    for url in urls:
+        for attempt in range(4):
+            try:
+                r=sess.get(url,headers=headers,timeout=45,allow_redirects=True)
+                if r.status_code==404:
+                    break
+                if r.status_code==200 and r.content.startswith(b'PK'):
+                    path.write_bytes(r.content)
+                    return {'date':d.isoformat(),'url':url,'status':'DOWNLOADED','bytes':len(r.content),'sha256':hashlib.sha256(r.content).hexdigest()}
+                errors.append(f'{url}: HTTP {r.status_code} content_type={r.headers.get("content-type")} bytes={len(r.content)} prefix={r.content[:20]!r}')
+            except Exception as e:
+                errors.append(f'{url}: {e!r}')
+        # try next archive host
+    return {'date':d.isoformat(),'url':';'.join(urls),'status':'ERROR','bytes':0,'sha256':' | '.join(errors)}
 
 def read_zip(path,d):
     try:
@@ -119,7 +130,27 @@ def main():
         if path.exists():
             z=read_zip(path,pd.Timestamp(m['date']));
             if not z.empty:frames.append(z)
-    if not frames: raise RuntimeError('No official NSE NIFTY option files parsed')
+    if not frames:
+        manifest_df=pd.DataFrame(manifest)
+        status_counts=manifest_df['status'].value_counts(dropna=False).to_dict() if not manifest_df.empty else {}
+        (OUT/'P14_OFFICIAL_NSE_FRESH_VALIDATION_REPORT.md').write_text('\n'.join([
+            '# P14 Official NSE Fresh Far-Expiry Validation Report','',
+            '## Source access gate',
+            '- No usable official NSE F&O UDiFF archive was parsed by the runner.',
+            f'- Attempted trading dates: {len(manifest)}.',
+            f'- Status counts: {status_counts}.',
+            '',
+            '## Decision',
+            '**FRESH DATA SOURCE BLOCKED — NO STRATEGY RESULT PRODUCED**',
+            '',
+            'This is a data-access/source-availability failure, not a strategy loss result. No P12 observations were reused.'
+        ])+'\n',encoding='utf-8')
+        (OUT/'P14_FINAL_RESEARCH_CONCLUSION.md').write_text('\n'.join([
+            '# P14 Final Research Conclusion','',
+            '**FRESH DATA SOURCE BLOCKED — NO STRATEGY RESULT PRODUCED**','',
+            'Official NSE fresh data could not be acquired and parsed from the runner. P14 therefore cannot validate or reject the frozen P12 adaptive rule.'
+        ])+'\n',encoding='utf-8')
+        raise SystemExit(0)
     all_df=pd.concat(frames,ignore_index=True)
     all_df=all_df[(all_df.option_type.isin(['CE','PE']))&(all_df.strike.notna())].copy()
     dates=sorted(all_df.date.unique()); exps=sorted(all_df.expiry.unique())
