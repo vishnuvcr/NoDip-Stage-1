@@ -39,18 +39,29 @@ jobs:
           PYTHONPATH: .
         run: pytest -q
 
-      - name: Build final P6 manuscript and figures
+      - name: Build strict frozen-protocol P6 inputs
         env:
           PYTHONPATH: .
         run: |
-          python scripts/build_p6_manuscript.py             --trade-level reports/nifty_calendar/SECONDARY_TRADE_LEVEL_RESULTS_2022_2024.csv             --recon reports/nifty_calendar/P5_SECONDARY_RECONCILIATION_2022_2024.csv             --costs reports/nifty_calendar/SECONDARY_COST_SENSITIVITY_2022_2024.csv             --out-report reports/nifty_calendar/MANUSCRIPT_NIFTY_4LEG_CALENDAR_2022_2024.md             --out-stats reports/nifty_calendar/FINAL_SECONDARY_STATISTICS_2022_2024.csv             --fig-dir reports/nifty_calendar/figures
+          python scripts/build_strict_p6_inputs.py             --recon reports/nifty_calendar/P5_SECONDARY_RECONCILIATION_2022_2024.csv             --secondary-ledger reports/nifty_calendar/SECONDARY_TRADE_LEVEL_RESULTS_2022_2024.csv             --out-ledger reports/nifty_calendar/STRICT_TRADE_LEVEL_RESULTS_2022_2024.csv             --out-costs reports/nifty_calendar/STRICT_COST_SENSITIVITY_2022_2024.csv
 
-      - name: Recompute and verify statistics
+      - name: Build final strict P6 manuscript and figures
+        env:
+          PYTHONPATH: .
         run: |
-          python scripts/compute_secondary_statistics.py             --ledger reports/nifty_calendar/SECONDARY_TRADE_LEVEL_RESULTS_2022_2024.csv             --costs reports/nifty_calendar/SECONDARY_COST_SENSITIVITY_2022_2024.csv             --out-report /tmp/final_stats.md             --out-annual /tmp/final_annual.csv
-          grep -q "Complete independent-secondary cycles: 132" /tmp/final_stats.md
-          grep -q "Gross P&L: ₹188,237.50" /tmp/final_stats.md
-          grep -q "Profit factor: 1.889" /tmp/final_stats.md
+          python scripts/build_strict_p6_manuscript.py             --strict-ledger reports/nifty_calendar/STRICT_TRADE_LEVEL_RESULTS_2022_2024.csv             --recon reports/nifty_calendar/P5_SECONDARY_RECONCILIATION_2022_2024.csv             --strict-costs reports/nifty_calendar/STRICT_COST_SENSITIVITY_2022_2024.csv             --primary-trades reports/nifty_calendar/TRADE_LEVEL_RESULTS_2022_2024.csv             --out-report reports/nifty_calendar/MANUSCRIPT_NIFTY_4LEG_CALENDAR_2022_2024.md             --out-stats reports/nifty_calendar/FINAL_SECONDARY_STATISTICS_2022_2024.csv             --out-annual reports/nifty_calendar/STRICT_ANNUAL_RESULTS_2022_2024.csv             --fig-dir reports/nifty_calendar/figures
+
+      - name: Recompute and verify strict statistics
+        env:
+          PYTHONPATH: .
+        run: |
+          python - <<'PY'
+          import pandas as pd
+          df = pd.read_csv("reports/nifty_calendar/STRICT_TRADE_LEVEL_RESULTS_2022_2024.csv")
+          assert len(df) == 84, len(df)
+          assert abs(df["pnl_inr"].sum() - 83030.0) < 1e-6
+          print("Strict P6 statistics validated: 84 cycles, gross P&L ₹83,030.00")
+          PY
 
       - name: Validate manuscript assets
         run: |
@@ -101,3 +112,6 @@ jobs:
             reports/nifty_calendar/figures/*.svg
             reports/nifty_calendar/SECONDARY_TRADE_LEVEL_RESULTS_2022_2024.csv
             reports/nifty_calendar/SECONDARY_COST_SENSITIVITY_2022_2024.csv
+            reports/nifty_calendar/STRICT_TRADE_LEVEL_RESULTS_2022_2024.csv
+            reports/nifty_calendar/STRICT_COST_SENSITIVITY_2022_2024.csv
+            reports/nifty_calendar/STRICT_ANNUAL_RESULTS_2022_2024.csv
