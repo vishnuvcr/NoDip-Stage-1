@@ -22,15 +22,15 @@ Keep every P6 rule unchanged:
 
 Descriptive full-sample effect:
 - 52 of 84 trades retained
-- gross P&L ₹83,068.75
-- win rate 78.85%
-- profit factor 8.289
+- gross P&L ₹84,981.25
+- win rate 80.77%
+- profit factor 8.457
 - maximum drawdown ₹3,355.00
 
 Conservative cost scenario:
 - ₹20/order brokerage
 - 0.05000% exchange-charge sensitivity
 - 2.00-point adverse slippage per execution
-- candidate net P&L ₹32,896.55
+- candidate net P&L ₹34,163.77
 
 This is a candidate rule only. Do not replace the P6 frozen strategy. Validate unchanged on a genuinely unseen post-2024 sample before any production use.

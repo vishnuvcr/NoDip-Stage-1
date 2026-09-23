@@ -8,7 +8,7 @@
 ## Loss audit
 - Total trades: 84
 - Losing trades: 32 (38.10%)
-- Total gross P&L: ₹81,117.50
+- Total gross P&L: ₹83,030.00
 - Aggregate losses: ₹-42,747.50
 - Mean loss: ₹-1,335.86
 - Median loss: ₹-938.75
@@ -25,11 +25,11 @@
 
 | Feature | Loss median | Winner median |
 |---|---:|---:|
-| calendar_balance_ratio | 1.278 | 1.062 |
+| calendar_balance_ratio | 1.278 | 1.061 |
 | call_ratio | 2.565 | 2.211 |
-| put_ratio | 1.885 | 2.123 |
+| put_ratio | 1.885 | 2.143 |
 | entry_debit_ratio | 0.092 | 0.064 |
-| calendar_asymmetry | 0.256 | 0.178 |
+| calendar_asymmetry | 0.256 | 0.172 |
 
 ### Leg contribution finding
 - Both near-expiry legs were individually adverse in 20 of 32 losses.
@@ -45,11 +45,11 @@ This is an entry-time condition. It uses no future P&L, exit information or post
 
 ### Candidate population effect
 - Retained cycles: 52 / 84 (61.9%).
-- Gross P&L: ₹83,068.75.
-- Win rate: 78.85%.
-- Profit factor: 8.289.
+- Gross P&L: ₹84,981.25.
+- Win rate: 80.77%.
+- Profit factor: 8.457.
 - Maximum drawdown: ₹3,355.00.
-- Bootstrap 95% interval: ₹nan to ₹nan.
+- Bootstrap 95% interval: ₹53,359.00 to ₹117,864.28.
 - Losses filtered: 22 of 32 (68.8%).
 - Aggregate loss removed from the retained sample: ₹-31,351.25.
 - Remaining losses: 10.
@@ -59,25 +59,25 @@ This is an entry-time condition. It uses no future P&L, exit information or post
 | Population | Baseline gross P&L | Candidate gross P&L |
 |---|---:|---:|
 | 2022-2023 development | ₹43,375.00 | ₹61,367.50 |
-| 2024 temporal holdout | ₹37,742.50 | ₹21,701.25 |
+| 2024 temporal holdout | ₹39,655.00 | ₹23,613.75 |
 
 | Population | Baseline trades | Candidate trades | Baseline win | Candidate win |
 |---|---:|---:|---:|---:|
 | 2022-2023 | 53 | 36 | 58.49% | 77.78% |
-| 2024 | 31 | 16 | 64.52% | 81.25% |
+| 2024 | 31 | 16 | 67.74% | 87.50% |
 
 The 2024 line is a temporal diagnostic, not a clean independent confirmation, because the full 2022-2024 sample was inspected during research. A future post-2024 holdout is required before promoting this gate.
 
 ## Threshold sensitivity
 |   threshold |   all_n |   all_gross_pnl |   all_win_rate |   all_profit_factor |   all_max_drawdown |   all_conservative_net20_2pt |   train_n_2022_2023 |   train_gross_pnl_2022_2023 |   train_conservative_net20_2pt |   test_n_2024 |   test_gross_pnl_2024 |   test_conservative_net20_2pt |
 |------------:|--------:|----------------:|---------------:|--------------------:|-------------------:|-----------------------------:|--------------------:|----------------------------:|-------------------------------:|--------------:|----------------------:|------------------------------:|
-|        1.15 |      45 |         75126.2 |       0.777778 |             8.48363 |            -3355   |                      31538.1 |                  33 |                     57902.5 |                        22680.1 |            12 |               17223.8 |                       8858.07 |
-|        1.2  |      52 |         83068.8 |       0.788462 |             8.28913 |            -3355   |                      32896.6 |                  36 |                     61367.5 |                        23002.4 |            16 |               21701.2 |                       9894.18 |
-|        1.25 |      56 |         82423.8 |       0.767857 |             7.18855 |            -4752.5 |                      27957.2 |                  40 |                     60722.5 |                        18063   |            16 |               21701.2 |                       9894.18 |
-|        1.3  |      62 |         76827.5 |       0.709677 |             5.01923 |            -4752.5 |                      16465.4 |                  44 |                     59670   |                        12814.4 |            18 |               17157.5 |                       3651    |
+|        1.15 |      45 |         77038.8 |       0.8      |             8.67414 |            -3355   |                      32805.4 |                  33 |                     57902.5 |                        22680.1 |            12 |               19136.3 |                      10125.3  |
+|        1.2  |      52 |         84981.2 |       0.807692 |             8.45695 |            -3355   |                      34163.8 |                  36 |                     61367.5 |                        23002.4 |            16 |               23613.7 |                      11161.4  |
+|        1.25 |      56 |         84336.2 |       0.785714 |             7.33214 |            -4752.5 |                      29224.4 |                  40 |                     60722.5 |                        18063   |            16 |               23613.7 |                      11161.4  |
+|        1.3  |      62 |         78740   |       0.725806 |             5.11928 |            -4752.5 |                      17732.6 |                  44 |                     59670   |                        12814.4 |            18 |               19070   |                       4918.21 |
 
 ## Conservative cost check
-- Candidate net P&L at ₹20/order brokerage, 0.05000% exchange charges and 2-point adverse slippage: ₹32,896.55.
+- Candidate net P&L at ₹20/order brokerage, 0.05000% exchange charges and 2-point adverse slippage: ₹34,163.77.
 
 ## Interpretation
 The largest recurring loss mechanism is front-expiry deterioration: both near-expiry legs are adverse in most losing trades, while the far legs are often favorable. The candidate balance ratio is intended to screen out entry configurations where the call calendar is disproportionately richer than the put calendar.
