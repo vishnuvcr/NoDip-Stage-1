@@ -111,17 +111,73 @@ Chronology was preserved across phases; the main timing experiment was preregist
 
 The final NoDip Stage-1 research state is a **closed historical research result with a prospective validation gate**, not a live-trading approval. The canonical strategy remains the frozen 09:15 entry with CBR<=1.20 and no discretionary adjustments. P10 demonstrates that D0 and D+2 can look stronger than D+1 in a historical OOS screen, but that result does not by itself justify replacing D+1. The preregistered P11 selection rule chooses D-1 from development data, yet there is currently no unseen completed sample in the pinned option dataset on which to validate D-1.
 
-Accordingly, the scientifically defensible stop point is: **do not search additional entry offsets or retune the rule on the existing data. Resume only when a genuinely fresh post-cutoff expiry cycle is available, then run the already-frozen P11 workflow and record the result without changing the selection rule.**
+Accordingly, the scientifically defensible stop point is: **do not search additional far-expiry horizons, retune the adaptive score, or select a strategy from the small fresh sample. Continue only with prospective paper monitoring using the frozen P12 adaptive rule until a materially larger post-P10 sample is available.**
 
-## 13. Future Research
+## 13. P12–P14 Far-Expiry Extension
 
-1. Add completed post-P10 1-minute option data to the pinned cache.
-2. Run the existing P11 D-1 fresh validation without changing its selection rule.
-3. Validate timestamped executable quotes/spreads when a licensed source permits it.
-4. Extend the final cost model with the complete Paytm Money schedule used operationally, keeping modeled and observed costs separate.
-5. Conduct prospective paper trading without retuning during the monitoring period.
+### P12 — Exploratory far-expiry screen
 
-## 14. Repository Records
+The strategy was changed only in the far expiry: near expiry remained the first listed expiry; far expiry was tested at F+1, F+2, F+3 and F+4 subsequent listed expiries. The position remained short near CE, long near PE, long far CE and short far PE at the same ATM strike.
+
+A deterministic entry-time selector was frozen:
+
+`score = (near CE - near PE + far PE - far CE) / NIFTY spot open`
+
+At 09:15, the eligible far expiry with the highest score was selected. The rule uses entry information only. In the already-exposed 2025+ evaluation period, adaptive selection produced 77 trades, gross P&L ₹144,277.50, PF 2.763 and net P&L ₹30,311.14 at 2-point adverse slippage. This was exploratory because the evaluation period had already been used in P10.
+
+### P13 — Fresh-data gate
+
+The pinned Hugging Face option source ended at 2026-06-29, before the frozen P10/P12 cutoff of 2026-08-26. P13 therefore produced no fresh completed cycles and did not reuse older observations.
+
+### P14 — Official NSE fresh validation
+
+To remove the P13 data-availability problem, P14 used fresh official NSE F&O UDiFF bhavcopy archives for the three completed post-cutoff weekly cycles available by 2026-09-22: entry dates 2026-09-02, 2026-09-09 and 2026-09-16, with near expiries 2026-09-08, 2026-09-15 and 2026-09-22 respectively. The raw daily archives were cached with SHA256 manifests.
+
+The frozen adaptive selector chose F+1 on all three fresh cycles. Therefore the fresh adaptive result is observationally identical to F+1 and does not demonstrate that the adaptive rule is exercising useful far-expiry switching.
+
+| Fresh P14 metric | Result |
+|---|---:|
+| Completed cycles | 3 |
+| Adaptive trades | 3 |
+| Adaptive gross P&L | ₹6,714.50 |
+| Adaptive win rate | 100% |
+| Adaptive profit factor | Infinite because there were no gross losses |
+| Adaptive gross max drawdown | ₹0 |
+| Adaptive net P&L @ 0 pt | ₹6,096.46 |
+| Adaptive net P&L @ 0.5 pt | ₹5,316.46 |
+| Adaptive net P&L @ 1 pt | ₹4,536.46 |
+| Adaptive net P&L @ 2 pt | ₹2,976.46 |
+| Adaptive selected horizon | F+1 on 3/3 cycles |
+
+Fixed-horizon P14 net P&L at 2-point slippage was ₹2,976.46 for F+1, -₹709.34 for F+2 and ₹2,260.39 for F+3; F+4 had no executable candidate in the three-cycle sample.
+
+These fresh results are **not statistically confirmatory**. Three completed cycles are insufficient to estimate a stable distribution, and the adaptive rule selected the same far expiry every time. No bootstrap significance claim or parameter tuning is justified from this sample.
+
+### Cost model for P14
+
+P14 used ₹10 brokerage per unique executed F&O order as stated in Paytm Money's current F&O FAQ, eight option orders per completed cycle, 0.15% STT on option-sale premium for transactions from 1 April 2026, plus the project's existing stamp-duty/SEBI/GST and 0.05% exchange-charge stress assumptions. These are modeled costs, not observed broker fills.
+
+## 14. Strengths and Limitations Updated After P14
+
+Strengths now include a genuine post-P10 official-NSE validation sample, raw-file SHA256 manifesting, explicit source-access failure logging, and a fixed entry-only far-expiry selector that was carried forward without retuning.
+
+The dominant limitation is sample size: only three completed fresh weekly cycles were available by 2026-09-22. The selector chose F+1 on every cycle, so the fresh data do not yet test whether the selector can improve on a fixed F+1 rule. Historical bid/ask quotes and realized Paytm Money fills are still unavailable, so slippage remains modeled.
+
+## 15. Final Conclusion
+
+Across P0-P14, the research now has a closed historical component and a small, genuinely fresh official-NSE validation component. The historical P12 extension shows that far-expiry choice materially affects results and that the entry-credit selector can look attractive in the already-exposed evaluation sample. P14 confirms that the exact frozen selector produced positive gross and net P&L on all three newly available completed cycles, but the sample is too small for a reliable inference and the selector chose F+1 every time.
+
+Therefore the current research conclusion is **PAPER MONITORING ONLY — INSUFFICIENT FRESH SAMPLE**. The result is neither a rejection of the structure nor a live-trading approval. No further retrospective far-expiry search or adaptive-score tuning should be performed on the current data.
+
+## 16. Future Research
+
+1. Add each newly completed weekly cycle to the immutable P14 paper ledger without changing the selector.
+2. Require a substantially larger fresh sample before any statistical promotion decision; retain separate fixed-horizon and adaptive results.
+3. Upgrade execution validation to timestamped quotes, bid/ask spread and observed broker fills when a licensed source becomes available.
+4. Keep current published brokerage and STT schedules separate from user-specific broker pricing where applicable.
+5. Re-run the frozen P14 workflow automatically after each completed expiry cycle; do not change parameters based on interim P&L.
+
+## 17. Repository Records
 
 - P10 report: `reports/nifty_calendar/P10_ENTRY_DAY_OFFSET_REPORT.md`
 - P10 conclusion: `reports/nifty_calendar/P10_FINAL_RESEARCH_CONCLUSION.md`
