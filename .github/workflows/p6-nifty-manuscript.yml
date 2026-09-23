@@ -45,7 +45,7 @@ jobs:
           test -s reports/nifty_calendar/SECONDARY_TRADE_LEVEL_RESULTS_2022_2024.csv
           test -s reports/nifty_calendar/SECONDARY_COST_SENSITIVITY_2022_2024.csv
           grep -q "All 75 primary-source rejections" reports/nifty_calendar/MANUSCRIPT_NIFTY_4LEG_CALENDAR_2022_2024.md
-          grep -q "P0-P5 are complete" reports/nifty_calendar/MANUSCRIPT_NIFTY_4LEG_CALENDAR_2022_2024.md
+          grep -q "P0-P6 are complete" reports/nifty_calendar/MANUSCRIPT_NIFTY_4LEG_CALENDAR_2022_2024.md
 
       - name: Upload manuscript validation outputs
         uses: actions/upload-artifact@v4
