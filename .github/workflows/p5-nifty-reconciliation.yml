@@ -101,7 +101,7 @@ jobs:
         env:
           PYTHONPATH: .
         run: |
-          python scripts/reconcile_rejections_nse.py             --audit reports/nifty_calendar/CYCLE_AUDIT_2022_2024.csv             --out reports/nifty_calendar/P5_SECONDARY_RECONCILIATION_2022_2024.csv             --rows-out data/cache/nifty_secondary_reconciliation_2022_2024.csv             --cache-dir data/cache/nse_reconciliation_raw             --mirror-root data/cache/nse_fno_mirror             --rejected-only             --valid-sample 10
+          python scripts/reconcile_rejections_nse.py             --audit reports/nifty_calendar/CYCLE_AUDIT_2022_2024.csv             --out reports/nifty_calendar/P5_SECONDARY_RECONCILIATION_2022_2024.csv             --rows-out data/cache/nifty_secondary_reconciliation_2022_2024.csv             --cache-dir data/cache/nse_reconciliation_raw             --mirror-root data/cache/nse_fno_mirror
 
       - name: Write P5 reconciliation report
         run: |
@@ -132,8 +132,8 @@ jobs:
               f"- Primary rejected cycles: {(audit['primary_reason'].ne('VALID')).sum()}",
               f"- Secondary fully executable cycles: {len(complete)}",
               f"- Primary rejects recovered by secondary source: {len(recovered)}",
-              f"- Primary-valid control sample also complete on secondary: {len(matched)}",
-              "- Reconciliation scope: all primary-rejected cycles plus 10 deterministic primary-valid control cycles.",
+              f"- Primary-valid cycles also complete on secondary: {len(matched)}",
+              "- Reconciliation scope: all 134 candidate cycles.",
               "",
               "## Primary rejection reasons",
               "",
