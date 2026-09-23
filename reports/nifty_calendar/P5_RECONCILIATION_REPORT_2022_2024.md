@@ -9,9 +9,9 @@ Independent spot cross-check: Yahoo Finance NIFTY 50 daily session OPEN for each
 - Candidate strategy cycles: 134
 - Primary valid cycles: 59
 - Primary rejected cycles: 75
-- Secondary fully executable cycles: 4
-- Primary rejects recovered by secondary source: 3
-- Primary-valid control sample also complete on secondary: 1
+- Secondary fully executable cycles: 84
+- Primary rejects recovered by secondary source: 75
+- Primary-valid control sample also complete on secondary: 9
 - Reconciliation scope: all primary-rejected cycles plus 10 deterministic primary-valid control cycles.
 
 ## Primary rejection reasons
@@ -27,20 +27,19 @@ Independent spot cross-check: Yahoo Finance NIFTY 50 daily session OPEN for each
 
 | Status | Cycles |
 |---|---:|
-| PRIMARY_REJECTED_SECONDARY_NONEXECUTABLE | 72 |
-| PRIMARY_VALID_SECONDARY_NONEXECUTABLE | 9 |
-| RECOVERED_BY_SECONDARY | 3 |
-| PRIMARY_VALID_SECONDARY_COMPLETE | 1 |
+| RECOVERED_BY_SECONDARY | 75 |
+| PRIMARY_VALID_SECONDARY_COMPLETE | 9 |
+| PRIMARY_VALID_SECONDARY_NONEXECUTABLE | 1 |
 
 ## Secondary P&L
 
-- Secondary complete cycles: 4
-- Secondary total P&L across complete cycles: ₹-6,001.25
-- Secondary mean trade: ₹-1,500.31
-- Secondary win rate: 50.00%
+- Secondary complete cycles: 84
+- Secondary total P&L across complete cycles: ₹83,181.25
+- Secondary mean trade: ₹990.25
+- Secondary win rate: 55.95%
 
 ## Cross-source price and spot checks
-- Matched-cycle maximum absolute option price difference: median ₹1.5500; p95 ₹1.5500; max ₹1.5500.
+- Matched-cycle maximum absolute option price difference: median ₹5.5500; p95 ₹66.8600; max ₹93.5000.
 - Yahoo-vs-primary NIFTY open difference on candidate entry dates: median 2.1508 index points; p95 24.8795; max 126.8000.
 
 ## Interpretation rule
