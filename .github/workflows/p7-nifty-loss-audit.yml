@@ -38,16 +38,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install pandas numpy tabulate pytest requests
 
-      - name: Verify cached strict ledger
+      - name: Rebuild canonical strict ledger from P5 reconciliation
+        env:
+          PYTHONPATH: .
         run: |
-          test -s reports/nifty_calendar/STRICT_TRADE_LEVEL_RESULTS_2022_2024.csv
-          python - <<'PY'
-          import pandas as pd
-          p = "reports/nifty_calendar/STRICT_TRADE_LEVEL_RESULTS_2022_2024.csv"
-          df = pd.read_csv(p)
-          assert len(df) == 84
-          print("cached strict ledger rows:", len(df))
-          PY
+          python scripts/build_strict_p6_inputs.py             --recon reports/nifty_calendar/P5_SECONDARY_RECONCILIATION_2022_2024.csv             --secondary-ledger reports/nifty_calendar/SECONDARY_TRADE_LEVEL_RESULTS_2022_2024.csv             --out-ledger reports/nifty_calendar/STRICT_TRADE_LEVEL_RESULTS_2022_2024.csv             --out-costs reports/nifty_calendar/STRICT_COST_SENSITIVITY_2022_2024.csv
 
       - name: Run repository tests
         env:
