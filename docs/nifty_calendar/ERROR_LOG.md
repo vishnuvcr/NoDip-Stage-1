@@ -250,3 +250,7 @@ Step failure requires inspection before numerical interpretation.
 ## 2026-09-23 — P12 far-expiry workflow failure
 Run ID: 35884371489
 Step failure requires inspection before numerical interpretation.
+
+## 2026-09-23 — P13 fresh far-expiry validation failure
+Run ID: 35885232033
+Step failure requires inspection before numerical interpretation.
