@@ -51,3 +51,28 @@ The result is conditional because 75 candidate cycles were rejected for incomple
 - [P5 manual reconciliation workflow](https://github.com/vishnuvcr/NoDip-Stage-1/blob/main/.github/workflows/p5-nifty-reconciliation.yml)
 
 The next research step is independent reconciliation of the 75 rejected cycles. Paytm Money brokerage is being modeled by the documented historical client cohorts (₹10/₹15/₹20 per executed order) rather than assuming a single rate. No claim about full-period strategy performance is made until the independent validation is completed.
+
+
+## NoDip NIFTY 4-Leg Calendar Research — latest status 2026-09-23
+
+**P0-P6 complete for the 2022-2024 study.** The frozen strategy specification was preserved throughout the research.
+
+Final independently reconciled result:
+- 134 candidate cycles
+- 132 complete cycles on the independent NSE F&O public mirror (98.5% coverage)
+- all 75 primary-source rejected cycles recovered
+- gross P&L ₹127,185.00
+- win rate 57.58%
+- profit factor 1.542
+- maximum drawdown ₹90,152.50
+- circular 3-cycle block-bootstrap 95% interval for total gross P&L: ₹-67,517.25 to ₹342,106.84
+
+The original primary-source backtest remains preserved as provenance: 59 executable cycles, gross P&L ₹52,827.50, and 44.0% primary-source coverage. The independent reconciliation shows that this 44.0% figure was mainly a source-coverage limitation.
+
+Research branch: research-nifty-4leg-calendar-p6-manuscript
+
+Final manuscript: reports/nifty_calendar/MANUSCRIPT_NIFTY_4LEG_CALENDAR_2022_2024.md
+
+Phase status: docs/nifty_calendar/PHASE_STATUS.md
+
+P6 validation workflow: .github/workflows/p6-nifty-manuscript.yml
