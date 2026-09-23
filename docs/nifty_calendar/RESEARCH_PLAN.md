@@ -89,5 +89,8 @@ Research stops after P6 or earlier if data quality cannot support a defensible c
 
 
 ### P7 — Loss audit / entry tuning
-Status: IN PROGRESS.
+Status: COMPLETE.
 Audit every losing trade in the strict 84-cycle sample, classify leg-level loss mechanisms, derive interpretable entry-time term-structure features, and propose one candidate entry gate without altering P6. The candidate must be reserved for independent post-2024 validation because repeated historical parameter search can create backtest overfitting.
+
+
+P7 final candidate gate: enter only when the calendar-balance ratio is <= 1.20, where (far CE / near CE) / (far PE / near PE). This is a research candidate and must be validated unchanged on genuinely unseen post-2024 data; it does not alter the P6 frozen result.
