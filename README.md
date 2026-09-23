@@ -19,58 +19,42 @@ P8 conclusion: supported for further research, not promoted to live trading.
 
 ### Final decision
 
-**Event-driven first-qualifying entry is not supported for promotion.**
+**Event-driven first-qualifying entry is not promoted.**
 
 P9 kept the 1.20 threshold, four-leg structure, same-strike semantics and near-expiry exit frozen.
 
-### Secondary OOS result
+### Secondary OOS after deterministic ATM QC
 
-| Metric | Fixed 09:15 | Event-driven |
+| Metric | Fixed source diagnostic | Event-driven |
 |---|---:|---:|
-| Executable trades | 26 | 70 |
-| Gross P&L | ₹40,506.25 | ₹37,291.40 |
-| Win rate | 80.77% | 62.86% |
-| Profit factor | 5.029 | 1.576 |
-| Gross max drawdown | ₹7,489.50 | ₹26,467.50 |
-| Worst trade | ₹-5,391.75 | ₹-9,984.75 |
-| Net at 0-point slippage | ₹29,499.84 | ₹9,222.87 |
-| Net at 0.5-point slippage | ₹22,139.84 | ₹-10,837.13 |
-| Net at 1-point slippage | ₹14,779.84 | ₹-30,897.13 |
-| Net at 2-point slippage | ₹59.84 | ₹-71,017.13 |
+| Executable trades | 14 | 65 |
+| Gross P&L | ₹19,737.25 | ₹43,607.25 |
+| Win rate | 78.57% | 64.62% |
+| Profit factor | 5.613 | 1.755 |
+| Gross max drawdown | ₹2,180.75 | ₹33,429.00 |
+| Worst trade | ₹-2,180.75 | ₹-9,984.75 |
+| Net at 0-point slippage | ₹13,418.43 | ₹17,798.70 |
+| Net at 0.5-point slippage | ₹9,458.43 | ₹-781.30 |
+| Net at 1-point slippage | ₹5,498.43 | ₹-19,361.30 |
+| Net at 2-point slippage | ₹-2,421.57 | ₹-56,521.30 |
 
-### Incremental-trade mechanism
+The fixed source diagnostic is not the canonical fixed reference because of incomplete intraday source coverage; P8 remains the canonical fixed-time ledger.
 
-The event-driven arm adds 44 trades beyond the 26 paired fixed-control dates:
+### Canonical paired comparison
 
-- 44 event-only trades gross: ₹-3,214.85; win rate 52.27%; PF 0.941.
-- 20 originally gate-pass but unavailable at 09:15: +₹10,749.75 gross.
-- 24 originally gate-fail but qualifying later: ₹-13,964.60 gross; PF 0.665.
+- 33 event trades occurred on dates that passed CBR<=1.20 at 09:15 in P8.
+- Event gross on those dates: ₹42,312.50.
+- Canonical P8 fixed-gate gross on the same dates: ₹104,231.75.
+- Mean event-minus-fixed difference: ₹-1,876.34 per date; median ₹-746.25.
+- Event was higher on 12/33 paired dates and lower on 21/33.
+- Bootstrap 95% CI for the mean paired difference: approximately ₹-3,990.63 to ₹-347.55.
+- 32 event trades occurred on dates that failed the 09:15 gate but qualified later; those trades produced ₹1,294.75 gross with PF 1.029.
 
-The negative late-qualifying gate-fail group more than offset the positive contribution from delayed entries on originally gate-pass days.
+### Pre-registered latest-entry sensitivity
 
-### Entry-time / ATM diagnostics
-
-- Median event signal time: 09:16 IST.
-- Median ATM distance: 48.3 points / 0.189%.
-- 90th percentile ATM distance: 306.65 points / 1.212%.
-- Maximum ATM distance: 844.35 points / 3.617%.
-
-### Primary-source QC finding
-
-The first public source acquisition succeeded for 192/201 required expiry files, but its far-expiry intraday coverage was too sparse. On 2026-04-01 the far expiry contained only 903 rows for the day, and the only four-leg common strike at the sampled qualifying timestamps was 20,500 while NIFTY was about 22,900.
-
-That primary-source event result was rejected as a performance estimate before the secondary-source test.
-
-## P9 research records
-
-- docs/nifty_calendar/P9_FINAL_RESEARCH_CONCLUSION.md
-- reports/nifty_calendar/P9_SECONDARY_VALIDATION_REPORT.md
-- reports/nifty_calendar/P9_RISSIN_OOS_COMPARISON.csv
-- reports/nifty_calendar/P9_RISSIN_OOS_COSTS.csv
-- docs/nifty_calendar/P9_ALTERNATE_DATA_SOURCE_AUDIT.md
-- docs/nifty_calendar/ERROR_LOG.md
-- docs/nifty_calendar/PHASE_STATUS.md
-
-## Next phase
-
-P10 is planned as forward/paper-execution validation of the frozen fixed rule, using timestamped executable quotes, observed spread, brokerage/statutory charges, slippage and a pre-registered paper ledger. New intraday timing ideas require a separate development phase and unseen validation.
+| Latest signal | Trades | Gross P&L | Net at 0.5 pt | Net at 1 pt | Net at 2 pt |
+|---|---:|---:|---:|---:|---:|
+| 15:00 | 63 | ₹37,787.00 | ₹-5,170.99 | ₹-23,190.99 | ₹-59,230.99 |
+| 15:15 | 64 | ₹38,465.75 | ₹-5,126.99 | ₹-23,446.99 | ₹-60,086.99 |
+| 15:30 | 65 | ₹43,607.25 | ₹-781.30 | ₹-19,361.30 | ₹-56,521.30 |
+| 15:40 | 65 | ₹43,607.25 | ₹-781.30 | ₹-19,361.30 | 
