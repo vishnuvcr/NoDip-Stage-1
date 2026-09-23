@@ -36,7 +36,7 @@ The frozen strategy produced 59 valid executable cycles and gross P&L of ₹52,8
 ### P5 — Verification / robustness
 Status: COMPLETE for the 2022-2024 validation sample.
 Completed: exact leg-specific slippage sensitivity; historical Paytm brokerage-cohort scenarios; documented brokerage/statutory costs; exchange-charge sensitivity; full cycle-coverage audit; independent public mirror of NSE F&O bhavcopy reconciliation for all 134 candidate cycles; Yahoo NIFTY 50 OPEN cross-check; full secondary trade-level ledger and cost sensitivity.
-Residual limitation: 2 of 134 candidate cycles are not constructible on the independent mirror because no common strike is present there, while the primary source treated them as valid. This is retained as a source-discrepancy limitation, not silently resolved.
+Residual limitation: 2 of 134 candidate cycles are not constructible on the independent mirror because no common strike is present there, while the primary source treated them as valid. This is retained as a source-discrepancy limitation, not silently resolved. For the secondary re-run, the frozen ATM/common-strike rule is re-applied using the independent Yahoo NIFTY OPEN diagnostic; 27 primary rejects reproduce the primary strike and 48 require independent secondary-source strike re-selection.
 
 No exact historical Paytm client-specific exchange pass-through was available from public pricing data, so the study retains explicit exchange-charge sensitivities rather than inventing a contract-note rate.
 
@@ -55,16 +55,21 @@ Primary 2022-2024 source result:
 
 Independent secondary validation result:
 - 132 complete cycles of 134 candidates (98.5% coverage)
-- Gross P&L ₹127,185.00
-- Win rate 57.58%
-- Profit factor 1.542
-- Max drawdown ₹90,152.50
-- 3-trade circular-block bootstrap 95% interval for total P&L: approximately ₹-67,517 to ₹342,107
+- Gross P&L ₹188,237.50
+- Mean cycle ₹1,426.04
+- Median cycle ₹580.63
+- Win rate 59.09%
+- Profit factor 1.889
+- Max drawdown ₹57,380.00
+- Best trade ₹62,080.00
+- Worst trade ₹-31,597.50
+- 3-trade circular-block bootstrap 95% interval for total P&L: approximately ₹6,927 to ₹408,770
 
 Coverage interpretation:
-- all 75 primary-source rejected cycles were complete on the independent public NSE-bhavcopy mirror;
+- all 75 primary-source rejected cycles were reconstructed on the independent public NSE-bhavcopy mirror;
 - 57 of 59 primary-valid cycles were also complete on the independent mirror;
-- 2 primary-valid cycles were not constructible on the independent mirror because that source lacked a common strike.
+- 27 of the 75 recovered rejects used the same strike as the primary source, while 48 required re-selection of the common ATM strike under the independent source's listed-strike grid;
+- 2 primary-valid cycles were not constructible on the independent mirror because that source contained no common strike.
 
 ## Execution-cost analysis
 
