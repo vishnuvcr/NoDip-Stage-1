@@ -200,3 +200,9 @@ Run ID: 35828207686
 Attempt: 1
 Branch: research-nifty-4leg-calendar-p8-oos-validation
 Interpretation is blocked until the failed step is inspected.
+
+## 2026-09-23 — P8 workflow failure
+Run ID: 35828286253
+Attempt: 1
+Branch: research-nifty-4leg-calendar-p8-oos-validation
+Interpretation is blocked until the failed step is inspected.
