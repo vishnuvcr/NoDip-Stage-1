@@ -41,7 +41,13 @@ jobs:
       - name: Verify cached strict ledger
         run: |
           test -s reports/nifty_calendar/STRICT_TRADE_LEVEL_RESULTS_2022_2024.csv
-          test "$(($(wc -l < reports/nifty_calendar/STRICT_TRADE_LEVEL_RESULTS_2022_2024.csv) - 1))" -eq 84
+          python - <<'PY'
+          import pandas as pd
+          p = "reports/nifty_calendar/STRICT_TRADE_LEVEL_RESULTS_2022_2024.csv"
+          df = pd.read_csv(p)
+          assert len(df) == 84
+          print("cached strict ledger rows:", len(df))
+          PY
 
       - name: Run repository tests
         env:
