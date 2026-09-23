@@ -116,3 +116,10 @@
 - Impact: P5 run 14 failed immediately at reconciliation setup; no numerical P5 result was produced.
 - Correction: removed the duplicate option and bound the reconciliation set explicitly to the selected rejected-plus-control scope.
 - Prevention: inspect the current script around the affected CLI block before patching; do not assume the target section is unique or unchanged.
+
+
+## 2026-09-23 — P5 secondary mirror filename case bug
+- Event: the independent mirror stores pre-UDiFF NSE bhavcopy archives with the lowercase filename prefix "fo", while the downloader uppercased that prefix.
+- Impact: most 2022-2024 legacy dates returned HTTP 404, leaving only 8 parsed dates and 4 secondary-complete cycles in the P5 run; this was a source-path bug, not evidence that the contracts were unavailable.
+- Correction: the legacy mirror filename is now preserved with the lowercase "fo" prefix. The 2024 UDiFF filenames retain their mixed-case "BhavCopy..." form.
+- Prevention: source filename case and path conventions are now validated against repository tree manifests before full execution.
