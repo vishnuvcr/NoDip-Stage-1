@@ -1,6 +1,6 @@
 # Phase Status
 
-Last updated: 2026-09-23  — P0-P7 complete for 2022-2024 study
+Last updated: 2026-09-23  — P0-P7 complete for 2022-2024 study; candidate entry gate reserved for post-2024 validation
 
 | Phase | Status | Notes |
 |---|---|---|
@@ -12,7 +12,6 @@ Last updated: 2026-09-23  — P0-P7 complete for 2022-2024 study
 | P5 Verification/robustness | COMPLETE | Corrected positive-open validation: 57 primary-valid cycles reproduced; 27 primary rejects recovered at the same strike; 28 source-specific strike-reselection cycles retained as sensitivity; 20 primary rejects unresolved; 2 primary-valid cycles not reproduced |
 | P6 Final manuscript | COMPLETE | Final strict 84-cycle frozen-protocol manuscript, figures, statistics, trade-level appendix, cost sensitivity and validation checks committed |
 
-| P7 Loss-trades audit | COMPLETE | 32 strict losing trades audited; leg-level attribution, loss-signature analysis and exploratory entry-state filters completed |
 
 
-| P7 Loss audit / entry tuning | IN PROGRESS | Auditing all strict-sample losses and testing a single interpretable entry-time term-structure balance gate; P6 remains frozen |
+| P7 Loss audit / entry tuning | IN PROGRESS | Auditing all strict-sample losses and testing a single interpretable entry-time term-structure balance gate; P6 remains frozen || P7 Loss audit / entry tuning | COMPLETE | Audited all 32 strict-sample losing trades; 20 were driven by both near legs being adverse, and a single candidate term-structure balance gate (<=1.20) filtered 22/32 losses; gate remains research-only pending unseen post-2024 validation |
