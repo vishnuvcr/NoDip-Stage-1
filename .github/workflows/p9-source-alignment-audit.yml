@@ -26,8 +26,8 @@ jobs:
         with:
           path: /home/runner/.cache/huggingface/hub/datasets--thetrademarkk--india-index-options-1m
           key: p9-hf-thetrademarkk-${{ runner.os }}-v1
-      - name: Fetch OOS source files if needed
-        run: python scripts/p9_fetch_hf_oos.py
+      - name: Fetch only alignment sample files
+        run: python scripts/p9_fetch_alignment_sample.py
       - name: Run source alignment audit
         run: python scripts/p9_source_alignment_audit.py
       - name: Commit audit
