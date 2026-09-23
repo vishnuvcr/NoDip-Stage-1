@@ -44,8 +44,8 @@ def prep_option(path, target_dates):
 
 def pivot_four(near,far,date):
     n=near[near['date'].eq(date)].copy(); f=far[far['date'].eq(date)].copy()
-    n=n[n['volume'].fillna(0)>0 & n['close'].notna() & (n['close']>0)].copy()
-    f=f[f['volume'].fillna(0)>0 & f['close'].notna() & (f['close']>0)].copy()
+    n=n[(n['volume'].fillna(0)>0) & n['close'].notna() & (n['close']>0)].copy()
+    f=f[(f['volume'].fillna(0)>0) & f['close'].notna() & (f['close']>0)].copy()
     def p(df,pfx,price='close'):
         z=df.pivot_table(index=['timestamp','strike'],columns='option_type',values=[price,'volume'],aggfunc='last')
         if z.empty:return z
@@ -70,7 +70,7 @@ def first_signal(panel, spot, entry_date, cutoff='15:30'):
     x['time']=x['timestamp'].dt.strftime('%H:%M')
     x=x[(x['time']>='09:15')&(x['time']<=cutoff)].copy()
     x=x.sort_values(['timestamp','abs_atm','strike'])
-    chosen=x.groupby('timestamp',as_index=False).first()
+    chosen=x.groupby('timestamp',as_index=False).head(1).copy()
     # Required columns are prices and positive volume in all four legs.
     req=['near_close_CE','near_close_PE','far_close_CE','far_close_PE','near_volume_CE','near_volume_PE','far_volume_CE','far_volume_PE']
     if any(c not in chosen.columns for c in req):return None
