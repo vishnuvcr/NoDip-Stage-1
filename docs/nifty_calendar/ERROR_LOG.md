@@ -143,3 +143,10 @@
 - Impact: the repository write was rejected before file creation; no manuscript content was committed by that failed call.
 - Correction: the manuscript is being written using line-array assembly so Markdown backticks cannot terminate the tool-side string.
 - Prevention: avoid unescaped backticks in JavaScript template literals used for large Markdown repository writes.
+
+
+## 2026-09-23 — P6 validation workflow omitted pytest installation
+- Event: P6 manuscript validation reached the test step but the runner had pandas/numpy installed without pytest.
+- Impact: validation run 1 stopped with `pytest: command not found`; no manuscript or research result was invalidated.
+- Correction: the P6 workflow now installs pytest explicitly before running the repository test suite.
+- Prevention: phase validation workflows must install every executable dependency they invoke.
