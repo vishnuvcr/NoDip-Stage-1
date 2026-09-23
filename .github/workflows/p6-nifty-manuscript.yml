@@ -1,0 +1,49 @@
+name: P6 NIFTY Calendar Manuscript Validation
+
+on:
+  workflow_dispatch:
+
+jobs:
+  validate-manuscript:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout P6 manuscript branch
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install pandas numpy
+
+      - name: Validate repository tests
+        env:
+          PYTHONPATH: .
+        run: pytest -q
+
+      - name: Recompute secondary statistics
+        run: |
+          python scripts/compute_secondary_statistics.py             --ledger reports/nifty_calendar/SECONDARY_TRADE_LEVEL_RESULTS_2022_2024.csv             --costs reports/nifty_calendar/SECONDARY_COST_SENSITIVITY_2022_2024.csv             --out-report /tmp/final_stats.md             --out-annual /tmp/annual.csv
+          cat /tmp/final_stats.md
+
+      - name: Validate manuscript assets and links
+        run: |
+          test -s reports/nifty_calendar/MANUSCRIPT_NIFTY_4LEG_CALENDAR_2022_2024.md
+          test -s reports/nifty_calendar/figures/cumulative_pnl.svg
+          test -s reports/nifty_calendar/figures/drawdown.svg
+          test -s reports/nifty_calendar/figures/annual_pnl.svg
+          test -s reports/nifty_calendar/figures/cost_sensitivity.svg
+          test -s reports/nifty_calendar/SECONDARY_TRADE_LEVEL_RESULTS_2022_2024.csv
+          test -s reports/nifty_calendar/SECONDARY_COST_SENSITIVITY_2022_2024.csv
+          grep -q "All 75 primary-source rejections" reports/nifty_calendar/MANUSCRIPT_NIFTY_4LEG_CALENDAR_2022_2024.md
+          grep -q "P0-P5 are complete" reports/nifty_calendar/MANUSCRIPT_NIFTY_4LEG_CALENDAR_2022_2024.md
+
+      - name: Upload manuscript validation outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: nifty-calendar-p6-manuscript-validation
+          path: |
+            /tmp/final_stats.md
+            /tmp/annual.csv
