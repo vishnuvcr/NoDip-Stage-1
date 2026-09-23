@@ -2,16 +2,17 @@
 
 ## Source design
 Primary source: public NIFTY options mirror used by the locked backtest.
-Secondary contract source: NSE daily F&O bhavcopy.
-Independent spot cross-check: Yahoo Finance NIFTY 50 daily session OPEN.
+Secondary contract source: an independent GitHub mirror of NSE F&O bhavcopy archives; the research uses the mirror copy for the full 2022-2024 sample.
+Independent spot cross-check: Yahoo Finance NIFTY 50 daily session OPEN for each candidate entry date.
 
-## Coverage
-- Candidate cycles: 134
-- Primary valid: 59
-- Primary rejected: 75
-- Secondary complete: 0
-- Recovered by secondary: 0
-- Primary-valid and secondary-complete: 0
+## Cycle coverage reconciliation
+- Candidate strategy cycles: 134
+- Primary valid cycles: 59
+- Primary rejected cycles: 75
+- Secondary fully executable cycles: 0
+- Primary rejects recovered by secondary source: 0
+- Primary-valid control sample also complete on secondary: 0
+- Reconciliation scope: all primary-rejected cycles plus 10 deterministic primary-valid control cycles.
 
 ## Primary rejection reasons
 
@@ -22,8 +23,23 @@ Independent spot cross-check: Yahoo Finance NIFTY 50 daily session OPEN.
 | NO_COMMON_STRIKE | 9 |
 | MISSING_EXIT_LEG | 2 |
 
-## Cross-source checks
-- Yahoo-vs-primary NIFTY open difference: median 2.1508; p95 24.8795; max 126.8000 index points.
+## Secondary reconciliation status
 
-## Interpretation
-Primary rejections are treated as genuine non-executions only when the independent NSE source also fails the frozen contract requirements. Secondary-complete cycles are data-coverage recoveries.
+| Status | Cycles |
+|---|---:|
+| PRIMARY_REJECTED_SECONDARY_NONEXECUTABLE | 75 |
+| PRIMARY_VALID_SECONDARY_NONEXECUTABLE | 10 |
+
+## Secondary P&L
+
+- No complete secondary cycles were available.
+
+## Cross-source price and spot checks
+- No matched-cycle option price differences were available.
+- Yahoo-vs-primary NIFTY open difference on candidate entry dates: median 2.1508 index points; p95 24.8795; max 126.8000.
+
+## Interpretation rule
+A primary rejection is not treated as a genuine market non-trade unless the independent NSE source also fails to provide the required frozen-protocol contract data. A complete secondary cycle is classified as a data-coverage recovery, not as an intentional strategy filter.
+
+## Reproducibility
+The compact NSE rows used for reconciliation are cached in data/cache/nifty_secondary_reconciliation_2022_2024.csv; raw NSE downloads remain in the GitHub Actions cache so reruns do not repeatedly download the same daily files.
