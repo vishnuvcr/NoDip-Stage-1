@@ -52,7 +52,7 @@ Status: COMPLETE.
 The 1.20 gate passed one genuine temporal holdout and is supported for further research, but not approved for live capital.
 
 ### P9 — Event-driven intraday entry timing
-Status: IN PROGRESS / DATA-BLOCKED.
+Status: IN PROGRESS / SOURCE-QUALITY VALIDATION.
 
 Research question:
 > On each eligible trading day, can the strategy enter at the first timestamp at which CBR <= 1.20 and all four near/far legs are simultaneously executable, instead of using a fixed opening timestamp?
@@ -96,12 +96,13 @@ Required data:
 - tick/1-second preferred, 1-minute acceptable secondary.
 
 Current blocker:
-The repository contains daily option data but no validated intraday multi-expiry quote dataset adequate for P9. No numerical P9 performance result is claimed until that data exists.
+The first public intraday source was acquired, but its far-expiry coverage is too sparse on the audited 2026-04-01 sample to support valid ATM selection. The resulting one-trade primary scan used an implausible 20,500 strike while validated NIFTY spot was about 22,899, so that output is rejected. A secondary intraday option source must pass source-quality checks before any P9 performance result is interpreted.
 
 P9 work packages:
-1. data-source audit and coverage validation;
-2. deterministic event detector;
-3. executable four-leg fill model;
+1. data-source audit and coverage validation, including spot/strike ATM-consistency QC;
+2. secondary-source cross-validation before strategy scoring;
+3. deterministic event detector;
+4. executable four-leg fill model;
 4. paired fixed-vs-event-driven historical comparison;
 5. residual loss-mechanism analysis;
 6. unseen temporal holdout.
