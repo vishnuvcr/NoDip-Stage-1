@@ -289,3 +289,16 @@ Step failure requires inspection before numerical interpretation.
 - Correction: P14 adopted the validated NSE F&O downloader headers and both official archive hosts, then retried the fresh range.
 - Final run succeeded and produced the authoritative P14 result: 3 fresh completed cycles, all 3 selected F+1, adaptive net ₹2,976.46 at 2-point adverse slippage.
 - Interpretation: sample is too small for promotion; result remains prospective-paper-monitoring only.
+
+## 2026-09-23 — P14 official NSE fresh validation completed
+- Event: P14 run 35889449301 completed successfully after source-access, concurrency and parsing corrections.
+- Source: six official NSE F&O UDiFF daily archives were cached for the three completed post-cutoff weekly cycles; SHA256 hashes are recorded in `P14_NSE_SOURCE_MANIFEST.csv`.
+- Fresh sample: 3 completed cycles with entry dates 2026-09-02, 2026-09-09 and 2026-09-16; latest official source date parsed was 2026-09-22.
+- Result: frozen P12 adaptive selector chose F+1 on all three cycles; adaptive gross P&L ₹6,714.50 and modeled net P&L ₹2,976.46 at 2-point adverse slippage.
+- Interpretation: insufficient fresh sample for statistical inference; result is paper-monitoring only. No parameter was changed.
+- Prevention: maintain the immutable fresh ledger and add future cycles without retrospective retuning.
+
+## 2026-09-23 — P14 source/parsing implementation corrections
+- Event: early P14 runs failed because generic NSE headers returned unusable archives, the initial workflow watched its own outputs, and the four-leg helper called the price lookup with an incomplete argument list.
+- Correction: source acquisition now uses the validated NSE archive headers/fallback hosts; downloads are parallelized for the exact fresh cycle dates; the price lookup signature is fixed; each failure is preserved in the error log.
+- Impact: no failed-run numerical result was interpreted.
