@@ -36,37 +36,12 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pandas numpy tabulate
+          pip install pandas numpy tabulate pytest
 
-      - name: Download latest P6 strict-ledger artifact
-        env:
-          GITHUB_TOKEN: \${{ secrets.GITHUB_TOKEN }}
+      - name: Verify cached strict ledger
         run: |
-          set -euo pipefail
-          mkdir -p /tmp/p6_artifact
-          curl -fsSL \
-            -H "Authorization: Bearer $GITHUB_TOKEN" \
-            -H "Accept: application/vnd.github+json" \
-            "https://api.github.com/repos/vishnuvcr/NoDip-Stage-1/actions/artifacts?per_page=100" \
-            > /tmp/artifacts.json
-          artifact_url="$(jq -r '
-            [.artifacts[]
-              | select(.name=="nifty-calendar-p6-final-manuscript-2022-2024")
-              | select(.expired==false)]
-            | sort_by(.created_at)
-            | last
-            | .archive_download_url
-          ' /tmp/artifacts.json)"
-          test -n "$artifact_url" -a "$artifact_url" != "null"
-          curl -fsSL \
-            -H "Authorization: Bearer $GITHUB_TOKEN" \
-            -H "Accept: application/vnd.github+json" \
-            "$artifact_url" \
-            -o /tmp/p6_artifact/p6.zip
-          unzip -q /tmp/p6_artifact/p6.zip -d /tmp/p6_artifact/extracted
-          test -s /tmp/p6_artifact/extracted/STRICT_TRADE_LEVEL_RESULTS_2022_2024.csv
-          cp -f /tmp/p6_artifact/extracted/STRICT_TRADE_LEVEL_RESULTS_2022_2024.csv \
-            reports/nifty_calendar/STRICT_TRADE_LEVEL_RESULTS_2022_2024.csv
+          test -s reports/nifty_calendar/STRICT_TRADE_LEVEL_RESULTS_2022_2024.csv
+          test "$(($(wc -l < reports/nifty_calendar/STRICT_TRADE_LEVEL_RESULTS_2022_2024.csv) - 1))" -eq 84
 
       - name: Run repository tests
         env:
