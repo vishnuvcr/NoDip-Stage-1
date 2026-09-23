@@ -24,20 +24,22 @@ entry_date  spot_open
 ## 09:15
 - Near rows at exact timestamp: 170
 - Far rows at exact timestamp: 2
-No complete CE/PE common-strike rows.
+No complete four-leg common-strike panel.
 
 ## 09:16
 - Near rows at exact timestamp: 177
 - Far rows at exact timestamp: 2
-No complete CE/PE common-strike rows.
+No complete four-leg common-strike panel.
 
 ## 09:22
 - Near rows at exact timestamp: 178
 - Far rows at exact timestamp: 3
-No complete CE/PE common-strike rows.
+ strike     spot  distance_points  distance_pct     cbr
+20500.0 22893.65          2393.65     10.455519 0.08178
 
 ## 09:26
 - Near rows at exact timestamp: 172
 - Far rows at exact timestamp: 4
-No complete CE/PE common-strike rows.
+ strike     spot  distance_points  distance_pct      cbr
+20500.0 22900.05          2400.05     10.480545 0.083238
 
