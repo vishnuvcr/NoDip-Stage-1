@@ -2,7 +2,7 @@
 
 ## Current research status — 2026-09-23
 
-**P0-P6 complete for the 2022-2024 frozen-strategy study; final result uses the strict independently reconciled 84-cycle sample.**
+**P0-P7 complete for the 2022-2024 frozen-strategy study; final result uses the strict independently reconciled 84-cycle sample, followed by a loss-trade audit.**
 
 The study froze a four-leg NIFTY calendar structure before interpretation and then validated its historical data coverage with an independent public mirror of NSE F&O bhavcopy archives plus an independent NIFTY spot-open diagnostic.
 
@@ -28,6 +28,16 @@ The study froze a four-leg NIFTY calendar structure before interpretation and th
 
 The original 59-trade primary-source result (₹52,827.50 gross P&L, 44.0% coverage) is preserved as provenance. The 28 source-specific strike-reselection cycles are reported as sensitivity evidence, not merged into the strict frozen-protocol result. Zero-open/non-traded option rows were excluded from executable fills.
 
+
+### P7 loss-trades audit
+
+The 84-trade strict baseline contains **32 losing trades**. The loss audit found that near-expiry legs account for the dominant loss contribution, with a recurring bullish-like front-week adverse payoff signature accounting for 72.1% of absolute losing-trade P&L. Exploratory entry-state filters reduce drawdown in-sample but are not validated strategy changes.
+
+- [Loss audit report](https://github.com/vishnuvcr/NoDip-Stage-1/blob/research-nifty-4leg-calendar-p7-loss-audit/reports/nifty_calendar/LOSS_AUDIT_REPORT_2022_2024.md)
+- [Loss-trade ledger](https://github.com/vishnuvcr/NoDip-Stage-1/blob/research-nifty-4leg-calendar-p7-loss-audit/reports/nifty_calendar/LOSS_TRADE_AUDIT_2022_2024.csv)
+- [Filter sensitivity](https://github.com/vishnuvcr/NoDip-Stage-1/blob/research-nifty-4leg-calendar-p7-loss-audit/reports/nifty_calendar/LOSS_FILTER_SENSITIVITY_2022_2024.csv)
+- [Cost-aware filter sensitivity](https://github.com/vishnuvcr/NoDip-Stage-1/blob/research-nifty-4leg-calendar-p7-loss-audit/reports/nifty_calendar/LOSS_FILTER_COST_SENSITIVITY_2022_2024.csv)
+- [P7 audit plan](https://github.com/vishnuvcr/NoDip-Stage-1/blob/research-nifty-4leg-calendar-p7-loss-audit/docs/nifty_calendar/P7_LOSS_AUDIT_PLAN.md)
 
 ## Frozen strategy
 
