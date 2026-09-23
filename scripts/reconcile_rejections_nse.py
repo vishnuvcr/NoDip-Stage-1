@@ -40,13 +40,18 @@ def download_day(d: date, cache_dir: Path, session: requests.Session) -> tuple[d
         mirror_name = f"BhavCopy_NSE_FO_0_0_0_{ts:%Y%m%d}_F_0000.csv.zip"
     else:
         mirror_name = f"fo{ts:%d}{ts:%b}".upper() + f"{ts:%Y}bhav.csv.zip"
-    mirror_name = mirror_name.lower()
-    mirror_url = f"https://raw.githubusercontent.com/SantoshSrinivas79/NSE-FNO-Data-bank/main/data/{ts:%Y}/{ts:%m}/{mirror_name}"
+        mirror_name = mirror_name.lower()
+    mirror_url = (
+        "https://api.github.com/repos/SantoshSrinivas79/NSE-FNO-Data-bank/contents/"
+        f"data/{ts:%Y}/{ts:%m}/{mirror_name}?ref=main"
+    )
 
     last = None
     for attempt in range(2):
         try:
-            r = session.get(mirror_url, headers=HEADERS, timeout=30)
+            request_headers = dict(HEADERS)
+            request_headers["Accept"] = "application/vnd.github.raw"
+            r = session.get(mirror_url, headers=request_headers, timeout=30)
             if r.status_code == 404:
                 return d, None, "GitHub mirror HTTP 404"
             r.raise_for_status()
