@@ -157,3 +157,10 @@
 - Impact: P6 validation run 2 stopped before statistics or manuscript checks.
 - Correction: the validation workflow is being expanded to install requests with the scientific Python dependencies.
 - Prevention: use a repository dependency manifest when one exists; otherwise inspect imports used by the full test suite before defining validation dependencies.
+
+
+## 2026-09-23 — P6 statistics script missing CLI entry point
+- Event: the statistics script defined main() but did not invoke it when executed as a script.
+- Impact: P6 validation run 3 exited successfully from the Python step without creating the requested output files, so the following cat command failed.
+- Correction: added the standard if __name__ == "__main__" entry point.
+- Prevention: every repository CLI script now requires an explicit execution smoke test before being placed in a workflow.
