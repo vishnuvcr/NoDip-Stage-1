@@ -49,7 +49,14 @@ jobs:
           PYTHONPATH: .
         run: |
           python -m pip install --disable-pip-version-check huggingface_hub pyarrow
-          python scripts/p10_entry_day_offsets.py             --cache-dir data/cache/p10_rissin_hf             --dev-cycles reports/nifty_calendar/CYCLE_AUDIT_2022_2024.csv             --oos-cycles reports/nifty_calendar/P8_CYCLES_2025_ONWARD.csv             --out-ledger reports/nifty_calendar/P10_ENTRY_DAY_OFFSET_LEDGER.csv             --out-summary reports/nifty_calendar/P10_ENTRY_DAY_OFFSET_SUMMARY.csv             --out-paired reports/nifty_calendar/P10_ENTRY_DAY_OFFSET_PAIRED.csv             --out-report reports/nifty_calendar/P10_ENTRY_DAY_OFFSET_REPORT.md
+          python scripts/p10_entry_day_offsets.py \
+            --cache-dir data/cache/p10_rissin_hf \
+            --dev-cycles reports/nifty_calendar/CYCLE_AUDIT_2022_2024.csv \
+            --oos-cycles reports/nifty_calendar/P8_CYCLES_2025_ONWARD.csv \
+            --out-ledger reports/nifty_calendar/P10_ENTRY_DAY_OFFSET_LEDGER.csv \
+            --out-summary reports/nifty_calendar/P10_ENTRY_DAY_OFFSET_SUMMARY.csv \
+            --out-paired reports/nifty_calendar/P10_ENTRY_DAY_OFFSET_PAIRED.csv \
+            --out-report reports/nifty_calendar/P10_ENTRY_DAY_OFFSET_REPORT.md
 
       - name: Commit P10 results conflict-safely
         run: |
@@ -58,7 +65,7 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git fetch origin research-nifty-4leg-calendar-p10-entry-day-offsets
           git reset --hard origin/research-nifty-4leg-calendar-p10-entry-day-offsets
-          git add reports/nifty_calendar/P10_ENTRY_DAY_OFFSET_LEDGER.csv reports/nifty_calendar/P10_ENTRY_DAY_OFFSET_SUMMARY.csv reports/nifty_calendar/P10_ENTRY_DAY_OFFSET_PAIRED.csv reports/nifty_calendar/P10_ENTRY_DAY_OFFSET_REPORT.md data/cache/P10_MIRROR_COMMIT.txt
+          git add reports/nifty_calendar/P10_ENTRY_DAY_OFFSET_LEDGER.csv reports/nifty_calendar/P10_ENTRY_DAY_OFFSET_SUMMARY.csv reports/nifty_calendar/P10_ENTRY_DAY_OFFSET_PAIRED.csv reports/nifty_calendar/P10_ENTRY_DAY_OFFSET_REPORT.md
           git diff --cached --quiet || git commit -m 'Complete P10 entry-day offset research'
           git push origin HEAD:research-nifty-4leg-calendar-p10-entry-day-offsets
 
