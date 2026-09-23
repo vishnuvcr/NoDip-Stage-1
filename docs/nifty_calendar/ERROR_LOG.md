@@ -164,3 +164,10 @@
 - Impact: the first P7 workflow run stopped before producing any P7 outputs; the failure did not invalidate the loss-analysis code or the frozen research data.
 - Handling: the P7 workflow test step is now explicitly non-blocking so the dedicated audit can run; the underlying test failure remains recorded for later diagnosis rather than being hidden.
 - Prevention: phase-specific audit workflows should not be blocked by unrelated legacy CI failures when the audited code path has its own validation checks.
+
+
+## 2026-09-23 — P7 loss-audit phase started
+- Event: a new tuning phase was opened after P6 completion.
+- Boundary: P6 remains frozen; P7 candidate filters are research-only and cannot overwrite P6.
+- Method: loss-mechanism audit first, then one interpretable entry-time gate with temporal diagnostics and conservative transaction costs.
+- Prevention: do not promote any candidate filter without a genuinely unseen post-2024 validation phase.
