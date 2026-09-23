@@ -1,0 +1,69 @@
+name: P11 NIFTY forward paper validation
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/p11-forward-validation.yml'
+      - 'scripts/p11_forward_validation.py'
+      - 'docs/nifty_calendar/P11_FORWARD_VALIDATION_PLAN.md'
+      - 'docs/nifty_calendar/P10_FINAL_RESEARCH_CONCLUSION.md'
+
+concurrency:
+  group: p11-forward-validation
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Checkout P11 branch
+        uses: actions/checkout@v4
+        with:
+          ref: research-nifty-4leg-calendar-p11-forward-validation
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --disable-pip-version-check pandas numpy duckdb pyarrow huggingface_hub requests tabulate
+
+      - name: Validate Python syntax
+        run: python -m py_compile scripts/p11_forward_validation.py
+
+      - name: Run P11 fresh-holdout validation
+        env:
+          PYTHONPATH: .
+        run: |
+          python scripts/p11_forward_validation.py
+
+      - name: Commit P11 outputs
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git fetch origin research-nifty-4leg-calendar-p11-forward-validation
+          git reset --hard origin/research-nifty-4leg-calendar-p11-forward-validation
+          python scripts/p11_forward_validation.py
+          git add reports/nifty_calendar/P11_* docs/nifty_calendar/P11_* docs/nifty_calendar/PHASE_STATUS.md README.md
+          git diff --cached --quiet || git commit -m 'Complete P11 forward paper validation'
+          git push origin HEAD:research-nifty-4leg-calendar-p11-forward-validation
+
+      - name: Log failure
+        if: failure()
+        run: |
+          set -euo pipefail
+          printf '\n## 2026-09-23 — P11 forward validation workflow failure\nRun ID: %s\nStep failure requires inspection before any numerical interpretation.\n' "$GITHUB_RUN_ID" >> docs/nifty_calendar/ERROR_LOG.md
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+vishnuvcr@users.noreply.github.com'
+          git add docs/nifty_calendar/ERROR_LOG.md
+          git diff --cached --quiet || git commit -m 'Log P11 forward validation workflow failure'
+          git push origin HEAD:research-nifty-4leg-calendar-p11-forward-validation
