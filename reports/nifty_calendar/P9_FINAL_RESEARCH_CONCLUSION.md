@@ -6,7 +6,7 @@ P9 tested whether the frozen CBR<=1.20 four-leg strategy should enter at the fir
 ## Source validation
 The primary public intraday source was rejected because far-expiry coverage was too sparse. On 2026-04-01 it had only 903 far-expiry rows for the session and the apparent common-strike trade selected 20,500 while NIFTY was around 22,900.
 
-The secondary Rissin/Upstox 1-minute source was tested over the same 86-cycle post-2024 OOS population. NSE specifies a 50-point strike interval for NIFTY weekly/monthly contracts; the deterministic ATM QC therefore required the common strike to be within 25 points of contemporaneous spot.
+The secondary Rissin/Upstox 1-minute source was tested over the same 86-cycle post-2024 OOS population. NSE specifies a 50-point strike interval for NIFTY weekly/monthly contracts; the deterministic ATM QC therefore required the common strike to be within 25 points of contemporaneous spot. Source: https://www.nseindia.com/static/products-services/equity-derivatives-nifty50
 
 ## Secondary OOS after ATM QC
 
