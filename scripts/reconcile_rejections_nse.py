@@ -272,6 +272,7 @@ def main() -> None:
     ap.add_argument("--out", required=True, type=Path)
     ap.add_argument("--rows-out", required=True, type=Path)
     ap.add_argument("--cache-dir", required=True, type=Path)
+    ap.add_argument("--valid-sample", type=int, default=10, help="Number of primary-valid control cycles to reconcile in addition to all rejects.")
     ap.add_argument("--rejected-only", action="store_true",
                     help="Reconcile every rejected cycle and skip primary-valid cycles.")
     ap.add_argument("--valid-sample", type=int, default=0,
@@ -314,7 +315,7 @@ def main() -> None:
     session = requests.Session()
     downloads = {}
 
-    with ThreadPoolExecutor(max_workers=8) as pool:
+    with ThreadPoolExecutor(max_workers=16) as pool:
         futs = {
             pool.submit(download_day, d, args.cache_dir, requests.Session()): d
             for d in sorted(dates)
@@ -333,9 +334,9 @@ def main() -> None:
         df = read_nifty_options(path, dt.date())
         # Retain the NIFTY rows needed for the expiry dates in the audit set.
         keep_exps = set()
-        for _, r in audit[audit["entry_date"] == dt.date().isoformat()].iterrows():
+        for _, r in recon_set[recon_set["entry_date"] == dt.date().isoformat()].iterrows():
             keep_exps.update([r["near_expiry"], r["far_expiry"]])
-        for _, r in audit[audit["near_expiry"] == dt.date().isoformat()].iterrows():
+        for _, r in recon_set[recon_set["near_expiry"] == dt.date().isoformat()].iterrows():
             keep_exps.update([r["near_expiry"], r["far_expiry"]])
         df = df[df["expiry"].dt.strftime("%Y-%m-%d").isin(keep_exps)].copy()
         daily[dt] = df
@@ -343,15 +344,23 @@ def main() -> None:
             rows_to_save.append(df.assign(source="NSE_bhavcopy"))
 
     yahoo = {}
-    for d in sorted({str(x) for x in audit["entry_date"]}):
+    entry_dates = sorted({str(x) for x in recon_set["entry_date"]})
+    def _yahoo_task(d: str) -> tuple[str, float | None, str | None]:
         try:
-            yahoo[d] = yahoo_open(d, session)
+            return d, yahoo_open(d, requests.Session()), None
         except Exception as exc:
-            yahoo[d] = None
-            source_errors.append((d, "Yahoo spot: " + repr(exc)))
+            return d, None, repr(exc)
+
+    with ThreadPoolExecutor(max_workers=16) as pool:
+        futs = [pool.submit(_yahoo_task, d) for d in entry_dates]
+        for fut in as_completed(futs):
+            d, val, err = fut.result()
+            yahoo[d] = val
+            if err:
+                source_errors.append((d, "Yahoo spot: " + err))
 
     results = []
-    for _, cycle in audit.iterrows():
+    for _, cycle in recon_set.iterrows():
         results.append(secondary_cycle(cycle, daily, yahoo.get(cycle["entry_date"])))
 
     out = pd.DataFrame(results)
