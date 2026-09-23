@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import io
 import math
+import subprocess
 import time
 import zipfile
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -30,7 +31,11 @@ def nse_url(d: date) -> str:
     return f"{NSE_BASE}/content/historical/DERIVATIVES/{ts:%Y}/{mon}/fo{ts:%d}{mon}{ts:%Y}bhav.csv.zip"
 
 
-def download_day(d: date, cache_dir: Path, session: requests.Session) -> tuple[date, Path | None, str | None]:
+def download_day(
+    d: date,
+    cache_dir: Path,
+    mirror_root: Path,
+) -> tuple[date, Path | None, str | None]:
     out = cache_dir / f"{d:%Y%m%d}.zip"
     if out.exists() and out.stat().st_size > 1000:
         return d, out, None
@@ -39,32 +44,30 @@ def download_day(d: date, cache_dir: Path, session: requests.Session) -> tuple[d
     if ts >= UDIFF_START:
         mirror_name = f"BhavCopy_NSE_FO_0_0_0_{ts:%Y%m%d}_F_0000.csv.zip"
     else:
-        mirror_name = f"fo{ts:%d}{ts:%b}".upper() + f"{ts:%Y}bhav.csv.zip"
-        mirror_name = mirror_name.lower()
-    mirror_url = (
-        "https://api.github.com/repos/SantoshSrinivas79/NSE-FNO-Data-bank/contents/"
-        f"data/{ts:%Y}/{ts:%m}/{mirror_name}?ref=main"
-    )
+        mirror_name = f"fo{ts:%d}{ts:%b}".upper() + f"{ts:%Y}bhav.csv.zip".lower()
 
-    last = None
-    for attempt in range(2):
-        try:
-            request_headers = dict(HEADERS)
-            request_headers["Accept"] = "application/vnd.github.raw"
-            r = session.get(mirror_url, headers=request_headers, timeout=30)
-            if r.status_code == 404:
-                return d, None, "GitHub mirror HTTP 404"
-            r.raise_for_status()
-            if not r.content.startswith(b"PK"):
-                return d, None, f"GitHub mirror unexpected payload ({len(r.content)} bytes)"
-            tmp = out.with_suffix(".part")
-            tmp.write_bytes(r.content)
-            tmp.replace(out)
-            return d, out, None
-        except Exception as exc:
-            last = f"GitHub mirror {repr(exc)}"
-            time.sleep(1 + attempt)
-    return d, None, last
+    rel = Path("data") / f"{ts:%Y}" / f"{ts:%m}" / mirror_name
+    git_path = str(rel).replace("\\", "/")
+    try:
+        proc = subprocess.run(
+            ["git", "-C", str(mirror_root), "show", f"HEAD:{git_path}"],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            timeout=45,
+        )
+        payload = proc.stdout
+        if not payload.startswith(b"PK"):
+            return d, None, f"GitHub mirror non-zip payload for {git_path}"
+        tmp = out.with_suffix(".part")
+        tmp.write_bytes(payload)
+        tmp.replace(out)
+        return d, out, None
+    except subprocess.CalledProcessError as exc:
+        err = exc.stderr.decode("utf-8", errors="replace").strip().splitlines()
+        return d, None, f"GitHub mirror git-show failed for {git_path}: {err[-1] if err else 'unknown'}"
+    except Exception as exc:
+        return d, None, f"GitHub mirror local access failed for {git_path}: {repr(exc)}"
 
 
 def read_nifty_options(path: Path, d: date) -> pd.DataFrame:
@@ -271,6 +274,7 @@ def main() -> None:
     ap.add_argument("--out", required=True, type=Path)
     ap.add_argument("--rows-out", required=True, type=Path)
     ap.add_argument("--cache-dir", required=True, type=Path)
+    ap.add_argument("--mirror-root", required=True, type=Path)
     ap.add_argument("--rejected-only", action="store_true",
                     help="Reconcile every rejected cycle and skip primary-valid cycles.")
     ap.add_argument("--valid-sample", type=int, default=0,
@@ -316,7 +320,7 @@ def main() -> None:
 
     with ThreadPoolExecutor(max_workers=16) as pool:
         futs = {
-            pool.submit(download_day, d, args.cache_dir, requests.Session()): d
+            pool.submit(download_day, d, args.cache_dir, args.mirror_root): d
             for d in sorted(dates)
         }
         for fut in as_completed(futs):
