@@ -56,3 +56,15 @@
 - Final 3-cycle circular-block bootstrap 95% interval: ₹31,147 to ₹139,294.
 - Final cost sensitivity at 0.05000% exchange-charge assumption remains positive at ₹20/order brokerage and 2.00-point adverse slippage: approximately ₹1,206.81.
 - P6 manuscript, figures, strict trade ledger, annual results and cost-sensitivity files were rebuilt and committed on research-nifty-4leg-calendar-p6-manuscript.
+
+
+## 2026-09-23 — P7 loss-trades audit completed
+- User requested an audit of losing trades, reasons for losses, and ways to improve the structure.
+- Dedicated branch created: research-nifty-4leg-calendar-p7-loss-audit.
+- All 32 losing trades in the strict 84-cycle baseline were audited.
+- Total losing-trade loss: ₹42,747.50 across 32 trades; winning trades contributed ₹125,777.50, so losses offset about 34.0% of winning P&L.
+- Near-expiry PE and CE contributions across losing trades were ₹-79,366.25 and ₹-91,253.75; far-expiry CE and PE contributed ₹52,385.00 and ₹75,487.50.
+- 19/32 losses showed a bullish-like front-week adverse payoff signature, accounting for 72.1% of absolute loss.
+- Losing trades had higher mean initial net debit (₹81.33 vs ₹51.45 for non-losses), lower near-call/far-call ratio (0.409 vs 0.455), and higher near-put/far-put ratio (0.529 vs 0.475).
+- Exploratory filters were tested. The combined call/put balance filter kept 28/84 trades, raised in-sample win rate to 85.71% and reduced max drawdown to ₹1,027.50, but gross P&L fell to ₹63,415 and the small retained sample creates substantial selection-bias risk.
+- No intraday stop-loss recommendation was accepted because daily entry/expiry-close data cannot establish the path or executable stop fills.
