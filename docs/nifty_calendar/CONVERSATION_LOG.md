@@ -105,3 +105,17 @@
 - Decision: reject the primary P9 performance output; do not tune CBR or infer strategy performance from it.
 - P9 plan updated to require secondary option-source validation, explicit ATM-distance QC, complete four-leg contemporaneous panels, and the P8 fixed ledger as the fixed-time reference.
 - Rissin secondary-source OOS validation is now running with cached option and NIFTY index data.
+
+
+## 2026-09-23 — P9 final secondary validation and closure
+- User said "Ok proceed".
+- The primary thetrademarkk intraday source was acquired successfully but failed source-quality QC because far-expiry observations were too sparse; the first apparent event trade selected strike 20,500 while NIFTY was near 22,900.
+- The primary timing output was rejected before performance interpretation.
+- A secondary Rissin/Upstox 1-minute NIFTY option source was then used on the full 86-cycle post-2024 OOS population.
+- Fixed 09:15 secondary control: 26 trades, gross ₹40,506.25, win rate 80.77%, PF 5.029, gross max drawdown ₹7,489.50.
+- Event-driven first-qualifying entry: 70 trades, gross ₹37,291.40, win rate 62.86%, PF 1.576, gross max drawdown ₹26,467.50.
+- 44 event-only incremental trades: gross ₹-3,214.85, PF 0.941.
+- Of the incremental trades, 24 had failed the frozen CBR gate at the fixed observation and only qualified later; these produced gross ₹-13,964.60 and PF 0.665.
+- Event-driven modeled net at 0.05% exchange stress: ₹9,222.87 at 0-point slippage and negative from 0.5-point slippage onward.
+- P9 closed as COMPLETE with event-driven timing not promoted.
+- Next planned phase: P10 forward/paper validation of the frozen fixed rule, with timestamped executable quotes, observed spreads, costs, slippage and a pre-registered paper ledger.
