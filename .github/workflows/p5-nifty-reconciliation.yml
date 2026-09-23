@@ -103,6 +103,12 @@ jobs:
         run: |
           python scripts/reconcile_rejections_nse.py             --audit reports/nifty_calendar/CYCLE_AUDIT_2022_2024.csv             --out reports/nifty_calendar/P5_SECONDARY_RECONCILIATION_2022_2024.csv             --rows-out data/cache/nifty_secondary_reconciliation_2022_2024.csv             --cache-dir data/cache/nse_reconciliation_raw             --mirror-root data/cache/nse_fno_mirror
 
+      - name: Build complete secondary trade ledger and cost sensitivity
+        env:
+          PYTHONPATH: .
+        run: |
+          python scripts/build_secondary_trade_ledger.py             --ledger reports/nifty_calendar/SECONDARY_FULL_TRADE_LEDGER_2022_2024.csv             --raw data/cache/nifty_secondary_reconciliation_2022_2024.csv             --out-ledger reports/nifty_calendar/SECONDARY_TRADE_LEVEL_RESULTS_2022_2024.csv             --out-costs reports/nifty_calendar/SECONDARY_COST_SENSITIVITY_2022_2024.csv
+
       - name: Write P5 reconciliation report
         run: |
           python - <<'PY'
