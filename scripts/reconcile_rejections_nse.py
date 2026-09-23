@@ -44,7 +44,7 @@ def download_day(
     if ts >= UDIFF_START:
         mirror_name = f"BhavCopy_NSE_FO_0_0_0_{ts:%Y%m%d}_F_0000.csv.zip"
     else:
-        mirror_name = f"fo{ts:%d}{ts:%b}{ts:%Y}bhav.csv.zip".lower()
+        mirror_name = "fo" + f"{ts:%d}" + ts.strftime("%b").upper() + f"{ts:%Y}bhav.csv.zip"
 
     rel = Path("data") / f"{ts:%Y}" / f"{ts:%m}" / mirror_name
     git_path = str(rel).replace("\\", "/")
