@@ -2,32 +2,32 @@
 
 ## Current research status — 2026-09-23
 
-**P0-P6 complete for the 2022-2024 frozen-strategy study.**
+**P0-P6 complete for the 2022-2024 frozen-strategy study; final result uses the strict independently reconciled 84-cycle sample.**
 
 The study froze a four-leg NIFTY calendar structure before interpretation and then validated its historical data coverage with an independent public mirror of NSE F&O bhavcopy archives plus an independent NIFTY spot-open diagnostic.
 
-### Final independently reconstructed result
+### Final validated result
 
 | Metric | Result |
 |---|---:|
 | Candidate cycles | 134 |
-| Complete independent cycles | 132 |
-| Independent coverage | 98.5% |
-| Primary-source valid cycles | 59 |
-| Primary-source rejected cycles | 75 |
+| Strict frozen-protocol cycles | 84 |
+| Strict coverage | 62.7% |
+| Primary-valid and independently reproduced | 57 |
 | Primary rejects recovered at same strike | 27 |
-| Primary rejects recovered after independent strike re-selection | 48 |
-| Gross P&L | ₹188,237.50 |
-| Mean cycle | ₹1,426.04 |
-| Median cycle | ₹580.63 |
-| Win rate | 59.09% |
-| Profit factor | 1.889 |
-| Maximum drawdown | ₹57,380.00 |
-| Bootstrap 95% interval | ₹6,927.47 to ₹408,770.34 |
+| Source-specific strike-reselection sensitivity cycles | 28 |
+| Primary rejects still non-executable | 20 |
+| Primary-valid source discrepancies | 2 |
+| Gross P&L | ₹83,030.00 |
+| Mean cycle | ₹988.45 |
+| Median cycle | ₹598.75 |
+| Win rate | 61.90% |
+| Profit factor | 2.942 |
+| Maximum drawdown | ₹8,022.50 |
+| Bootstrap 95% interval | ₹31,147.19 to ₹139,293.78 |
 
-At 0.05000% exchange-charge sensitivity, modeled cumulative net P&L is ₹166,171.23 / ₹159,940.83 / ₹153,710.43 at 0.00-point slippage for ₹10/₹15/₹20 brokerage cohorts, and ₹68,771.23 / ₹62,540.83 / ₹56,310.43 at 2.00-point slippage.
+The original 59-trade primary-source result (₹52,827.50 gross P&L, 44.0% coverage) is preserved as provenance. The 28 source-specific strike-reselection cycles are reported as sensitivity evidence, not merged into the strict frozen-protocol result. Zero-open/non-traded option rows were excluded from executable fills.
 
-The original 59-trade primary-source result (₹52,827.50 gross P&L, 44.0% coverage) is preserved as provenance. The research does not treat 44.0% as the strategy's intrinsic trading frequency because 75 rejected cycles were reconstructed on an independent source.
 
 ## Frozen strategy
 
