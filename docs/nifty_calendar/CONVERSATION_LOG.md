@@ -34,3 +34,15 @@
 - Added an independent NSE bhavcopy reconciliation script covering the full candidate set and an independent Yahoo NIFTY spot-open cross-check.
 - Added manual-run and push-triggered GitHub Actions workflows with cached primary and secondary data.
 - The first P5 execution is currently running on GitHub Actions; no independent-source result has been interpreted yet.
+
+
+## 2026-09-23 — P5 independent reconciliation completed
+- The independent public mirror of NSE F&O bhavcopy was used for the full 134-cycle candidate set.
+- Result: 132/134 candidate cycles are complete on the independent source (98.5% coverage).
+- All 75 cycles rejected by the primary source were recovered as complete secondary-source cycles.
+- 57 of the 59 primary-valid cycles were also complete on the independent source.
+- Two primary-valid cycles (2023-06-02 and 2023-06-23) lacked a common strike on the independent source and remain classified as source discrepancies.
+- Secondary complete-cycle gross P&L: ₹127,185.00 across 132 cycles; win rate 57.58%; profit factor 1.542; maximum drawdown ₹90,152.50.
+- The 59-trade primary-source result remains in the manuscript as a source-coverage comparison rather than the final population result.
+- Full secondary trade-level price ledger and Paytm Money brokerage/exchange/slippage sensitivity are now cached in the repository.
+- P5 is COMPLETE. P6 manuscript phase is now in progress.
