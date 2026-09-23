@@ -137,3 +137,20 @@
 - Development sample: 2022-2024. Unseen OOS: 2025 onward.
 - All seven offsets will be reported; OOS will not be used to choose an offset.
 - New branch: research-nifty-4leg-calendar-p10-entry-day-offsets.
+
+## 2026-09-23 — P10 seven-offset study completed
+- User asked to test the frozen 09:15 + CBR<=1.20 criteria on seven trading-session offsets relative to the previous expiry: D-1, D0, D+1, D+2, D+3, D+4 and D+5.
+- The first P10 OOS run was rejected because an implementation bug mapped every OOS cycle to the same previous-expiry fallback date. This was logged and fixed.
+- The next run computed valid results but its commit step overwrote generated outputs after reset; this persistence bug was logged and the workflow was changed to regenerate outputs after reset.
+- Final authoritative run 35841796933 completed successfully.
+- Final OOS population: 88 cycles with 88 distinct previous-expiry dates.
+- D0: 42 trades, gross ₹133,757.75, PF 11.925, net ₹69,890.36 at 2-point adverse slippage.
+- D+2: 44 trades, gross ₹129,107.75, PF 8.100, net ₹63,387.53 at 2-point adverse slippage.
+- D+1 reference: 36 trades, gross ₹99,992.75, PF 4.540, net ₹46,131.90 at 2-point adverse slippage.
+- D-1: 44 trades, gross ₹90,808.25, net ₹23,846.23 at 2-point slippage.
+- D+3: 36 trades, gross ₹50,454.25, net ₹-2,850.82 at 2-point slippage.
+- D+4: 33 trades, gross ₹80,699.00, net ₹32,157.50 at 2-point slippage.
+- D+5: 19 trades, gross ₹17,240.00, net ₹-10,274.78 at 2-point slippage.
+- Paired OOS bootstrap versus D+1: D0 mean +₹383.69 (95% CI −₹797.17 to +₹1,480.94); D+2 +₹330.85 (−₹445.32 to +₹1,099.05); D+5 −₹940.37 (−₹1,975.86 to −₹69.96).
+- Conclusion: D0 and D+2 are development-only candidates for the next research step, but neither is statistically separated from D+1 in this paired OOS bootstrap. D+5 shows the clearest negative paired result. No offset is promoted directly from OOS.
+- P10 is COMPLETE. P11 is the next planned phase: choose any candidate only under a development-only rule, validate on a fresh temporal holdout, then perform forward/paper execution.
