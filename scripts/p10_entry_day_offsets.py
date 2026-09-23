@@ -72,9 +72,11 @@ def load_cycles(dev_path: Path, oos_path: Path, trading: list[pd.Timestamp]) -> 
     oos['near_expiry']=pd.to_datetime(oos['near_expiry']).dt.strftime('%Y-%m-%d')
     oos['far_expiry']=pd.to_datetime(oos['far_expiry']).dt.strftime('%Y-%m-%d')
     oos['cycle_id']='OOS_'+oos.index.astype(str)
-    exps=sorted(pd.to_datetime(oos['near_expiry']).unique())
-    prev={str(exps[i]):str(exps[i-1]) for i in range(1,len(exps))}
+    exps=sorted(oos['near_expiry'].dropna().unique())
+    prev={exps[i]:exps[i-1] for i in range(1,len(exps))}
     oos['previous_expiry']=oos['near_expiry'].map(prev).fillna('2024-12-26')
+    if oos['previous_expiry'].nunique() < 3:
+        raise RuntimeError('OOS previous-expiry mapping sanity check failed')
     keep=['cycle_id','sample','previous_expiry','near_expiry','far_expiry']
     out=pd.concat([dev[keep],oos[keep]],ignore_index=True)
     return out
