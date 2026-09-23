@@ -138,16 +138,30 @@ def main():
             sel=max(elig,key=lambda v:(v['selection_score'],-v['horizon']))
             rows.append({**base,'horizon':sel['horizon'],'horizon_label':LABELS[sel['horizon']],'far_expiry':sel['far_expiry'],'strike':strike,'status':'ADAPTIVE_SELECTED',**sel})
     ledger=pd.DataFrame(rows)
+    if ledger.empty:
+        ledger=pd.DataFrame([{
+            'status':'NO_FRESH_ROWS',
+            'cutoff':str(CUTOFF.date()),
+            'latest_source_date':str(max_date.date()),
+            'fresh_cycles':len(fresh),
+        }])
+    if 'status' not in ledger.columns:
+        ledger['status']='UNKNOWN'
     summary=[]; costs=[]
     for label,h in [('F+1',1),('F+2',2),('F+3',3),('F+4',4),('ADAPTIVE',0)]:
-        x=ledger[(ledger.status=='ADAPTIVE_SELECTED') if h==0 else ((ledger.horizon==h)&(ledger.status=='EXECUTABLE'))].copy()
+        if h==0:
+            x=ledger[ledger['status'].eq('ADAPTIVE_SELECTED')].copy()
+        elif 'horizon' in ledger.columns:
+            x=ledger[ledger['horizon'].eq(h)&ledger['status'].eq('EXECUTABLE')].copy()
+        else:
+            x=ledger.iloc[0:0].copy()
         p=perf(x.pnl_inr if 'pnl_inr' in x else pd.Series(dtype=float))
         summary.append({'strategy':label,'scheduled_cycles':len(fresh),'executable_trades':len(x),'coverage':len(x)/len(fresh) if len(fresh) else np.nan,**p})
         for slip in [0,0.5,1,2]:
             y=x.dropna(subset=['lot_near','lot_far','pnl_inr']).copy()
             net=float(y.apply(lambda r:net_cost(r,slip),axis=1).sum()) if not y.empty else 0.0
             costs.append({'strategy':label,'slippage_points':slip,'net_pnl_inr':net})
-    sel=ledger[ledger.status=='ADAPTIVE_SELECTED'].copy()
+    sel=ledger[ledger['status'].eq('ADAPTIVE_SELECTED')].copy()
     freq={f'F+{h}':int((sel.horizon==h).sum()) for h in HORIZONS}
     OUT_LEDGER.parent.mkdir(parents=True,exist_ok=True)
     ledger.to_csv(OUT_LEDGER,index=False); pd.DataFrame(summary).to_csv(OUT_SUMMARY,index=False); pd.DataFrame(costs).to_csv(OUT_COSTS,index=False); pd.DataFrame([freq|{'selected_trades':len(sel),'latest_source_date':str(max_date.date()),'cutoff':str(CUTOFF.date())}]).to_csv(ROOT/'reports/nifty_calendar/P13_ADAPTIVE_SELECTION.csv',index=False)
