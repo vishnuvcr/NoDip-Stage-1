@@ -9,10 +9,10 @@ Independent spot cross-check: Yahoo Finance NIFTY 50 daily session OPEN for each
 - Candidate strategy cycles: 134
 - Primary valid cycles: 59
 - Primary rejected cycles: 75
-- Secondary fully executable cycles: 84
+- Secondary fully executable cycles: 132
 - Primary rejects recovered by secondary source: 75
-- Primary-valid control sample also complete on secondary: 9
-- Reconciliation scope: all primary-rejected cycles plus 10 deterministic primary-valid control cycles.
+- Primary-valid cycles also complete on secondary: 57
+- Reconciliation scope: all 134 candidate cycles.
 
 ## Primary rejection reasons
 
@@ -28,19 +28,19 @@ Independent spot cross-check: Yahoo Finance NIFTY 50 daily session OPEN for each
 | Status | Cycles |
 |---|---:|
 | RECOVERED_BY_SECONDARY | 75 |
-| PRIMARY_VALID_SECONDARY_COMPLETE | 9 |
-| PRIMARY_VALID_SECONDARY_NONEXECUTABLE | 1 |
+| PRIMARY_VALID_SECONDARY_COMPLETE | 57 |
+| PRIMARY_VALID_SECONDARY_NONEXECUTABLE | 2 |
 
 ## Secondary P&L
 
-- Secondary complete cycles: 84
-- Secondary total P&L across complete cycles: ₹83,181.25
-- Secondary mean trade: ₹990.25
-- Secondary win rate: 55.95%
+- Secondary complete cycles: 132
+- Secondary total P&L across complete cycles: ₹127,185.00
+- Secondary mean trade: ₹963.52
+- Secondary win rate: 57.58%
 
 ## Cross-source price and spot checks
-- Matched-cycle maximum absolute option price difference: median ₹5.5500; p95 ₹66.8600; max ₹93.5000.
-- Yahoo-vs-primary NIFTY open difference on candidate entry dates: median 2.1508 index points; p95 24.8795; max 126.8000.
+- Matched-cycle maximum absolute option price difference: median ₹8.5000; p95 ₹70.4200; max ₹93.5000.
+- Yahoo-vs-primary NIFTY open difference on candidate entry dates: median 0.0496 index points; p95 22.2598; max 126.8000.
 
 ## Interpretation rule
 A primary rejection is not treated as a genuine market non-trade unless the independent NSE source also fails to provide the required frozen-protocol contract data. A complete secondary cycle is classified as a data-coverage recovery, not as an intentional strategy filter.
