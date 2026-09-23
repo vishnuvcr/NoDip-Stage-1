@@ -5,6 +5,7 @@ import importlib.util
 import duckdb
 import pandas as pd
 import numpy as np
+from huggingface_hub import hf_hub_download
 
 ROOT=Path(__file__).resolve().parents[1]
 OOS=ROOT/'reports/nifty_calendar/P8_OOS_TRADE_LEDGER_2025_ONWARD.csv'
@@ -13,7 +14,7 @@ COST=ROOT/'reports/nifty_calendar/P9_RISSIN_OOS_COSTS.csv'
 REPORT=ROOT/'reports/nifty_calendar/P9_RISSIN_OOS_REPORT.md'
 
 RISSIN_ROOT='upstox_intraday/NIFTY/'
-HF_RISSIN='https://huggingface.co/datasets/rissin/nse-options-intraday/resolve/main/'
+HF_RISSIN='rissin/nse-options-intraday'
 HF_TM='https://huggingface.co/datasets/thetrademarkk/india-index-options-1m/resolve/main/index/NIFTY.parquet'
 
 p8_path=ROOT/'scripts/p8_score.py'
@@ -42,20 +43,22 @@ def normalize(df):
 
 def load_year(con,year,dates,expiries):
     if not dates or not expiries:return pd.DataFrame()
-    url=HF_RISSIN+f'{RISSIN_ROOT}NIFTY_{year}.parquet'
+    filename=f'upstox_intraday/NIFTY/NIFTY_{year}.parquet'
+    path=hf_hub_download(repo_id=HF_RISSIN,repo_type='dataset',filename=filename)
     date_sql=','.join("'" + d + "'" for d in sorted(dates))
     exp_sql=','.join("'" + e + "'" for e in sorted(expiries))
     q=f"""
     SELECT timestamp, date, expiry, strike, option_type, open, close, volume
-    FROM read_parquet('{url}')
+    FROM read_parquet(?)
     WHERE date IN ({date_sql})
       AND expiry IN ({exp_sql})
       AND option_type IN ('CE','PE')
     """
-    return normalize(con.execute(q).fetch_df())
+    return normalize(con.execute(q,[path]).fetch_df())
 
 def load_spot(con,dates):
-    url=HF_TM
+    spot_path=hf_hub_download(repo_id='thetrademarkk/india-index-options-1m',repo_type='dataset',filename='index/NIFTY.parquet')
+    url=spot_path
     date_sql=','.join("'" + d + "'" for d in sorted(dates))
     q=f"""
     SELECT timestamp, close AS spot_close
