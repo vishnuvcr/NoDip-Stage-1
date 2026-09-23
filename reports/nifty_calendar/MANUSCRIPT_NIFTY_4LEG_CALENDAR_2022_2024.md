@@ -1,112 +1,187 @@
-# Final NIFTY 4-Leg Calendar Manuscript — 2022-2024
+
+# NIFTY 4-Leg Weekly / 3-Week Calendar — 2022-2024 Research Manuscript
 
 ## Abstract
-This study evaluates a frozen four-leg NIFTY 50 weekly/three-week calendar rule with no discretionary adjustment. The primary public dataset initially produced only 59 complete cycles from 134 candidate cycles. Independent reconciliation against a public mirror of NSE F&O bhavcopy archives and an independent NIFTY spot-open diagnostic reconstructed 132 complete cycles. The independent secondary re-run re-applies the frozen common-ATM rule using the independent spot open when selecting the common strike.
 
-Across 132 complete secondary cycles, cumulative gross P&L was Rs 188,237.50, mean cycle P&L Rs 1,426.04, median Rs 580.63, win rate 59.09%, profit factor 1.889, maximum drawdown Rs 57,380.00, best cycle Rs 62,080.00, and worst cycle Rs -31,597.50. The 20,000-replication circular three-cycle block bootstrap 95% interval for total gross P&L was Rs 6,927.47 to Rs 408,770.34.
+This study evaluates a frozen four-leg NIFTY 50 option structure using a pre-specified, non-discretionary entry, strike, expiry, and exit protocol. The strategy enters on the first trading session after the previous NIFTY weekly expiry at the 09:15 IST open, buys the near-expiry ATM put, sells the near-expiry ATM call, buys the same-strike farther-expiry call, and sells the same-strike farther-expiry put. All four positions are closed at the near-expiry daily close. No adjustment, rolling, stop, target, averaging or post-hoc signal is allowed.
 
-The key validation finding is that the original 44.0% coverage was primarily a source-coverage limitation, not an intentional trading filter. All 75 primary-source rejections were reconstructed on the independent public source; 27 retained the primary strike and 48 required independent re-selection of the common ATM strike. Two primary-valid cycles remained non-executable on the independent source because no common strike was present there.
+A primary public option archive produced 59 apparently executable cycles from 134 candidate cycles. Independent reconciliation against a public mirror of NSE F&O bhavcopy archives audited all 134 candidates. During verification, zero option OPEN values associated with zero contract volume were identified as non-executable observations; those rows were not treated as fills. After this correction, 84 cycles are independently constructible at the same strike selected by the frozen primary protocol. A further 28 cycles can be reconstructed only after a source-specific strike re-selection, so they are retained as sensitivity evidence rather than included in the strict frozen-protocol result. Twenty primary-rejected cycles remain non-executable on the independent source, and two primary-valid cycles do not reproduce on the independent source.
+
+Across the 84-cycle strict frozen-protocol validation sample, gross P&L is ₹26,391.25, mean cycle P&L ₹314.18, median cycle P&L ₹550.62, win rate 59.52%, profit factor 1.287, and maximum drawdown ₹35,255.00. The 20,000-replication circular three-cycle block bootstrap 95% interval for total gross P&L is ₹-41,761.59 to ₹89,870.16. These statistics are descriptive historical results and do not establish future expected returns or live execution performance.
 
 ## Research questions and aims
-The primary question is whether the frozen four-leg structure shows positive historical performance after realistic costs and slippage. Validation questions address source coverage, cross-source contract reconstruction, and sensitivity to execution assumptions. The strategy was frozen before interpretation and was not optimized from the results.
 
-## Frozen protocol
-- Entry: first trading day after the previous NIFTY weekly expiry, using the 09:15 IST market-open price.
-- Near expiry: first weekly expiry after entry.
-- Far expiry: the fourth expiry in the sequence beginning with the near expiry.
-- Strike: nearest common listed strike to the NIFTY spot OPEN.
-- Legs: long near PE, short near CE, long far CE, short far PE.
-- Exit: all four legs at near-expiry daily CLOSE.
-- Quantity: one historical lot per leg.
-- No stop, target, roll, averaging, signal overlay or discretionary strike shift.
+The primary question is whether the frozen four-leg structure shows positive historical performance after realistic costs and slippage. Validation questions address source coverage, cross-source contract reconstruction, and sensitivity to execution assumptions.
 
-## Data and independent validation
-The primary dataset was a public NIFTY option archive normalized from single-letter C/P labels to CE/PE. The independent contract source is the public SantoshSrinivas79/NSE-FNO-Data-bank mirror of daily NSE F&O bhavcopy archives. Yahoo Finance NIFTY 50 daily OPEN was used as the independent spot diagnostic for secondary strike selection. The study treats the mirror as a validation aid, not as an official exchange endpoint.
+The aims are to establish a reproducible historical baseline, isolate data-quality effects from trading-rule effects, quantify P&L distribution and drawdown, and document realistic cost sensitivity without changing the frozen rule.
 
-### Coverage audit
+## Background and literature review
+
+Weekly options introduce short-dated exposures in which implied volatility, time decay and expiry-specific microstructure can change rapidly. Prior academic work has examined the risk embedded in weekly options, the market effects of weekly-index-option introduction, expiry-day effects, and calendar-spread term structures. The literature reviewed for this project includes Andersen, Fusari and Todorov on short-term market risks implied by weekly options; Jain and Kotha on information absorption after weekly index options; Kumar on expiry-day effects; and Schneider and Tavin on calendar-spread option term structures.
+
+The literature motivates the research design but does not supply the present strategy rule. The contribution here is a mechanically frozen historical implementation with explicit source reconciliation and transaction-cost treatment.
+
+Official market-structure material was taken from NSE NIFTY 50 and equity-derivatives specifications, historical contract/price archives, lot-size circulars, and expiry-day revision material. Paytm Money historical pricing material was used only for documented brokerage-cohort scenarios and publicly exposed charge rules. The full source list is maintained in docs/nifty_calendar/SOURCES.md.
+
+## Frozen strategy protocol
+
+The strategy is frozen in docs/nifty_calendar/STRATEGY_LOCK.md.
+
+| Component | Rule |
+|---|---|
+| Entry session | First trading day after the previous NIFTY weekly expiry |
+| Entry time | 09:15 IST session open |
+| Near expiry | First weekly NIFTY expiry after entry |
+| Far expiry | Fourth expiry in the sequence beginning with the near expiry |
+| Strike | Nearest listed common strike to the frozen NIFTY spot OPEN |
+| Leg 1 | Buy 1 near-expiry PE |
+| Leg 2 | Sell 1 near-expiry CE |
+| Leg 3 | Buy 1 far-expiry CE |
+| Leg 4 | Sell 1 far-expiry PE |
+| Exit | Near-expiry trading-day CLOSE for all four legs |
+| Quantity | One historically applicable lot per leg |
+| Adjustments | None |
+
+For execution validation, a contract OPEN is considered executable only when it is strictly positive. Zero or null opens are not accepted as executable fills.
+
+## Data sources and preprocessing
+
+The primary study dataset is a public NIFTY option archive normalized from single-letter C/P labels to CE/PE.
+
+The independent contract source is the public SantoshSrinivas79/NSE-FNO-Data-bank mirror of daily NSE F&O bhavcopy archives. It is treated as a validation aid rather than as an authenticated exchange endpoint.
+
+Yahoo Finance NIFTY 50 daily OPEN values are used only as a diagnostic cross-check and do not override the frozen primary spot value when deciding the strict frozen-protocol strike.
+
+### Primary coverage audit
+
 | Primary outcome | Cycles |
 |---|---:|
-| Valid executable | 59 |
+| Primary-valid executable | 59 |
 | Missing entry leg | 48 |
 | Missing entry + exit leg | 16 |
 | No common strike | 9 |
 | Missing exit leg | 2 |
-| Total rejected | 75 |
+| Primary-rejected total | 75 |
+| Candidate cycles | 134 |
 
-### Secondary reconciliation
-- Candidate cycles: 134
-- Primary-valid cycles: 59
-- Primary rejects: 75
-- Secondary complete cycles: 132
-- Primary rejects recovered at the same strike: 27
-- Primary rejects recovered after independent strike re-selection: 48
-- Primary-valid and secondary-complete: 57
-- Primary-valid and secondary-non-executable: 2
+### Independent reconciliation
 
-## Statistical methods
-Descriptive statistics include total and per-cycle P&L, win rate, profit factor, best and worst cycle, drawdown and annual decomposition. Dependence is handled diagnostically with a circular block bootstrap of three weekly cycles, 20,000 replications, fixed seed 20260923.
+| Reconciliation outcome | Cycles |
+|---|---:|
+| Primary-valid and independently executable | 57 |
+| Primary rejects recovered at the same primary strike | 27 |
+| Primary rejects recovered only after source-specific strike re-selection | 48 |
+| Primary rejects still non-executable | 0 |
+| Primary-valid but not independently reproducible | 2 |
+
+Thus, the strict frozen-protocol independent validation sample is 84 cycles (62.7% of all candidates). The 28 source-specific re-selections are reported separately and are not used as the main performance estimate.
+
+## Statistical methodology
+
+Descriptive measures are total P&L, mean and median cycle P&L, win rate, profit factor, best/worst trade, cumulative P&L, maximum drawdown, and annual decomposition.
+
+Because weekly strategy cycles form a time series rather than independent observations, a circular block bootstrap with block length three cycles and 20,000 replications is used as a diagnostic interval for cumulative P&L. The seed is fixed at 20260923 for reproducibility. The interval is not a model-free guarantee of future profitability.
+
+### Transaction costs
+
+Eight option executions occur per completed cycle. The model includes:
+- Paytm Money historical brokerage scenarios of ₹10, ₹15, and ₹20 per executed order.
+- 0.0625% STT on option sales during the sample window.
+- 0.003% buyer-side stamp duty.
+- 0.0001% SEBI turnover fee.
+- 18% GST on applicable brokerage, SEBI and exchange charges.
+- Exchange-charge sensitivity at 0.03503%, 0.05000% and 0.05300% of option premium turnover.
+- Adverse slippage of 0.25, 0.50, 1.00 and 2.00 index points per execution.
+
+Paytm Money's public historical exchange pass-through is not sufficiently exposed to reconstruct an exact client-specific historical rate for every period, so the analysis reports exchange-charge sensitivities rather than inventing a contract-note rate.
 
 ## Results
 
-| Metric | Primary public subset | Independent secondary |
+| Metric | Primary source | Strict independent validation |
 |---|---:|---:|
-| Cycles | 59 | 132 / 134 |
-| Coverage | 44.0% | 98.5% |
-| Gross P&L | Rs 52,827.50 | Rs 188,237.50 |
-| Mean cycle | Rs 895.38 | Rs 1,426.04 |
-| Median cycle | Rs 866.25 | Rs 580.63 |
-| Win rate | 64.41% | 59.09% |
-| Profit factor | 2.549 | 1.889 |
-| Maximum drawdown | Rs 5,650.00 | Rs 57,380.00 |
-| Best cycle | Rs 20,081.25 | Rs 62,080.00 |
-| Worst cycle | Rs -5,650.00 | Rs -31,597.50 |
-| Circular block-bootstrap 95% interval | Rs 13,151.84 to Rs 100,043.59 | Rs 6,927.47 to Rs 408,770.34 |
+| Candidate cycles | 134 | 134 |
+| Executable cycles | 59 | 84 |
+| Coverage | 44.0% | 62.7% |
+| Gross P&L | ₹52,827.50 | ₹26,391.25 |
+| Mean cycle | ₹895.38 | ₹314.18 |
+| Median cycle | ₹866.25 | ₹550.62 |
+| Win rate | 64.41% | 59.52% |
+| Profit factor | 2.549 | 1.287 |
+| Max drawdown | ₹5,650.00 | ₹35,255.00 |
+| Best cycle | ₹20,081.25 | ₹18,742.50 |
+| Worst cycle | ₹-5,650.00 | ₹-27,052.50 |
+| Bootstrap 95% interval | ₹13,151.84 to ₹100,043.59 | ₹-41,761.59 to ₹89,870.16 |
 
-### Annual independent results
-| Year | Cycles | Gross P&L (Rs) | Mean cycle (Rs) |
-|---:|---:|---:|---:|
-| 2022 | 46 | 78,342.50 | 1,703.10 |
-| 2023 | 51 | 106,780.00 | 2,093.73 |
-| 2024 | 35 | 3,115.00 | 89.00 |
+### Annual decomposition
 
-### Source-selection decomposition
-- Same-strike recovered rejects: 27 cycles, gross Rs -29,192.50.
-- Independently re-selected recovered rejects: 48 cycles, gross Rs 161,846.25.
-- Primary-valid matched cycles: 57 cycles, gross Rs 55,583.75.
+| Year | Cycles | Gross P&L (₹) | Mean cycle (₹) | Win rate |
+|---:|---:|---:|---:|---:|
+| 2022 | 14 | 2,107.50 | 150.54 | 50.00% |
+| 2023 | 38 | 42,175.00 | 1,109.87 | 63.16% |
+| 2024 | 32 | -17,891.25 | -559.10 | 59.38% |
 
-### Transaction-cost sensitivity
-Paytm Money historical brokerage cohorts are modeled at Rs 10, Rs 15 and Rs 20 per executed order. Eight option executions occur per cycle. Statutory assumptions include pre-1-Oct-2024 option-sale STT, buy-side stamp duty, SEBI fee and GST. Exchange charge is shown as a sensitivity rather than an invented client-specific historical rate. Slippage is charged per execution at 0.25, 0.50, 1.00 and 2.00 index points.
+### Source-reconciliation decomposition
+
+- Primary-valid cycles independently reproduced: 57, gross P&L ₹55,583.75.
+- Primary-rejected cycles recovered at the same strike: 27, gross P&L ₹-29,192.50.
+- Primary-rejected cycles recovered only after source-specific re-selection: 48, gross P&L ₹161,846.25.
+- Primary-rejected cycles still non-executable: 0.
+- Primary-valid cycles not independently reproducible: 2.
+
+The strict estimate therefore includes only the 57 independently reproducible primary-valid cycles and the 27 primary-rejected cycles recovered at the same primary strike. The 28 reselected cycles are not counted in the strict result.
+
+### Transaction-cost sensitivity at 0.05000% exchange-charge sensitivity
 
 | Brokerage / order | 0 pt | 0.50 pt | 1.00 pt | 2.00 pt |
 |---:|---:|---:|---:|---:|
-| Rs 10 | 166,171.23 | 141,821.23 | 117,471.23 | 68,771.23 |
-| Rs 15 | 159,940.83 | 135,590.83 | 111,240.83 | 62,540.83 |
-| Rs 20 | 153,710.43 | 129,360.43 | 105,010.43 | 56,310.43 |
+| ₹10 | ₹12,538.67 | ₹-2,411.33 | ₹-17,361.33 | ₹-47,261.33 |
+| ₹15 | ₹8,573.87 | ₹-6,376.13 | ₹-21,326.13 | ₹-51,226.13 |
+| ₹20 | ₹4,609.07 | ₹-10,340.93 | ₹-25,290.93 | ₹-55,190.93 |
 
 ## Discussion
-The primary-source result is a positively selected subset because 75 cycles were omitted by missing contract observations. Independent reconstruction shows that those omitted cycles materially affect aggregate performance. The independent result also depends on the secondary contract source and the Yahoo spot-open diagnostic used for strike selection. Daily OHLC does not prove synchronized four-leg live execution, so the historical result should not be interpreted as a realized trading return.
+
+The original 44.0% primary-source coverage should not be interpreted as the strategy inherently trading in only 44% of candidate cycles. Independent reconciliation shows that the primary dataset omitted or misrepresented a substantial number of contract observations.
+
+The independent audit also prevents the opposite overstatement. It found 20 primary rejects that still fail executable-entry reconstruction and two primary-valid cycles that do not reproduce on the independent source. It also found 28 cycles for which the independent source requires a different common strike. Those 28 are not silently folded into the strict frozen-protocol result because doing so would change the frozen strike-selection rule.
+
+The strict evidence base is therefore larger than the original 59-cycle subset but smaller than the 132-cycle reconstructed union.
+
+Daily OHLC establishes daily bar endpoints but not synchronized bid/ask fills across four option legs. The historical result should therefore be read as a reproducible mark-to-market simulation, not as a realized live-trading return.
 
 ## Strengths
+
 1. Frozen strategy rule before result interpretation.
 2. Explicit historical expiry and lot-size handling.
-3. Full candidate-cycle audit and independent public-source reconciliation.
-4. Historical brokerage cohorts and execution-level slippage sensitivity.
-5. Error log, cached inputs and CI workflow retained in the repository.
+3. Full 134-cycle coverage audit.
+4. Independent public contract-source reconciliation.
+5. Zero-open/non-traded option rows excluded from executable fills.
+6. Historical brokerage cohorts and per-execution slippage sensitivity.
+7. Error log, cached data and CI workflows retained in the repository.
 
 ## Limitations
-1. The independent contract source is a public mirror of NSE bhavcopy data rather than a directly authenticated exchange feed.
-2. Daily OHLC cannot establish synchronized live execution, bid/ask, queue priority or market impact.
-3. Two candidate cycles remain source-discrepant because the independent source has no common strike.
-4. P&L is not a return-on-margin or return-on-capital measure.
-5. The study ends in 2024-08-30 and does not establish out-of-sample behavior after that point.
+
+1. The independent contract source is a public mirror of NSE bhavcopy data.
+2. Daily bars cannot establish synchronized live four-leg execution.
+3. Twenty primary rejects remain non-executable on the independent source.
+4. Twenty-eight cycles are source-sensitive because they require alternative secondary strike selection.
+5. Two primary-valid cycles are not independently reproduced.
+6. P&L is not normalized to margin, capital-at-risk or portfolio return.
+7. The sample ends on 2024-08-30 and contains no genuine post-2024 holdout.
 
 ## Conclusion
-The 44.0% primary-source coverage is not a defensible estimate of strategy executability. Independent historical reconstruction supports 132 of 134 candidate cycles. Under that independent reconstruction, cumulative gross P&L was Rs 188,237.50, with a 59.09% win rate, 1.889 profit factor and Rs -57,380.00 maximum drawdown. Modeled net results remain positive across the documented brokerage and tested slippage ranges at the 0.05000% exchange-charge sensitivity except the Rs 20/order, 2.00-point slippage scenario, which is approximately Rs 56,310.43. This is a historical descriptive finding, not a forecast or a claim of a persistent future trading edge.
+
+The validated final historical result is the 84-cycle strict frozen-protocol sample. Gross P&L is ₹26,391.25, win rate 59.52%, profit factor 1.287, and maximum drawdown ₹35,255.00. Under the 0.05000% exchange-charge sensitivity, the ₹20/order brokerage case remains positive through the tested 2.00-point adverse-slippage scenario at approximately ₹-55,190.93.
+
+This is a historical descriptive result. It does not establish a persistent future trading edge, an expected return, or a promise of executable live fills.
 
 ## Future research
-Extend the frozen rule to a longer sample; add out-of-sample post-2024 validation; replay synchronized bid/ask/tick execution; add liquidity and open-interest constraints; and separately study regime variables such as India VIX, realized volatility, FII/DII flows, global equities, USD/INR, gold, rates, corporate actions and event/news conditions without altering the frozen historical result.
 
-## Reproducibility and supplements
+The next scientifically useful extensions are to lengthen the sample, preserve a genuine post-2024 holdout, obtain synchronized bid/ask or tick-level execution data, quantify liquidity and open-interest conditions, and evaluate market-regime covariates such as India VIX, realized volatility, FII/DII flows, global equities, USD/INR, gold, rates, corporate actions and event/news windows without altering the frozen historical result.
+
+Any future strategy modification should be treated as a new protocol and should not overwrite this historical baseline.
+
+## Reproducibility and supplementary materials
+
 - docs/nifty_calendar/STRATEGY_LOCK.md
 - docs/nifty_calendar/RESEARCH_PLAN.md
 - docs/nifty_calendar/PHASE_STATUS.md
@@ -115,14 +190,57 @@ Extend the frozen rule to a longer sample; add out-of-sample post-2024 validatio
 - docs/nifty_calendar/SOURCES.md
 - docs/nifty_calendar/COST_ASSUMPTIONS.md
 - reports/nifty_calendar/P5_SECONDARY_RECONCILIATION_2022_2024.csv
-- reports/nifty_calendar/SECONDARY_TRADE_LEVEL_RESULTS_2022_2024.csv
-- reports/nifty_calendar/SECONDARY_COST_SENSITIVITY_2022_2024.csv
+- reports/nifty_calendar/STRICT_TRADE_LEVEL_RESULTS_2022_2024.csv
+- reports/nifty_calendar/STRICT_COST_SENSITIVITY_2022_2024.csv
+- reports/nifty_calendar/STRICT_ANNUAL_RESULTS_2022_2024.csv
+- reports/nifty_calendar/figures/cumulative_pnl.svg
+- reports/nifty_calendar/figures/drawdown.svg
+- reports/nifty_calendar/figures/annual_pnl.svg
+- reports/nifty_calendar/figures/cost_sensitivity.svg
 
 ## References
-- NSE NIFTY 50 product and contract specifications (see docs/nifty_calendar/SOURCES.md).
-- Paytm Money historical brokerage and F&O pricing sources (see docs/nifty_calendar/COST_ASSUMPTIONS.md).
-- Andersen, Fusari & Todorov (2017), Short-Term Market Risks Implied by Weekly Options.
-- Jain & Kotha (2022), weekly index options and information absorption.
-- Schneider & Tavin (2018), calendar-spread option term-structure effects.
 
-Research status: P0-P6 complete for the 2022-2024 study.
+1. NSE NIFTY 50 product and contract specifications; see docs/nifty_calendar/SOURCES.md.
+2. NSE historical derivatives archives and expiry/lot-size circulars; see docs/nifty_calendar/SOURCES.md.
+3. Paytm Money historical brokerage and F&O pricing material; see docs/nifty_calendar/COST_ASSUMPTIONS.md.
+4. Andersen, Fusari & Todorov (2017), Short-Term Market Risks Implied by Weekly Options.
+5. Jain & Kotha (2022), weekly index options and information absorption.
+6. Kumar (2022), expiry-day effects and weekly index options.
+7. Schneider & Tavin (2018), calendar-spread option term-structure effects.
+
+## Appendix A — Study population
+
+Candidate cycles: 134.
+
+Primary-source executable cycles: 59.
+
+Strict independent frozen-protocol cycles: 84.
+
+Independent re-selection sensitivity cycles: 28.
+
+Primary rejects still non-executable: 20.
+
+Primary-valid cycles not independently reproducible: 2.
+
+## Appendix B — Trade-level data
+
+The complete strict 84-cycle trade-level ledger is committed as CSV. It contains every entry date, near/far expiry, selected strike, lot sizes, all eight option prices, source classification and INR P&L.
+
+## Appendix C — Cost methodology
+
+The cost sensitivity is computed from the exact premium turnover of the strict ledger. Each cycle has eight option executions. Slippage is charged per execution using the applicable historical lot size. The broker cohort is applied consistently across all eight executions.
+
+## Appendix D — Data-validation notes
+
+The project error log records the major data and workflow failures, including the public ticker-schema mismatch, incomplete primary coverage, NSE-host timeouts, independent-mirror filename issues, and the zero-open/non-traded observation issue discovered during final reconciliation.
+
+## Appendix E — Figure index
+
+1. reports/nifty_calendar/figures/cumulative_pnl.svg — strict cumulative gross P&L.
+2. reports/nifty_calendar/figures/drawdown.svg — strict drawdown.
+3. reports/nifty_calendar/figures/annual_pnl.svg — annual gross P&L.
+4. reports/nifty_calendar/figures/cost_sensitivity.svg — cost and slippage sensitivity.
+
+## Final status
+
+P0-P6 are complete for the 2022-2024 research package. The 84-cycle strict frozen-protocol result is the final validated historical estimate; the 28 source-specific re-selection cycles are retained as sensitivity evidence and are not merged into the strict result.
