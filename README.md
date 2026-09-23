@@ -2,7 +2,7 @@
 
 ## Current research status — 2026-09-23
 
-**P0-P9 complete. P9 event-driven entry timing was tested on an unseen post-2024 sample using a secondary 1-minute NIFTY option source and was not promoted. P10 forward/paper validation of the frozen fixed rule is planned.**
+**P0-P9 complete. P10 entry-day offset research is now in progress. The P9 event-driven intraday-entry idea remains discarded. P11 forward/paper validation is planned after the new timing-session study.**
 
 ## Frozen validated reference
 
@@ -78,10 +78,22 @@ The first public source acquisition succeeded for 192/201 required expiry files,
 - docs/nifty_calendar/ERROR_LOG.md
 - docs/nifty_calendar/CONVERSATION_LOG.md
 
+## P10 — Entry-day offset research
+
+The frozen 09:15 + CBR<=1.20 criteria are being tested on seven trading-session offsets relative to the previous expiry:
+
+D-1, D0, D+1, D+2, D+3, D+4, D+5.
+
+Development: 2022-2024. Unseen validation: 2025 onward. OOS is not used to choose an offset.
+
+- Plan: docs/nifty_calendar/P10_ENTRY_DAY_OFFSET_PLAN.md
+- Trigger: docs/nifty_calendar/P10_TRIGGER.md
+- Workflow: .github/workflows/p10-entry-day-offsets.yml
+
 ## Next phase
 
-P10 is planned as forward/paper-execution validation of the frozen fixed rule, using timestamped executable quotes, observed spread, brokerage/statutory charges, slippage and a pre-registered paper ledger. New intraday timing ideas require a separate development phase and unseen validation.
+P11 is planned as forward/paper-execution validation after any development-selected offset survives unseen OOS validation, using timestamped executable quotes, observed spread, brokerage/statutory charges, slippage and a pre-registered paper ledger.
 
 ## Research stop condition
 
-The defined P9 research phase is closed. P10 is the next planned phase; no additional P9 parameter search is permitted.
+P10 will stop after the seven pre-registered offsets are evaluated on development and unseen OOS samples with cost/slippage sensitivity. No additional timing offsets will be searched in this phase.
