@@ -19,12 +19,12 @@ HEADERS = {
     "Accept": "*/*",
     "Connection": "keep-alive",
 }
-LEGACY_CUTOFF = pd.Timestamp("2024-01-01")
+UDIFF_START = pd.Timestamp("2024-07-08")
 
 
 def nse_url(d: date) -> str:
     ts = pd.Timestamp(d)
-    if ts >= LEGACY_CUTOFF:
+    if ts >= UDIFF_START:
         return f"{NSE_BASE}/content/fo/BhavCopy_NSE_FO_0_0_0_{ts:%Y%m%d}_F_0000.csv.zip"
     mon = ts.strftime("%b").upper()
     return f"{NSE_BASE}/content/historical/DERIVATIVES/{ts:%Y}/{mon}/fo{ts:%d}{mon}{ts:%Y}bhav.csv.zip"
@@ -35,23 +35,36 @@ def download_day(d: date, cache_dir: Path, session: requests.Session) -> tuple[d
     if out.exists() and out.stat().st_size > 1000:
         return d, out, None
 
-    url = nse_url(d)
+    ts = pd.Timestamp(d)
+    if ts >= UDIFF_START:
+        mirror_name = f"BhavCopy_NSE_FO_0_0_0_{ts:%Y%m%d}_F_0000.csv.zip"
+    else:
+        mirror_name = f"fo{ts:%d}{ts:%b}".upper() + f"{ts:%Y}bhav.csv.zip"
+    mirror_url = f"https://raw.githubusercontent.com/SantoshSrinivas79/NSE-FNO-Data-bank/main/data/{ts:%Y}/{ts:%m}/{mirror_name}"
+
+    urls = [
+        ("github_mirror", mirror_url),
+        ("nse_archive", nse_url(d)),
+    ]
     last = None
-    for attempt in range(3):
-        try:
-            r = session.get(url, headers=HEADERS, timeout=60)
-            if r.status_code == 404:
-                return d, None, "HTTP 404"
-            r.raise_for_status()
-            if not r.content.startswith(b"PK"):
-                return d, None, f"unexpected payload ({len(r.content)} bytes)"
-            tmp = out.with_suffix(".part")
-            tmp.write_bytes(r.content)
-            tmp.replace(out)
-            return d, out, None
-        except Exception as exc:
-            last = repr(exc)
-            time.sleep(1 + attempt)
+    for source, url in urls:
+        for attempt in range(3):
+            try:
+                r = session.get(url, headers=HEADERS, timeout=60)
+                if r.status_code == 404:
+                    last = f"{source} HTTP 404"
+                    break
+                r.raise_for_status()
+                if not r.content.startswith(b"PK"):
+                    last = f"{source} unexpected payload ({len(r.content)} bytes)"
+                    break
+                tmp = out.with_suffix(".part")
+                tmp.write_bytes(r.content)
+                tmp.replace(out)
+                return d, out, None
+            except Exception as exc:
+                last = f"{source} {repr(exc)}"
+                time.sleep(1 + attempt)
     return d, None, last
 
 
