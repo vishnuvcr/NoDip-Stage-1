@@ -2,6 +2,10 @@ name: P6 NIFTY Calendar Final Manuscript
 
 on:
   workflow_dispatch:
+  push:
+    branches: [research-nifty-4leg-calendar-p6-manuscript]
+    paths:
+      - ".github/workflows/p6-nifty-manuscript.yml"
 
 concurrency:
   group: nifty-calendar-p6-manuscript
