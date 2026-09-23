@@ -223,3 +223,7 @@ Step failure requires inspection before any numerical interpretation.
 - Correction: the conflict-safe commit step now regenerates the P10 outputs after the branch reset and before `git add`/push.
 - Impact: run 35841545509 output files are not accepted as the authoritative corrected result despite the computation step succeeding.
 - Prevention: conflict-safe output workflows must regenerate artifacts after any `git reset --hard` that can overwrite generated files.
+
+## 2026-09-23 — P11 forward validation workflow failure
+Run ID: 35846047483
+Step failure requires inspection before any numerical interpretation.
