@@ -1,0 +1,37 @@
+name: P9 Rissin latest-entry sensitivity
+
+on:
+  push:
+    paths:
+      - 'scripts/p9_rissin_cutoff_sensitivity.py'
+      - '.github/workflows/p9-rissin-cutoff-sensitivity.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: p9-rissin-cutoff-sensitivity
+  cancel-in-progress: true
+
+jobs:
+  sensitivity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install analysis tools
+        run: python -m pip install --disable-pip-version-check pandas numpy
+      - name: Run cutoff sensitivity
+        run: python scripts/p9_rissin_cutoff_sensitivity.py
+      - name: Commit generated sensitivity results
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git fetch origin "\${GITHUB_REF_NAME}"
+          git reset --hard "origin/\${GITHUB_REF_NAME}"
+          python scripts/p9_rissin_cutoff_sensitivity.py
+          git add reports/nifty_calendar/P9_RISSIN_CUTOFF_SENSITIVITY.csv reports/nifty_calendar/P9_RISSIN_CUTOFF_SENSITIVITY_REPORT.md
+          git diff --cached --quiet || git commit -m 'Run P9 latest-entry sensitivity'
+          git push origin HEAD:"\${GITHUB_REF_NAME}"
