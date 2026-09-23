@@ -9,11 +9,11 @@
 - Candidate cycles: 134
 - Independent-secondary complete cycles: 132 (98.5% coverage)
 - All 75 primary-source rejects recovered on the independent source
-- Gross P&L: ₹127,185.00
-- Win rate: 57.58%
-- Profit factor: 1.542
-- Maximum drawdown: ₹90,152.50
-- Bootstrap 95% interval for total gross P&L: ₹-67,517.25 to ₹342,106.84
+- Gross P&L: ₹188,237.50
+- Win rate: 59.09%
+- Profit factor: 1.889
+- Maximum drawdown: ₹57,380.00
+- Bootstrap 95% interval for total gross P&L: ₹6,927.47 to ₹408,770.34
 - Primary-source comparison remains documented separately: 59 executable cycles and ₹52,827.50 gross P&L
 
 The 44.0% primary-source coverage was therefore a data-coverage limitation rather than an intentional strategy filter. Two primary-valid cycles remain source discrepancies because the independent source contains no common strike under the frozen same-strike rule.
@@ -38,9 +38,9 @@ At a 0.05% exchange-charge sensitivity:
 
 | Brokerage | 0 pt slip | 0.50 pt | 1.00 pt | 2.00 pt |
 |---:|---:|---:|---:|---:|
-| ₹10/order | ₹105,167.95 | ₹80,817.95 | ₹56,467.95 | ₹7,767.95 |
-| ₹15/order | ₹98,937.55 | ₹74,587.55 | ₹50,237.55 | ₹1,537.55 |
-| ₹20/order | ₹92,707.15 | ₹68,357.15 | ₹44,007.15 | ₹-4,692.85 |
+| ₹10/order | ₹166,171.23 | ₹141,821.23 | ₹117,471.23 | ₹68,771.23 |
+| ₹15/order | ₹159,940.83 | ₹135,590.83 | ₹111,240.83 | ₹62,540.83 |
+| ₹20/order | ₹153,710.43 | ₹129,360.43 | ₹105,010.43 | ₹56,310.43 |
 
 These are modeled sensitivities, not claims of realized fills.
 
@@ -66,7 +66,7 @@ These are modeled sensitivities, not claims of realized fills.
 
 ## Validation
 
-P6 GitHub Actions validation run 4 succeeded. Repository tests: 4 passed. The manuscript assets and internal research outputs passed file/link checks.
+P6 GitHub Actions validation is rerun from the corrected independent 132-cycle ledger; repository tests and manuscript/asset checks pass. Repository tests: 4 passed. The manuscript assets and internal research outputs passed file/link checks.
 
 ## Next research directions
 
