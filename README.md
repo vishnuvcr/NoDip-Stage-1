@@ -2,7 +2,7 @@
 
 ## Current research status — 2026-09-23
 
-**P0-P8 complete. P9 event-driven entry timing is now open as a separate research phase and is currently data-blocked.**
+**P0-P8 complete. P9 event-driven entry timing is open; alternate-source audit is complete and acquisition is prepared, but numerical scoring is still blocked until timestamped files are successfully materialized and validated.**
 
 ## Frozen validated reference
 
@@ -12,59 +12,47 @@ P8 validated the fixed calendar-balance gate on the post-2024 temporal holdout:
 
 P8 conclusion: supported for further research, not promoted to live trading.
 
-- P8 plan: docs/nifty_calendar/P8_OOS_VALIDATION_PLAN.md
-- P8 candidate lock: docs/nifty_calendar/P8_OOS_CANDIDATE_LOCK.md
-- P8 report: reports/nifty_calendar/P8_OOS_VALIDATION_REPORT_2025_ONWARD.md
-- P8 conclusion: reports/nifty_calendar/P8_FINAL_RESEARCH_CONCLUSION.md
+- P8 report: [reports/nifty_calendar/P8_OOS_VALIDATION_REPORT_2025_ONWARD.md](reports/nifty_calendar/P8_OOS_VALIDATION_REPORT_2025_ONWARD.md)
+- P8 conclusion: [reports/nifty_calendar/P8_FINAL_RESEARCH_CONCLUSION.md](reports/nifty_calendar/P8_FINAL_RESEARCH_CONCLUSION.md)
 
 ## P9 — Event-driven intraday entry timing
 
-User question:
+### Research rule
 
-> Can the strategy enter when all other criteria are met during the trading day, rather than using a fixed clock time?
-
-Research rule:
-
-Enter exactly once at the first intraday timestamp on the first eligible trading day when:
+Enter exactly once on the first eligible trading day at the first intraday timestamp when:
 1. CBR <= 1.20;
-2. a valid current common ATM strike exists;
-3. near CE/PE and far CE/PE are all available and executable at that timestamp.
+2. current NIFTY permits a valid common ATM strike;
+3. near CE/PE and far CE/PE are all simultaneously executable.
 
-The four-leg structure, 1.20 gate and near-expiry close exit remain frozen.
+The four-leg structure, 1.20 gate and near-expiry close exit remain frozen. P9 tests timing only.
 
-P9 is not a threshold-optimization phase. It tests timing only.
+### Alternate data-source audit
 
-### Data requirement
+| Source | Resolution | Expiry identity | P9 role |
+|---|---|---|---|
+| Hugging Face `thetrademarkk/india-index-options-1m` | 1 minute | Actual expiry files + strike/type | Primary public candidate |
+| Hugging Face `rissin/nse-options-intraday` | 1 minute | Explicit expiry/strike/type | Secondary cross-check |
+| Kaggle `Historical Nifty Options 2024 All Expiries` | Intraday | Expiry/trade-day file structure | 2024 development cross-check |
+| GitHub `SauMStats/nifty-options-data-engine` | 1 minute query layer | Explicit expiry/trade date | Schema/query reference around Kaggle 2024 and 2026 data |
+| GitHub `QuantDev-stack/OptionVault` | 1 minute + 1 second + tick/L2 samples | Explicit contract expiry/strike | Higher-fidelity licensed fallback |
+| GitHub `JATINDHURVE/Indian-market-data-pipeline` | 1 minute | Expiry per contract | ICICI Breeze API fallback |
 
-The existing daily OPEN/CLOSE archive cannot determine an intraday trigger time or reliable contemporaneous four-leg fills. P9 therefore requires timestamped NIFTY spot plus multi-expiry option data, preferably with bid/ask and quote size.
+Source manifest: [reports/nifty_calendar/P9_ALTERNATE_DATA_SOURCES.csv](reports/nifty_calendar/P9_ALTERNATE_DATA_SOURCES.csv)
 
-NSE states that normal equity-derivatives trading runs from 09:15 to 15:40 IST and provides historical order/trade data as a separate historical-data service. These are candidate sources for an auditable intraday dataset.
+Detailed audit: [docs/nifty_calendar/P9_ALTERNATE_DATA_SOURCE_AUDIT.md](docs/nifty_calendar/P9_ALTERNATE_DATA_SOURCE_AUDIT.md)
 
-Public research projects also show that 1-minute NIFTY option datasets can exist, but coverage and contract fidelity must be independently validated before research use.
+### Acquisition
 
-### P9 files
+A Hugging Face acquisition script and manual GitHub Actions workflow have been added:
 
-- docs/nifty_calendar/P9_ENTRY_TIMING_PLAN.md
-- docs/nifty_calendar/P9_TRIGGER.md
-- .github/workflows/p9-entry-timing.yml
-- docs/nifty_calendar/PHASE_STATUS.md
+- `scripts/p9_fetch_hf_intraday.py`
+- `.github/workflows/p9-data-acquisition.yml`
 
-### P10 planned
+The workflow has not yet produced an observed run in the available GitHub connector, so raw intraday files are **not** being represented as already cached. This is an acquisition/runner issue, not evidence that the datasets are unavailable.
 
-After P9, the next planned phase is fixed-rule forward/paper-execution validation using timestamped executable quotes, explicit costs and slippage, with no contemporaneous threshold retuning.
+### Execution limitation
 
-## Historical reference result
-
-| Metric | Result |
-|---|---:|
-| Candidate cycles | 134 |
-| Strict frozen-protocol cycles | 84 |
-| Strict coverage | 62.7% |
-| Gross P&L | ₹83,030.00 |
-| Win rate | 61.90% |
-| Profit factor | 2.942 |
-| Maximum drawdown | ₹8,022.50 |
-| Bootstrap 95% interval | ₹31,147.19 to ₹139,293.78 |
+The public intraday candidates found so far expose OHLCV and expiry/strike identity, but not reliable historical bid/ask quotes in their published schemas. Therefore P9 historical testing will use the pre-registered 1-minute signal-close -> next-minute execution convention with adverse-slippage sensitivity. True bid/ask replay remains a separate execution-validation layer.
 
 ## P8 OOS reference
 
@@ -83,7 +71,7 @@ These are historical modeled results, not claims of realized live fills.
 
 ## Research records
 
-- docs/nifty_calendar/RESEARCH_PLAN.md
-- docs/nifty_calendar/PHASE_STATUS.md
-- docs/nifty_calendar/ERROR_LOG.md
-- docs/nifty_calendar/CONVERSATION_LOG.md
+- `docs/nifty_calendar/RESEARCH_PLAN.md`
+- `docs/nifty_calendar/PHASE_STATUS.md`
+- `docs/nifty_calendar/ERROR_LOG.md`
+- `docs/nifty_calendar/CONVERSATION_LOG.md`
