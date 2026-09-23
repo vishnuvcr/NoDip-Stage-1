@@ -125,3 +125,16 @@
 - Impact: the output is rejected as an implementation artifact and is not a P9 strategy result.
 - Correction: a remote-predicate DuckDB implementation was added. It reads the public Hugging Face Parquet source directly with date predicates instead of downloading whole expiry files, and it uses direct expiry URLs from the OOS ledger rather than relying on the repository file listing.
 - Prevention: do not interpret a zero-trade result when the row-level error rate is non-zero; require executable-row and error-rate checks before performance analysis.
+
+
+## 2026-09-23 — P9 source-alignment audit dependency failure
+- Event: the first timestamp/ATM alignment audit workflow omitted the `huggingface_hub` package and failed before the audit script ran.
+- Impact: no alignment conclusion was produced by that failed run.
+- Correction: the workflow now installs `huggingface_hub`; the subsequent audit completed successfully.
+- Prevention: any workflow invoking `hf_hub_download` must list `huggingface_hub` explicitly in its install step.
+
+## 2026-09-23 — P9 primary-source far-expiry intraday sparsity
+- Event: the primary public 1-minute source was found to have extremely sparse far-expiry observations on the 2026-04-01 sample: the near expiry had tens of thousands of option rows, while the far expiry had only 903 rows for the entire trading day and only 2–4 rows at sampled minutes.
+- Impact: the frozen nearest-common-strike rule can select a strike far from the current NIFTY spot simply because the far-expiry source has few contemporaneous strikes. The first apparent event trade used strike 20,500 with NIFTY near 22,900.
+- Handling: the one-trade P9 primary-source result is rejected for performance interpretation until a second option-data source demonstrates adequate multi-strike far-expiry coverage.
+- Prevention: P9 source validation must record ATM-distance and far-expiry coverage at the signal timestamp; sparse-common-strike cases remain a data-quality limitation, not a trading conclusion.
