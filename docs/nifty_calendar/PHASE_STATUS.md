@@ -1,6 +1,6 @@
 # Phase Status
 
-Last updated: 2026-09-23  — P5 complete; P6 manuscript in progress
+Last updated: 2026-09-23  — P0-P6 complete for 2022-2024 study
 
 | Phase | Status | Notes |
 |---|---|---|

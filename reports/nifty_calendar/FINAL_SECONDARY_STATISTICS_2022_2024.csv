@@ -1,0 +1,2 @@
+candidate_cycles,secondary_complete_cycles,coverage,gross_pnl_inr,mean_trade_inr,median_trade_inr,win_rate,profit_factor,max_drawdown_inr,best_trade_inr,worst_trade_inr,bootstrap_ci_lo_inr,bootstrap_ci_hi_inr,same_strike_recovered_rejects,reselected_recovered_rejects,primary_valid_secondary_complete
+134,132,0.9850746268656716,188237.5,1426.0416666666667,580.6250000000002,0.5909090909090909,1.8889977744062623,-57380.0,62080.0,-31597.5,6927.468750000032,408770.3437499999,27,48,57
