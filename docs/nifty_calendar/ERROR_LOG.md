@@ -95,14 +95,19 @@
 - Correction: the audit document was rewritten using line-array construction and then committed successfully.
 - Prevention: avoid nested template strings when repository content contains Markdown backticks or quote-heavy schema descriptions.
 
-## 2026-09-23 — P9 GitHub Actions acquisition run not observed
-- Event: the new P9 Hugging Face acquisition workflow was added with push and workflow_dispatch triggers, but an immediate query of workflow runs for branch `research-nifty-4leg-calendar-p9-entry-timing` returned zero runs.
-- Impact: no raw intraday dataset has yet been materialized into the repository runner/cache from this phase.
-- Interpretation: this is an Actions/connector observability or triggering issue, not evidence that the Hugging Face datasets are unavailable.
-- Handling: P9 remains data-blocked for numerical scoring. Source metadata and acquisition scripts are committed; no P9 performance claim is made.
-- Prevention: future P9 acquisition runs must be confirmed through an actual workflow run/job result before treating downloaded files as present.
+## 2026-09-23 — P9 acquisition run initially appeared absent, then completed successfully
+- Event: the first query after adding the P9 Hugging Face acquisition workflow returned zero runs, but a subsequent workflow-run query confirmed run 35831140990 completed successfully.
+- Result: 192/201 requested NIFTY option expiry files were downloaded (~671.8 MB) and the 1-minute NIFTY index file was downloaded.
+- Impact: no research interpretation was affected; the initial zero-run response was transient connector observability.
+- Follow-up: the successful acquisition is now recorded in the P9 source audit and phase status.
 
 ## 2026-09-23 — P9 public-source schema limitation
 - Event: the public intraday candidates identified so far expose OHLCV and expiry/strike data but not reliable historical bid/ask quotes in their published schema.
 - Impact: these sources cannot support a claim of exact historical market-order fills.
 - Handling: when a qualifying intraday dataset is acquired, P9 will use the pre-registered 1-minute signal-close to next-minute execution convention with explicit adverse slippage. True bid/ask validation remains a separate execution-validation layer.
+
+## 2026-09-23 — P9 raw-cache path correction
+- Event: the first successful acquisition workflow cached data/cache/p9_hf_probe, which contained the manifest but not the raw Hugging Face Parquet files stored under /home/runner/.cache/huggingface/hub.
+- Impact: the raw 671.8 MB source files were not persisted in the Actions cache for reuse by a later scan.
+- Correction: the workflow was updated to cache the actual Hugging Face dataset directory under a stable cache key and to run parquet schema validation plus the first event-driven timing scan.
+- Prevention: verify the cache path against the actual downloader destination before declaring raw data cached.
