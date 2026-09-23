@@ -127,3 +127,18 @@ The first workflow successfully downloaded the raw files onto the GitHub Actions
 under a stable P9 cache key. The corrected workflow also adds parquet schema validation and the first event-driven timing scan.
 
 Because the available connector does not expose a manual workflow-dispatch action, the corrected workflow has not yet produced a second run. No event-driven performance result is therefore claimed from this stage.
+
+
+## Primary-source execution-quality finding
+
+The first P9 timing scan is not an admissible performance estimate from the primary public source.
+
+A targeted audit on 2026-04-01 showed:
+- NIFTY index data at 1-minute resolution beginning 09:15 IST;
+- near-expiry option rows: 58,868 for the day;
+- far-expiry option rows: only 903 for the day;
+- sampled far-expiry rows at 09:15, 09:16, 09:22 and 09:26: only 2–4 rows per minute.
+
+Because the frozen P6 selection rule chooses the nearest common executable strike to spot, sparse far-expiry coverage can make the selected strike materially non-ATM even though it is mathematically the nearest remaining common strike. The first apparent P9 event trade on 2026-04-01 selected strike 20,500 while NIFTY spot was about 22,900.
+
+Therefore the primary-source event-performance output is treated as **data-quality diagnostic evidence only**, not as a strategy performance result. The secondary Rissin/Upstox-derived 1-minute source is being used to test whether the anomaly is source-specific.
