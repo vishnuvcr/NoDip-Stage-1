@@ -42,29 +42,22 @@ def download_day(d: date, cache_dir: Path, session: requests.Session) -> tuple[d
         mirror_name = f"fo{ts:%d}{ts:%b}".upper() + f"{ts:%Y}bhav.csv.zip"
     mirror_url = f"https://raw.githubusercontent.com/SantoshSrinivas79/NSE-FNO-Data-bank/main/data/{ts:%Y}/{ts:%m}/{mirror_name}"
 
-    urls = [
-        ("github_mirror", mirror_url),
-        ("nse_archive", nse_url(d)),
-    ]
     last = None
-    for source, url in urls:
-        for attempt in range(3):
-            try:
-                r = session.get(url, headers=HEADERS, timeout=60)
-                if r.status_code == 404:
-                    last = f"{source} HTTP 404"
-                    break
-                r.raise_for_status()
-                if not r.content.startswith(b"PK"):
-                    last = f"{source} unexpected payload ({len(r.content)} bytes)"
-                    break
-                tmp = out.with_suffix(".part")
-                tmp.write_bytes(r.content)
-                tmp.replace(out)
-                return d, out, None
-            except Exception as exc:
-                last = f"{source} {repr(exc)}"
-                time.sleep(1 + attempt)
+    for attempt in range(2):
+        try:
+            r = session.get(mirror_url, headers=HEADERS, timeout=30)
+            if r.status_code == 404:
+                return d, None, "GitHub mirror HTTP 404"
+            r.raise_for_status()
+            if not r.content.startswith(b"PK"):
+                return d, None, f"GitHub mirror unexpected payload ({len(r.content)} bytes)"
+            tmp = out.with_suffix(".part")
+            tmp.write_bytes(r.content)
+            tmp.replace(out)
+            return d, out, None
+        except Exception as exc:
+            last = f"GitHub mirror {repr(exc)}"
+            time.sleep(1 + attempt)
     return d, None, last
 
 
@@ -120,7 +113,7 @@ def yahoo_open(entry_date: str, session: requests.Session) -> float | None:
         "https://query1.finance.yahoo.com/v8/finance/chart/^NSEI"
         f"?period1={start}&period2={end}&interval=1d&events=history"
     )
-    r = session.get(url, headers=HEADERS, timeout=30)
+    r = session.get(url, headers=HEADERS, timeout=10)
     r.raise_for_status()
     js = r.json()
     result = js["chart"]["result"]
