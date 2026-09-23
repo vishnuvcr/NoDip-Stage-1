@@ -6,6 +6,7 @@ on:
     branches: [research-nifty-4leg-calendar-p6-manuscript]
     paths:
       - ".github/workflows/p6-nifty-manuscript.yml"
+      - "docs/nifty_calendar/P6_TRIGGER.md"
 
 concurrency:
   group: nifty-calendar-p6-manuscript
