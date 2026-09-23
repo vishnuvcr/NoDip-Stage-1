@@ -21,13 +21,13 @@
 
 ## OOS results — all seven offsets are reported without post-hoc selection
 
-- D-1: 1 trades / 88 cycles; gross ₹4,511.25; net at 0/0.5/1/2pt = ₹4,136.02 / ₹3,836.02 / ₹3,536.02 / ₹2,936.02; PF inf; drawdown ₹0.00.
-- D0: 2 trades / 88 cycles; gross ₹3,296.25; net at 0/0.5/1/2pt = ₹2,554.07 / ₹1,954.07 / ₹1,354.07 / ₹154.07; PF 2.487; drawdown ₹0.00.
-- D+1: 2 trades / 88 cycles; gross ₹2,133.75; net at 0/0.5/1/2pt = ₹1,378.14 / ₹778.14 / ₹178.14 / ₹-1,021.86; PF 2.371; drawdown ₹0.00.
-- D+2: 2 trades / 88 cycles; gross ₹5,118.75; net at 0/0.5/1/2pt = ₹4,383.17 / ₹3,783.17 / ₹3,183.17 / ₹1,983.17; PF inf; drawdown ₹0.00.
-- D+3: 2 trades / 88 cycles; gross ₹-5,081.25; net at 0/0.5/1/2pt = ₹-5,820.76 / ₹-6,420.76 / ₹-7,020.76 / ₹-8,220.76; PF 0.182; drawdown ₹0.00.
-- D+4: 2 trades / 88 cycles; gross ₹4,556.25; net at 0/0.5/1/2pt = ₹3,812.62 / ₹3,212.62 / ₹2,612.62 / ₹1,412.62; PF inf; drawdown ₹0.00.
-- D+5: 0 trades / 88 cycles; gross ₹0.00; net at 0/0.5/1/2pt = ₹0.00 / ₹0.00 / ₹0.00 / ₹0.00; PF inf; drawdown ₹0.00.
+- D-1: 44 trades / 88 cycles; gross ₹90,808.25; net at 0/0.5/1/2pt = ₹74,246.23 / ₹61,646.23 / ₹49,046.23 / ₹23,846.23; PF 2.922; drawdown ₹30,663.75.
+- D0: 42 trades / 88 cycles; gross ₹133,757.75; net at 0/0.5/1/2pt = ₹117,810.36 / ₹105,830.36 / ₹93,850.36 / ₹69,890.36; PF 11.925; drawdown ₹4,143.75.
+- D+1: 36 trades / 88 cycles; gross ₹99,992.75; net at 0/0.5/1/2pt = ₹87,251.90 / ₹76,971.90 / ₹66,691.90 / ₹46,131.90; PF 4.540; drawdown ₹13,406.25.
+- D+2: 44 trades / 88 cycles; gross ₹129,107.75; net at 0/0.5/1/2pt = ₹113,707.53 / ₹101,127.53 / ₹88,547.53 / ₹63,387.53; PF 8.100; drawdown ₹9,213.75.
+- D+3: 36 trades / 88 cycles; gross ₹50,454.25; net at 0/0.5/1/2pt = ₹38,109.18 / ₹27,869.18 / ₹17,629.18 / ₹-2,850.82; PF 1.993; drawdown ₹18,667.50.
+- D+4: 33 trades / 88 cycles; gross ₹80,699.00; net at 0/0.5/1/2pt = ₹69,517.50 / ₹60,177.50 / ₹50,837.50 / ₹32,157.50; PF 3.834; drawdown ₹11,388.75.
+- D+5: 19 trades / 88 cycles; gross ₹17,240.00; net at 0/0.5/1/2pt = ₹11,245.22 / ₹5,865.22 / ₹485.22 / ₹-10,274.78; PF 2.359; drawdown ₹6,685.25.
 
 ## Source
 - Rissin historical_daily/NIFTY annual Parquet, derived from NSE F&O bhavcopy; NIFTY opening spot from Yahoo daily chart.
