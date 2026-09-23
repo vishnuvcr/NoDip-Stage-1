@@ -84,28 +84,37 @@ def main():
         t=pd.Timestamp(f'{DATE} {tm}')
         n=ne[ne.timestamp.eq(t)].copy()
         f=fe[fe.timestamp.eq(t)].copy()
-        if n.empty or f.empty:
-            lines += [f'## {tm} — no complete timestamp panel','']
-            continue
-        npiv=n.pivot_table(index='strike',columns='option_type',values=['close','volume'],aggfunc='last')
-        fpiv=f.pivot_table(index='strike',columns='option_type',values=['close','volume'],aggfunc='last')
-        common=npiv.join(fpiv,lsuffix='_near',rsuffix='_far',how='inner')
-        # flatten access by checking column tuples
-        rows=[]
-        for strike in common.index:
-            try:
-                ce_n=float(common.loc[strike,('close','CE')])
-                pe_n=float(common.loc[strike,('close','PE')])
-                ce_f=float(common.loc[strike,('close_far','CE')])
-                pe_f=float(common.loc[strike,('close_far','PE')])
-            except Exception:
-                continue
-            rows.append((float(strike),ce_n,pe_n,ce_f,pe_f))
-        snap=pd.DataFrame(rows,columns=['strike','near_ce','near_pe','far_ce','far_pe'])
         lines += [f'## {tm}',f'- Near rows at exact timestamp: {len(n)}',f'- Far rows at exact timestamp: {len(f)}']
-        lines += [snap.sort_values('strike').head(15).to_string(index=False)] if len(snap) else ['No complete CE/PE common-strike rows.']
-        lines += ['']
-
+        if n.empty or f.empty:
+            lines += ['No complete four-leg common-strike panel.','']
+            continue
+        def contracts(df,exp):
+            y=df[df.option_type.isin(['CE','PE']) & df.volume.fillna(0).gt(0) & df.close.gt(0)].copy()
+            piv=y.pivot_table(index='strike',columns='option_type',values=['close','volume'],aggfunc='last')
+            out={}
+            for strike in piv.index:
+                try:
+                    ce=float(piv.loc[strike,('close','CE')]); pe=float(piv.loc[strike,('close','PE')])
+                    vce=float(piv.loc[strike,('volume','CE')]); vpe=float(piv.loc[strike,('volume','PE')])
+                except Exception:
+                    continue
+                if min(ce,pe,vce,vpe)>0: out[float(strike)]={'ce':ce,'pe':pe}
+            return out
+        nc=contracts(n,'near'); fc=contracts(f,'far')
+        common=sorted(set(nc).intersection(fc))
+        if not common:
+            lines += ['No complete four-leg common-strike panel.','']
+            continue
+        ix=idx[idx.timestamp.eq(t)]
+        spot=float(ix.close.iloc[0]) if len(ix) else float('nan')
+        rows=[]
+        for strike in common:
+            cr=fc[strike]['ce']/nc[strike]['ce']
+            pr=fc[strike]['pe']/nc[strike]['pe']
+            cbr=cr/pr
+            rows.append({'strike':strike,'spot':spot,'distance_points':abs(strike-spot),'distance_pct':abs(strike-spot)/spot*100,'cbr':cbr})
+        snap=pd.DataFrame(rows).sort_values(['distance_points','strike'])
+        lines += [snap.head(25).to_string(index=False), '']
     OUT.write_text('\n'.join(lines)+'\n',encoding='utf-8')
 
 if __name__=='__main__': main()
