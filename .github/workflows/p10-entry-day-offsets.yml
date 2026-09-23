@@ -10,7 +10,7 @@ on:
       - 'docs/nifty_calendar/P10_TRIGGER.md'
 
 concurrency:
-  group: p10-entry-day-offsets
+  group: p10-entry-day-offsets-v2
   cancel-in-progress: true
 
 permissions:
