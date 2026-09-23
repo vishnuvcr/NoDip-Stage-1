@@ -57,3 +57,12 @@
   https://papers.ssrn.com/sol3/Delivery.cfm/6918100.pdf?abstractid=6918100&mirid=1
 
 No external source is treated as authoritative merely because it agrees with the result. Independent datasets are validation aids; official exchange records remain the primary contract source.
+
+
+## P7 loss-mechanism / improvement literature
+
+- Andersen, Fusari & Todorov (2017), *Short-Term Market Risks Implied by Weekly Options* — documents short-dated option exposure to jump/tail-risk variation. https://www.nber.org/papers/w21491
+- Schneider & Tavin (2018), *From the Samuelson volatility effect to a Samuelson correlation effect: An analysis of crude oil calendar spread options* — documents maturity-dependent dependence/term-structure effects relevant to calendar structures. https://www.sciencedirect.com/science/article/pii/S0378426616302424
+- Jayanesh et al. (2026), *An Empirical Study on the Impact of Weekly Options Expiry on Market Volatility: Evidence from NIFTY and Bank NIFTY* — discusses expiry-linked volatility and short-dated option microstructure in Indian indices. https://zenodo.org/records/19220278
+- Sajjan (2026), *Variance Risk Premium in Nifty 50 Weekly Expiry Cycles: VIX Calibration Bias and Regime Dependence* — examines NIFTY weekly-cycle volatility-risk-premium and regime dependence. https://papers.ssrn.com/sol3/Delivery.cfm/6918100.pdf?abstractid=6918100&mirid=1
+- *Retail option traders and the implied volatility surface* (Journal of Financial Economics, 2026) — reports that retail demand can affect short-dated/long-dated implied-volatility term structure and moneyness curves. https://www.sciencedirect.com/science/article/abs/pii/S0304405X26000097
