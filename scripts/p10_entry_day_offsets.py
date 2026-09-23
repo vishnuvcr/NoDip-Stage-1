@@ -19,20 +19,47 @@ p8m = importlib.util.module_from_spec(p8); assert p8.loader is not None; p8.load
 rec = importlib.util.spec_from_file_location('rec', ROOT/'scripts/reconcile_rejections_nse.py')
 recm = importlib.util.module_from_spec(rec); assert rec.loader is not None; rec.loader.exec_module(recm)
 
-def archives(mirror_root: Path) -> dict[pd.Timestamp,str]:
-    raw = subprocess.check_output(['git','-C',str(mirror_root),'ls-tree','-r','--name-only','HEAD','data'], text=True)
-    pat_new = re.compile(r'data/(?:2024|2025|2026)/\\d{2}/BhavCopy_NSE_FO_0_0_0_(\\d{8})_F_0000\\.csv\\.zip$')
-    pat_old = re.compile(r'data/(?:2022|2023|2024)/\\d{2}/fo(\\d{2})([A-Z]{3})(\\d{4})bhav\\.csv\\.zip$')
-    out={}
-    for line in raw.splitlines():
-        x=line.strip(); m=pat_new.match(x)
-        if m: out[pd.to_datetime(m.group(1),format='%Y%m%d')]=x; continue
-        m=pat_old.match(x)
-        if m:
-            d=pd.to_datetime(f'{m.group(1)}{m.group(2)}{m.group(3)}',format='%d%b%Y')
-            out[d]=x
-    if not out: raise RuntimeError('No F&O BhavCopy archives found')
-    return dict(sorted(out.items()))
+def trading_dates_from_cycles(cycles: pd.DataFrame) -> list[pd.Timestamp]:
+    dates=set()
+    for _,c in cycles.iterrows():
+        dates.add(pd.Timestamp(c["previous_expiry"]))
+        dates.add(pd.Timestamp(c["near_expiry"]))
+    # Yahoo/NSE holiday calendar will determine actual session dates in the spot map.
+    return sorted(dates)
+
+def load_rissin_daily(cycles: pd.DataFrame, cache_dir: Path) -> tuple[list[pd.Timestamp], dict[pd.Timestamp,pd.DataFrame]]:
+    from huggingface_hub import hf_hub_download
+    years=sorted(set(pd.to_datetime(cycles["previous_expiry"]).dt.year.tolist())
+                 | set(pd.to_datetime(cycles["near_expiry"]).dt.year.tolist())
+                 | set(pd.to_datetime(cycles["far_expiry"]).dt.year.tolist())
+                 | {2022,2023,2024,2025,2026})
+    required_dates=set()
+    for _,c in cycles.iterrows():
+        prev=pd.Timestamp(c["previous_expiry"])
+        required_dates.add(prev)
+    daily={}
+    all_dates=[]
+    for y in years:
+        path=hf_hub_download(
+            repo_id="rissin/nse-options-intraday",
+            filename=f"historical_daily/NIFTY/NIFTY_{y}.parquet",
+            repo_type="dataset",
+            cache_dir=str(cache_dir),
+        )
+        df=pd.read_parquet(path)
+        df["date"]=pd.to_datetime(df["date"],errors="coerce")
+        df["expiry"]=pd.to_datetime(df["expiry"],errors="coerce")
+        df["strike"]=pd.to_numeric(df["strike"],errors="coerce")
+        df["open"]=pd.to_numeric(df["open"],errors="coerce")
+        df["close"]=pd.to_numeric(df["close"],errors="coerce")
+        df["volume"]=pd.to_numeric(df["volume"],errors="coerce")
+        df=df[(df["underlying"].astype(str).str.upper()=="NIFTY") & (df["granularity"].astype(str)=="1d")]
+        # Keep only contract rows needed by this phase.
+        df=df[["date","expiry","strike","option_type","open","close","volume"]].copy()
+        for d,g in df.groupby(df["date"].dt.normalize()):
+            daily[d]=g
+            all_dates.append(d)
+    return sorted(set(all_dates)), daily
 
 def load_cycles(dev_path: Path, oos_path: Path, trading: list[pd.Timestamp]) -> pd.DataFrame:
     dev=pd.read_csv(dev_path); dev['sample']='DEVELOPMENT'
@@ -154,23 +181,14 @@ def net_total(sub:pd.DataFrame, slip:float)->float:
     return float(total)
 
 def main():
-    ap=argparse.ArgumentParser(); ap.add_argument('--mirror-root',required=True,type=Path); ap.add_argument('--dev-cycles',required=True,type=Path); ap.add_argument('--oos-cycles',required=True,type=Path); ap.add_argument('--out-ledger',required=True,type=Path); ap.add_argument('--out-summary',required=True,type=Path); ap.add_argument('--out-paired',required=True,type=Path); ap.add_argument('--out-report',required=True,type=Path); args=ap.parse_args()
-    files=archives(args.mirror_root); trading=sorted(files); cycles=load_cycles(args.dev_cycles,args.oos_cycles,trading); spots=spot_map()
-    req={}
-    pos={d:i for i,d in enumerate(trading)}
-    for _,c in cycles.iterrows():
-        p=pd.Timestamp(c.previous_expiry)
-        if p not in pos: continue
-        for off in OFFSETS:
-            idx=pos[p]+off
-            if 0<=idx<len(trading): req.setdefault(trading[idx],set()).update([str(c.near_expiry),str(c.far_expiry)])
-        if pd.Timestamp(c.near_expiry) in files: req.setdefault(pd.Timestamp(c.near_expiry),set()).update([str(c.near_expiry),str(c.far_expiry)])
-    daily={}
-    def task(item):
-        d,exps=item; return d, read_day(args.mirror_root,files[d],exps)
-    with ThreadPoolExecutor(max_workers=12) as pool:
-        futs={pool.submit(task,item):item[0] for item in req.items()}
-        for fut in as_completed(futs): d,df=fut.result(); daily[d]=df
+    ap=argparse.ArgumentParser(); ap.add_argument('--cache-dir',required=True,type=Path); ap.add_argument('--dev-cycles',required=True,type=Path); ap.add_argument('--oos-cycles',required=True,type=Path); ap.add_argument('--out-ledger',required=True,type=Path); ap.add_argument('--out-summary',required=True,type=Path); ap.add_argument('--out-paired',required=True,type=Path); ap.add_argument('--out-report',required=True,type=Path); args=ap.parse_args()
+    dev=pd.read_csv(args.dev_cycles); oos=pd.read_csv(args.oos_cycles); cycles_raw=pd.concat([dev.assign(sample='DEVELOPMENT'),oos.assign(sample='OOS')],ignore_index=True)
+    cycles=load_cycles(args.dev_cycles,args.oos_cycles,[])
+    _, daily=load_rissin_daily(cycles,args.cache_dir)
+    # Use the full NSE/Rissin trading-session dates for offset calculation by combining date keys from the annual files.
+    trading=sorted(daily)
+    spots=spot_map()
+    if not trading: raise RuntimeError('No historical_daily NIFTY rows loaded')
     ledger=evaluate(cycles,trading,daily,spots)
     summaries=[]; paired=[]
     for sample in ['DEVELOPMENT','OOS']:
@@ -194,7 +212,7 @@ def main():
     for _,r in dev.iterrows(): lines.append(f"- {r.offset_label}: {int(r.trades)} trades / {int(r.cycles)} cycles; gross ₹{r.gross:,.2f}; net at 2pt ₹{r.net_2pt:,.2f}; PF {r.pf:.3f}; coverage {r.coverage:.1%}.")
     lines += ['', '## OOS results — all seven offsets are reported without post-hoc selection','']
     for _,r in oos.iterrows(): lines.append(f"- {r.offset_label}: {int(r.trades)} trades / {int(r.cycles)} cycles; gross ₹{r.gross:,.2f}; net at 0/0.5/1/2pt = ₹{r.net_0pt:,.2f} / ₹{r.net_0.5pt:,.2f} / ₹{r.net_1pt:,.2f} / ₹{r.net_2pt:,.2f}; PF {r.pf:.3f}; drawdown ₹{abs(r.dd):,.2f}.")
-    lines += ['', '## Selection rule for any future promotion','- No OOS result is used to choose a winner in this phase. If a single offset is later promoted, it must be selected from the 2022-2024 development sample under a pre-registered rule and then validated on an untouched later period.','', '## Cost model','- Same P8 historical stress model: ₹20/order, eight option executions, statutory charges, 0.05% exchange-charge stress and 0/0.5/1/2 point adverse slippage per execution.','- Cost outputs are modeled and are not claims of realized Paytm Money fills.','', '## Research conclusion status','- This run is a seven-offset timing screen. It does not alter the canonical P8/P9 rules until a development-selected offset survives unseen validation and execution-cost stress.']
+    lines += ['', '## Source', '- Rissin historical_daily/NIFTY annual Parquet, derived from NSE F&O bhavcopy; NIFTY opening spot from Yahoo daily chart.', '', '## Selection rule for any future promotion','- No OOS result is used to choose a winner in this phase. If a single offset is later promoted, it must be selected from the 2022-2024 development sample under a pre-registered rule and then validated on an untouched later period.','', '## Cost model','- Same P8 historical stress model: ₹20/order, eight option executions, statutory charges, 0.05% exchange-charge stress and 0/0.5/1/2 point adverse slippage per execution.','- Cost outputs are modeled and are not claims of realized Paytm Money fills.','', '## Research conclusion status','- This run is a seven-offset timing screen. It does not alter the canonical P8/P9 rules until a development-selected offset survives unseen validation and execution-cost stress.']
     args.out_report.parent.mkdir(parents=True,exist_ok=True); args.out_report.write_text('\n'.join(lines)+'\n',encoding='utf-8')
     print(sm.to_string(index=False)); print('Development screen top by 2-point net:', dev.iloc[0].offset_label if len(dev) else 'none')
 
