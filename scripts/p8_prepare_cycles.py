@@ -2,25 +2,24 @@ from __future__ import annotations
 
 import argparse
 import re
-import subprocess
 from pathlib import Path
 import pandas as pd
 
 BOUNDARY = pd.Timestamp("2024-12-26")
 
 def archives(root: Path) -> dict[pd.Timestamp, str]:
-    raw = subprocess.check_output(
+    raw = __import__("subprocess").check_output(
         ["git", "-C", str(root), "ls-tree", "-r", "--name-only", "HEAD", "data/2025", "data/2026"],
         text=True,
     )
     pat = re.compile(r"data/(?:2025|2026)/\d{2}/BhavCopy_NSE_FO_0_0_0_(\d{8})_F_0000\.csv\.zip$")
-    out = {}
+    out: dict[pd.Timestamp, str] = {}
     for line in raw.splitlines():
         m = pat.match(line.strip())
         if m:
-            out[pd.Timestamp(m.group(1), format="%Y%m%d")] = line.strip()
+            out[pd.to_datetime(m.group(1), format="%Y%m%d")] = line.strip()
     if not out:
-        raise RuntimeError("No 2025-2026 mirror archives found")
+        raise RuntimeError("No 2025-2026 UDiFF archives found")
     return dict(sorted(out.items()))
 
 def expiry_dates(trading_dates: list[pd.Timestamp]) -> list[pd.Timestamp]:
