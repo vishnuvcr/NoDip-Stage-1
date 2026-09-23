@@ -119,8 +119,9 @@ jobs:
           audit = pd.read_csv("reports/nifty_calendar/CYCLE_AUDIT_2022_2024.csv")
           recon = pd.read_csv("reports/nifty_calendar/P5_SECONDARY_RECONCILIATION_2022_2024.csv")
 
-          complete = recon[recon["secondary_status"].eq("SECONDARY_COMPLETE")].copy()
-          recovered = recon[recon["comparison_status"].eq("RECOVERED_BY_SECONDARY")].copy()
+          exact = recon[recon["secondary_status"].eq("SECONDARY_EXACT_STRIKE_COMPLETE")].copy()
+          grid = recon[recon["secondary_status"].eq("SECONDARY_GRID_ALTERNATIVE_COMPLETE")].copy()
+          recovered = recon[recon["comparison_status"].eq("RECOVERED_BY_SECONDARY_EXACT")].copy()
           matched = recon[recon["comparison_status"].eq("PRIMARY_VALID_SECONDARY_COMPLETE")].copy()
           rejected = recon[recon["primary_reason"].ne("VALID")]
 
@@ -136,8 +137,10 @@ jobs:
               f"- Candidate strategy cycles: {len(audit)}",
               f"- Primary valid cycles: {(audit['primary_reason'].eq('VALID')).sum()}",
               f"- Primary rejected cycles: {(audit['primary_reason'].ne('VALID')).sum()}",
-              f"- Secondary fully executable cycles: {len(complete)}",
-              f"- Primary rejects recovered by secondary source: {len(recovered)}",
+              f"- Secondary exact-primary-strike complete cycles: {len(exact)}",
+              f"- Secondary grid-alternative complete cycles: {len(grid)}",
+              f"- Primary rejects recovered at the exact frozen strike: {len(recovered)}",
+              f"- Primary rejects with only a secondary-grid alternative: {len(recon[(recon['comparison_status']=='GRID_ALTERNATIVE_RECOVERY')])}",
               f"- Primary-valid cycles also complete on secondary: {len(matched)}",
               "- Reconciliation scope: all 134 candidate cycles.",
               "",
@@ -160,10 +163,10 @@ jobs:
               lines.append(f"| {status} | {int(count)} |")
 
           lines += ["", "## Secondary P&L", ""]
-          if len(complete):
-              x = pd.to_numeric(complete["secondary_pnl_inr"], errors="coerce").dropna()
+          if len(exact):
+              x = pd.to_numeric(exact["secondary_pnl_inr"], errors="coerce").dropna()
               lines += [
-                  f"- Secondary complete cycles: {len(x)}",
+                  f"- Exact-strike secondary cycles: {len(x)}",
                   f"- Secondary total P&L across complete cycles: ₹{x.sum():,.2f}",
                   f"- Secondary mean trade: ₹{x.mean():,.2f}",
                   f"- Secondary win rate: {(x > 0).mean():.2%}",
@@ -201,7 +204,7 @@ jobs:
           ]].copy()
           recovered_out.to_csv("reports/nifty_calendar/SECONDARY_RECOVERED_TRADES_2022_2024.csv", index=False)
 
-          full = complete[["entry_date","near_expiry","far_expiry","secondary_strike","secondary_pnl_inr"]].copy()
+          full = exact[["entry_date","near_expiry","far_expiry","secondary_strike","secondary_pnl_inr"]].copy()
           full["secondary_pnl_inr"] = pd.to_numeric(full["secondary_pnl_inr"], errors="coerce")
           full.to_csv("reports/nifty_calendar/SECONDARY_FULL_TRADE_LEDGER_2022_2024.csv", index=False)
           PY
