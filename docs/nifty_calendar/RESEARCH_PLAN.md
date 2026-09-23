@@ -41,8 +41,8 @@ Residual limitation: 2 of 134 candidate cycles are not constructible on the inde
 No exact historical Paytm client-specific exchange pass-through was available from public pricing data, so the study retains explicit exchange-charge sensitivities rather than inventing a contract-note rate.
 
 ### P6 — Final manuscript
-Status: IN PROGRESS.
-The manuscript is now being produced from the 132-cycle independently reconciled secondary ledger, with the 59-cycle primary-source result retained as a source-coverage comparison. It will include tables, charts, trade-level appendix, methods, statistical inference, limitations and supplementary material.
+Status: COMPLETE.
+The manuscript is finalized from the strict 84-cycle frozen-protocol independent validation sample, with the 59-cycle primary-source result retained as a source-coverage comparison and the 28 source-specific re-selection cycles retained only as sensitivity evidence. It includes tables, charts, trade-level appendix, methods, statistical inference, limitations and supplementary material.
 
 ## Current statistical outputs
 
@@ -53,23 +53,24 @@ Primary 2022-2024 source result:
 - Profit factor 2.549
 - Max drawdown ₹5,650
 
-Independent secondary validation result:
-- 132 complete cycles of 134 candidates (98.5% coverage)
-- Gross P&L ₹188,237.50
-- Mean cycle ₹1,426.04
-- Median cycle ₹580.63
-- Win rate 59.09%
-- Profit factor 1.889
-- Max drawdown ₹57,380.00
-- Best trade ₹62,080.00
-- Worst trade ₹-31,597.50
-- 3-trade circular-block bootstrap 95% interval for total P&L: approximately ₹6,927 to ₹408,770
+Strict independent validation result:
+- 84 strict frozen-protocol cycles of 134 candidates (62.7% coverage)
+- Gross P&L ₹83,030.00
+- Mean cycle ₹988.45
+- Median cycle ₹598.75
+- Win rate 61.90%
+- Profit factor 2.942
+- Max drawdown ₹8,022.50
+- Best trade ₹18,742.50
+- Worst trade ₹-5,363.75
+- 3-trade circular-block bootstrap 95% interval for total P&L: ₹31,147 to ₹139,294
 
 Coverage interpretation:
-- all 75 primary-source rejected cycles were reconstructed on the independent public NSE-bhavcopy mirror;
-- 57 of 59 primary-valid cycles were also complete on the independent mirror;
-- 27 of the 75 recovered rejects used the same strike as the primary source, while 48 required re-selection of the common ATM strike under the independent source's listed-strike grid;
-- 2 primary-valid cycles were not constructible on the independent mirror because that source contained no common strike.
+- 57 of 59 primary-valid cycles were independently executable;
+- 27 primary rejects were recovered at the same primary-selected strike;
+- 28 primary rejects were executable only after source-specific secondary strike re-selection and are not counted in the strict estimate;
+- 20 primary rejects remained non-executable on the independent source;
+- 2 primary-valid cycles were not independently reproduced.
 
 ## Execution-cost analysis
 
