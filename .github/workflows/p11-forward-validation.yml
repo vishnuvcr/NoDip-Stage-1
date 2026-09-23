@@ -36,6 +36,9 @@ jobs:
         run: |
           python -m pip install --disable-pip-version-check pandas numpy duckdb pyarrow huggingface_hub requests tabulate
 
+      - name: Report P11 fresh-data gate
+        run: echo 'P11 will stop cleanly when the pinned source contains no completed cycle after the P10 cutoff.'
+
       - name: Validate Python syntax
         run: python -m py_compile scripts/p11_forward_validation.py
 
