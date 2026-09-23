@@ -105,3 +105,10 @@ The gate retains 52/84 cycles in the historical sample and is **not** promoted i
 - [P7 loss audit report](https://github.com/vishnuvcr/NoDip-Stage-1/blob/research-nifty-4leg-calendar-p7-loss-audit/reports/nifty_calendar/ENTRY_TUNING_REPORT_2022_2024.md)
 - [P7 candidate entry criteria](https://github.com/vishnuvcr/NoDip-Stage-1/blob/research-nifty-4leg-calendar-p7-loss-audit/reports/nifty_calendar/ENTRY_CRITERIA_CANDIDATE_2022_2024.md)
 - [P7 loss ledger](https://github.com/vishnuvcr/NoDip-Stage-1/blob/research-nifty-4leg-calendar-p7-loss-audit/reports/nifty_calendar/LOSS_AUDIT_2022_2024.csv)
+
+## P8 unseen post-2024 validation
+The fixed P7 candidate gate was evaluated unchanged on the post-2024 temporal holdout.
+- P8 plan: docs/nifty_calendar/P8_OOS_VALIDATION_PLAN.md
+- P8 candidate lock: docs/nifty_calendar/P8_OOS_CANDIDATE_LOCK.md
+- P8 OOS report: reports/nifty_calendar/P8_OOS_VALIDATION_REPORT_2025_ONWARD.md
+- P8 OOS ledger: reports/nifty_calendar/P8_OOS_TRADE_LEDGER_2025_ONWARD.csv

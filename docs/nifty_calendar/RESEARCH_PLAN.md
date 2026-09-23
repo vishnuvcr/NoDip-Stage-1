@@ -94,3 +94,7 @@ Audit every losing trade in the strict 84-cycle sample, classify leg-level loss 
 
 
 P7 final candidate gate: enter only when the calendar-balance ratio is <= 1.20, where (far CE / near CE) / (far PE / near PE). This is a research candidate and must be validated unchanged on genuinely unseen post-2024 data; it does not alter the P6 frozen result.
+
+### P8 — Unseen post-2024 validation
+Status: COMPLETE.
+The 1.20 candidate threshold was frozen before OOS scoring. P8 performed one temporal holdout evaluation without threshold re-optimization.

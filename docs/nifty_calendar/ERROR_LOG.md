@@ -212,3 +212,8 @@ Run ID: 35828422533
 Attempt: 1
 Branch: research-nifty-4leg-calendar-p8-oos-validation
 Interpretation is blocked until the failed step is inspected.
+
+## 2026-09-23 — P8 mirror checkout correction
+- Event: initial P8 run used an invalid detached-checkout command and stopped before research execution.
+- Correction: P8 now uses the cached mirror's HEAD snapshot directly, matching the audited P5 git-show ingestion model and avoiding a full working-tree checkout.
+- Prevention: keep the mirror as a blob-filtered data snapshot; do not materialize the full archive tree when only selected files are read.

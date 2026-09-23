@@ -15,3 +15,5 @@ Last updated: 2026-09-23  — P0-P7 complete for 2022-2024 study; candidate entr
 
 
 | P7 Loss audit / entry tuning | IN PROGRESS | Auditing all strict-sample losses and testing a single interpretable entry-time term-structure balance gate; P6 remains frozen || P7 Loss audit / entry tuning | COMPLETE | Audited all 32 strict-sample losing trades; 20 were driven by both near legs being adverse, and a single candidate term-structure balance gate (<=1.20) filtered 22/32 losses; gate remains research-only pending unseen post-2024 validation |
+
+| P8 Unseen post-2024 validation | COMPLETE | Frozen 1.20 gate evaluated unchanged on the post-2024 temporal sample; see P8 OOS report |

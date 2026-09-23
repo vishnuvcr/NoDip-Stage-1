@@ -86,3 +86,10 @@
 - Canonical full-sample candidate diagnostics: 52 trades retained, gross P&L ₹84,981.25, win rate 80.77%, profit factor 8.457, maximum drawdown ₹3,355.00.
 - Conservative cost scenario (₹20/order, 0.05000% exchange-charge sensitivity, 2-point adverse slippage): ₹34,163.77 modeled net P&L.
 - The gate is not promoted into P6 and is not a validated live-trading rule. It is reserved for genuinely unseen post-2024 validation.
+
+## 2026-09-23 — P8 unseen post-2024 validation
+- Candidate threshold fixed at calendar-balance ratio <= 1.20 before OOS scoring.
+- OOS begins 2025-01-01 with Thursday weekly expiries through August 2025 and Tuesday weekly expiries from 2025-09-02.
+- Independent NSE F&O mirror and NIFTY spot-open inputs used.
+- Brokerage, statutory costs, exchange-charge stress and adverse slippage modeled.
+- No additional threshold or filter searched.
