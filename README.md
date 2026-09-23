@@ -57,4 +57,31 @@ The fixed source diagnostic is not the canonical fixed reference because of inco
 | 15:00 | 63 | ₹37,787.00 | ₹-5,170.99 | ₹-23,190.99 | ₹-59,230.99 |
 | 15:15 | 64 | ₹38,465.75 | ₹-5,126.99 | ₹-23,446.99 | ₹-60,086.99 |
 | 15:30 | 65 | ₹43,607.25 | ₹-781.30 | ₹-19,361.30 | ₹-56,521.30 |
-| 15:40 | 65 | ₹43,607.25 | ₹-781.30 | ₹-19,361.30 | 
+| 15:40 | 65 | ₹43,607.25 | ₹-781.30 | ₹-19,361.30 | ₹-56,521.30 |
+
+The event signal appeared predominantly near the open: median 09:22; only two qualifying event signals occurred after 15:00. No later cutoff improved the cost robustness.
+
+### Primary-source QC finding
+
+The first public source acquisition succeeded for 192/201 required expiry files, but its far-expiry intraday coverage was too sparse. On 2026-04-01 the far expiry contained only 903 rows for the day, and the primary scan selected strike 20,500 while NIFTY was about 22,900. That output was rejected before performance interpretation.
+
+## P9 research records
+
+- reports/nifty_calendar/P9_FINAL_RESEARCH_CONCLUSION.md
+- reports/nifty_calendar/P9_SECONDARY_VALIDATION_REPORT.md
+- reports/nifty_calendar/P9_RISSIN_OOS_COMPARISON.csv
+- reports/nifty_calendar/P9_RISSIN_OOS_COSTS.csv
+- reports/nifty_calendar/P9_RISSIN_CUTOFF_SENSITIVITY.csv
+- reports/nifty_calendar/P9_RISSIN_CUTOFF_SENSITIVITY_REPORT.md
+- docs/nifty_calendar/PHASE_STATUS.md
+- docs/nifty_calendar/RESEARCH_PLAN.md
+- docs/nifty_calendar/ERROR_LOG.md
+- docs/nifty_calendar/CONVERSATION_LOG.md
+
+## Next phase
+
+P10 is planned as forward/paper-execution validation of the frozen fixed rule, using timestamped executable quotes, observed spread, brokerage/statutory charges, slippage and a pre-registered paper ledger. New intraday timing ideas require a separate development phase and unseen validation.
+
+## Research stop condition
+
+The defined P9 research phase is closed. P10 is the next planned phase; no additional P9 parameter search is permitted.
