@@ -118,3 +118,10 @@
 - Impact: the first DuckDB numerical output is rejected and must not be interpreted.
 - Correction: the scanner now checks for empty/missing timestamp columns before `merge_asof` and accesses exit dictionaries by key.
 - Prevention: zero-row and empty-arm cases remain explicit non-trade states rather than exceptions.
+
+
+## 2026-09-23 — P9 full-file DuckDB timing result rejected
+- Event: the first completed DuckDB timing workflow produced 86 OOS rows but 0 executable timing trades; most rows failed inside the analysis with `KeyError: 'timestamp'`, and one row had an exit-helper attribute error.
+- Impact: the output is rejected as an implementation artifact and is not a P9 strategy result.
+- Correction: a remote-predicate DuckDB implementation was added. It reads the public Hugging Face Parquet source directly with date predicates instead of downloading whole expiry files, and it uses direct expiry URLs from the OOS ledger rather than relying on the repository file listing.
+- Prevention: do not interpret a zero-trade result when the row-level error rate is non-zero; require executable-row and error-rate checks before performance analysis.
