@@ -1,6 +1,6 @@
 # Phase Status
 
-Last updated: 2026-09-23 — P0-P8 complete; P9 event-driven entry-timing phase COMPLETE; event-driven timing not promoted after final secondary-source QC; P10 forward/paper validation planned
+Last updated: 2026-09-23 — P0-P9 complete; P10 entry-day offset research IN PROGRESS; P11 forward/paper validation planned
 
 | Phase | Status | Notes |
 |---|---|---|
@@ -14,7 +14,8 @@ Last updated: 2026-09-23 — P0-P8 complete; P9 event-driven entry-timing phase 
 | P7 Loss audit / entry tuning | COMPLETE | 32 losses audited; candidate calendar-balance gate <=1.20 identified; P6 unchanged |
 | P8 Unseen post-2024 validation | COMPLETE | Frozen 1.20 gate tested unchanged on 2025+ temporal holdout; supported for further research, not promoted to live trading |
 | P9 Event-driven intraday entry timing | COMPLETE | Primary source failed ATM/far-expiry coverage QC. After deterministic 25-point ATM QC, Rissin OOS had 65 event trades, gross ₹43,607.25, PF 1.755; modeled event net was negative from 0.5-point slippage. On 33 event dates that passed the canonical P8 09:15 gate, mean event-minus-fixed was ₹-1,876.34 with bootstrap 95% CI ₹-3,990.63 to ₹-347.55. Event-driven timing is not promoted. |
-| P10 Forward / paper-execution validation | PLANNED | Return to the frozen fixed rule; use timestamped executable quotes, observed spreads, real costs and a pre-registered paper ledger |
+| P10 Entry-day offset research | IN PROGRESS | Testing D-1, D0, D+1, D+2, D+3, D+4 and D+5 trading-session entry offsets at the frozen 09:15 and CBR<=1.20 criteria; development 2022-2024, unseen OOS 2025+ |
+| P11 Forward / paper-execution validation | PLANNED | Freeze any development-selected offset only after unseen validation; use timestamped executable quotes, observed spreads, real costs and a pre-registered paper ledger |
 
 ## P9 final decision
 
@@ -63,3 +64,11 @@ The primary-source event result was therefore rejected as a performance estimate
 ## Research stop / next phase
 
 P9 stops here. The next phase is P10 forward/paper-execution validation of the frozen fixed rule. Any new intraday timing/filter idea must be a separate development phase with a new unseen temporal holdout.
+## P10 entry-day offset protocol
+
+- D-1 = trading session immediately before previous expiry.
+- D0 = previous-expiry trading session.
+- D+1 through D+5 = subsequent trading sessions.
+- Entry remains 09:15 IST with CBR<=1.20.
+- Four-leg structure and near-expiry close exit remain unchanged.
+- All seven offsets are pre-registered; OOS results are not used to select a candidate.
