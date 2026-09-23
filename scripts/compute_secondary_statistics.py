@@ -110,3 +110,7 @@ def main() -> None:
     args.out_annual.parent.mkdir(parents=True, exist_ok=True)
     annual.to_csv(args.out_annual, index=False)
     print(args.out_report.read_text())
+
+
+if __name__ == "__main__":
+    main()
