@@ -171,3 +171,10 @@
 - Boundary: P6 remains frozen; P7 candidate filters are research-only and cannot overwrite P6.
 - Method: loss-mechanism audit first, then one interpretable entry-time gate with temporal diagnostics and conservative transaction costs.
 - Prevention: do not promote any candidate filter without a genuinely unseen post-2024 validation phase.
+
+
+## 2026-09-23 — P7 loss-audit ledger type coercion failure
+- Event: the audit script attempted to classify losses before coercing the imported P&L and option-price columns to numeric values.
+- Impact: P7 workflow run 4 failed during loss classification with a string-vs-integer comparison.
+- Correction: all required ledger numeric columns are explicitly coerced with pandas.to_numeric before feature construction.
+- Prevention: research audit scripts now validate schema and numeric dtypes at the start of analysis.
