@@ -9,9 +9,9 @@ Independent spot cross-check: Yahoo Finance NIFTY 50 daily session OPEN for each
 - Candidate strategy cycles: 134
 - Primary valid cycles: 59
 - Primary rejected cycles: 75
-- Secondary fully executable cycles: 132
+- Secondary fully executable cycles: 112
 - Primary rejects recovered at the same strike as the primary source: 27
-- Primary rejects recovered after independent secondary strike re-selection: 48
+- Primary rejects recovered after independent secondary strike re-selection: 28
 - Primary-valid cycles also complete on secondary: 57
 - Reconciliation scope: all 134 candidate cycles.
 
@@ -29,20 +29,21 @@ Independent spot cross-check: Yahoo Finance NIFTY 50 daily session OPEN for each
 | Status | Cycles |
 |---|---:|
 | PRIMARY_VALID_SECONDARY_COMPLETE | 57 |
-| RECOVERED_BY_SECONDARY_RESELECTED | 48 |
+| RECOVERED_BY_SECONDARY_RESELECTED | 28 |
 | RECOVERED_BY_SECONDARY_EXACT | 27 |
+| PRIMARY_REJECTED_SECONDARY_NONEXECUTABLE | 20 |
 | PRIMARY_VALID_SECONDARY_NONEXECUTABLE | 2 |
 
 ## Secondary P&L
 
-- Complete independent cycles: 132
-- Complete independent gross P&L: ₹188,237.50
-- Mean trade: ₹1,426.04
+- Complete independent cycles: 112
+- Complete independent gross P&L: ₹89,517.50
+- Mean trade: ₹799.26
 - Median trade: ₹580.63
-- Win rate: 59.09%
-- Profit factor: 1.889
-- Primary rejects recovered at same strike: 27 cycles; gross P&L ₹-29,192.50
-- Primary rejects recovered after re-selection: 48 cycles; gross P&L ₹161,846.25
+- Win rate: 60.71%
+- Profit factor: 2.310
+- Primary rejects recovered at same strike: 27 cycles; gross P&L ₹27,446.25
+- Primary rejects recovered after re-selection: 28 cycles; gross P&L ₹6,487.50
 - Primary-valid control subset: 57 cycles; gross P&L ₹55,583.75
 
 ## Cross-source price and spot checks
