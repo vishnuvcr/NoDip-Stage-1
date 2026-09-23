@@ -2,7 +2,7 @@
 
 ## Current research status — 2026-09-23
 
-**P0-P8 complete. P9 event-driven entry timing is open. Alternate-source discovery and the first primary-source acquisition are complete; the first event-driven timing scan is prepared but awaits execution on the corrected workflow.**
+**P0-P8 complete. P9 event-driven entry timing is active. The first primary-source timing output has been rejected by source-quality QC; a secondary Rissin intraday validation is now running. No P9 performance conclusion is currently claimed.**
 
 ## Frozen validated reference
 
@@ -62,7 +62,7 @@ The raw Hugging Face files were downloaded successfully on the CI runner but the
 
 The public intraday candidates found so far expose OHLCV and expiry/strike identity, but not reliable historical bid/ask quotes in their published schemas. Therefore P9 historical testing will use the pre-registered 1-minute signal-close -> next-minute execution convention with adverse-slippage sensitivity. True bid/ask replay remains a separate execution-validation layer.
 
-The corrected workflow also contains parquet-schema validation and the first event-driven timing scanner. A P9 performance result will not be interpreted until that scan completes successfully.
+The primary-source timing scan did complete, but its apparent event trade is rejected: on 2026-04-01 it selected strike 20,500 despite NIFTY being around 22,843–22,899 in the same opening window. The cause is sparse far-expiry coverage in the primary public source. P9 now requires secondary-source validation and explicit ATM-distance/four-leg QC before any performance result is interpreted.
 
 ## P8 OOS reference
 
