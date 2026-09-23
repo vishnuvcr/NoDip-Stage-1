@@ -119,3 +119,13 @@
 - Event-driven modeled net at 0.05% exchange stress: ₹9,222.87 at 0-point slippage and negative from 0.5-point slippage onward.
 - P9 closed as COMPLETE with event-driven timing not promoted.
 - Next planned phase: P10 forward/paper validation of the frozen fixed rule, with timestamped executable quotes, observed spreads, costs, slippage and a pre-registered paper ledger.
+
+## 2026-09-23 — P9 authoritative final closure
+- The first Rissin timing output was superseded by deterministic ATM QC using the current NSE NIFTY 50-point strike interval and a 25-point half-interval tolerance.
+- Final secondary result: 65 event-driven executable trades and 14 fixed source-diagnostic trades across the 86-cycle post-2024 OOS population.
+- Event-driven gross P&L ₹43,607.25; win rate 64.62%; PF 1.755; gross max drawdown ₹33,429.00.
+- Event-driven modeled net at 0.05% exchange stress: ₹17,798.70 / ₹-781.30 / ₹-19,361.30 / ₹-56,521.30 at 0 / 0.5 / 1 / 2 points adverse slippage.
+- On 33 event dates that passed the canonical 09:15 P8 gate, event gross was ₹42,312.50 versus canonical P8 fixed-gate ₹104,231.75; mean event-minus-fixed ₹-1,876.34 and bootstrap 95% CI approximately ₹-3,990.63 to ₹-347.55.
+- 32 dates failed the 09:15 gate but qualified later; those event trades produced gross ₹1,294.75 and PF 1.029.
+- Pre-registered latest-entry sensitivity at 15:00/15:15/15:30/15:40 remained negative at 0.5-point adverse slippage and beyond.
+- P9 is COMPLETE; event-driven timing is not promoted. P10 returns to the frozen 09:15 rule for forward/paper validation without retuning.
