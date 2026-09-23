@@ -2,7 +2,7 @@
 
 ## Current research status — 2026-09-23
 
-**P0-P8 complete. P9 event-driven entry timing is active. The first primary-source timing output has been rejected by source-quality QC; a secondary Rissin intraday validation is now running. No P9 performance conclusion is currently claimed.**
+**P0-P9 complete. P9 event-driven entry timing was tested on an unseen post-2024 sample using a secondary 1-minute NIFTY option source and was not promoted. P10 forward/paper validation of the frozen fixed rule is planned.**
 
 ## Frozen validated reference
 
@@ -12,76 +12,65 @@ P8 validated the fixed calendar-balance gate on the post-2024 temporal holdout:
 
 P8 conclusion: supported for further research, not promoted to live trading.
 
-- P8 report: [reports/nifty_calendar/P8_OOS_VALIDATION_REPORT_2025_ONWARD.md](reports/nifty_calendar/P8_OOS_VALIDATION_REPORT_2025_ONWARD.md)
-- P8 conclusion: [reports/nifty_calendar/P8_FINAL_RESEARCH_CONCLUSION.md](reports/nifty_calendar/P8_FINAL_RESEARCH_CONCLUSION.md)
+- P8 report: reports/nifty_calendar/P8_OOS_VALIDATION_REPORT_2025_ONWARD.md
+- P8 conclusion: reports/nifty_calendar/P8_FINAL_RESEARCH_CONCLUSION.md
 
 ## P9 — Event-driven intraday entry timing
 
-### Research rule
+### Final decision
 
-Enter exactly once on the first eligible trading day at the first intraday timestamp when:
-1. CBR <= 1.20;
-2. current NIFTY permits a valid common ATM strike;
-3. near CE/PE and far CE/PE are all simultaneously executable.
+**Event-driven first-qualifying entry is not supported for promotion.**
 
-The four-leg structure, 1.20 gate and near-expiry close exit remain frozen. P9 tests timing only.
+P9 kept the 1.20 threshold, four-leg structure, same-strike semantics and near-expiry exit frozen.
 
-### Alternate data-source audit
+### Secondary OOS result
 
-| Source | Resolution | Expiry identity | P9 role |
-|---|---|---|---|
-| Hugging Face `thetrademarkk/india-index-options-1m` | 1 minute | Actual expiry files + strike/type | Primary public candidate |
-| Hugging Face `rissin/nse-options-intraday` | 1 minute | Explicit expiry/strike/type | Secondary cross-check |
-| Kaggle `Historical Nifty Options 2024 All Expiries` | Intraday | Expiry/trade-day file structure | 2024 development cross-check |
-| GitHub `SauMStats/nifty-options-data-engine` | 1 minute query layer | Explicit expiry/trade date | Schema/query reference around Kaggle 2024 and 2026 data |
-| GitHub `QuantDev-stack/OptionVault` | 1 minute + 1 second + tick/L2 samples | Explicit contract expiry/strike | Higher-fidelity licensed fallback |
-| GitHub `JATINDHURVE/Indian-market-data-pipeline` | 1 minute | Expiry per contract | ICICI Breeze API fallback |
+| Metric | Fixed 09:15 | Event-driven |
+|---|---:|---:|
+| Executable trades | 26 | 70 |
+| Gross P&L | ₹40,506.25 | ₹37,291.40 |
+| Win rate | 80.77% | 62.86% |
+| Profit factor | 5.029 | 1.576 |
+| Gross max drawdown | ₹7,489.50 | ₹26,467.50 |
+| Worst trade | ₹-5,391.75 | ₹-9,984.75 |
+| Net at 0-point slippage | ₹29,499.84 | ₹9,222.87 |
+| Net at 0.5-point slippage | ₹22,139.84 | ₹-10,837.13 |
+| Net at 1-point slippage | ₹14,779.84 | ₹-30,897.13 |
+| Net at 2-point slippage | ₹59.84 | ₹-71,017.13 |
 
-Source manifest: [reports/nifty_calendar/P9_ALTERNATE_DATA_SOURCES.csv](reports/nifty_calendar/P9_ALTERNATE_DATA_SOURCES.csv)
+### Incremental-trade mechanism
 
-Detailed audit: [docs/nifty_calendar/P9_ALTERNATE_DATA_SOURCE_AUDIT.md](docs/nifty_calendar/P9_ALTERNATE_DATA_SOURCE_AUDIT.md)
+The event-driven arm adds 44 trades beyond the 26 paired fixed-control dates:
 
-### Primary source acquisition result
+- 44 event-only trades gross: ₹-3,214.85; win rate 52.27%; PF 0.941.
+- 20 originally gate-pass but unavailable at 09:15: +₹10,749.75 gross.
+- 24 originally gate-fail but qualifying later: ₹-13,964.60 gross; PF 0.665.
 
-The first GitHub Actions acquisition run successfully downloaded the primary Hugging Face source files needed for the research:
+The negative late-qualifying gate-fail group more than offset the positive contribution from delayed entries on originally gate-pass days.
 
-- 170 input research cycles
-- 201 unique near/far expiry files required
-- 192 expiry files downloaded
-- ~671.8 MB downloaded during the runner job
-- 1-minute NIFTY index file downloaded
-- 157/170 cycles (92.35%) have both required near and far expiry files
-- 13/170 cycles are currently source-gapped because one of the needed later-2026 expiry files is absent
+### Entry-time / ATM diagnostics
 
-The acquisition manifest is cached as a research record:
-[reports/nifty_calendar/P9_HF_FETCH_MANIFEST.csv](reports/nifty_calendar/P9_HF_FETCH_MANIFEST.csv)
+- Median event signal time: 09:16 IST.
+- Median ATM distance: 48.3 points / 0.189%.
+- 90th percentile ATM distance: 306.65 points / 1.212%.
+- Maximum ATM distance: 844.35 points / 3.617%.
 
-The raw Hugging Face files were downloaded successfully on the CI runner but the first workflow cached only the manifest rather than the raw Hugging Face directory. The workflow has now been corrected to cache the actual Hugging Face raw-file directory under a stable key for subsequent scans.
+### Primary-source QC finding
 
-### Current execution limitation
+The first public source acquisition succeeded for 192/201 required expiry files, but its far-expiry intraday coverage was too sparse. On 2026-04-01 the far expiry contained only 903 rows for the day, and the only four-leg common strike at the sampled qualifying timestamps was 20,500 while NIFTY was about 22,900.
 
-The public intraday candidates found so far expose OHLCV and expiry/strike identity, but not reliable historical bid/ask quotes in their published schemas. Therefore P9 historical testing will use the pre-registered 1-minute signal-close -> next-minute execution convention with adverse-slippage sensitivity. True bid/ask replay remains a separate execution-validation layer.
+That primary-source event result was rejected as a performance estimate before the secondary-source test.
 
-The primary-source timing scan did complete, but its apparent event trade is rejected: on 2026-04-01 it selected strike 20,500 despite NIFTY being around 22,843–22,899 in the same opening window. The cause is sparse far-expiry coverage in the primary public source. P9 now requires secondary-source validation and explicit ATM-distance/four-leg QC before any performance result is interpreted.
+## P9 research records
 
-## P8 OOS reference
+- docs/nifty_calendar/P9_FINAL_RESEARCH_CONCLUSION.md
+- reports/nifty_calendar/P9_SECONDARY_VALIDATION_REPORT.md
+- reports/nifty_calendar/P9_RISSIN_OOS_COMPARISON.csv
+- reports/nifty_calendar/P9_RISSIN_OOS_COSTS.csv
+- docs/nifty_calendar/P9_ALTERNATE_DATA_SOURCE_AUDIT.md
+- docs/nifty_calendar/ERROR_LOG.md
+- docs/nifty_calendar/PHASE_STATUS.md
 
-| Metric | Fixed P7 gate |
-|---|---:|
-| Executable post-2024 cycles | 86 |
-| Gate trades | 42 |
-| Gross P&L | ₹126,460.50 |
-| Win rate | 76.19% |
-| Profit factor | 5.115 |
-| Gross max drawdown | ₹13,406.25 |
-| Worst trade | ₹-12,502.75 |
-| Net at 2-point slippage, 0.05% exchange stress | ₹64,304.41 |
+## Next phase
 
-These are historical modeled results, not claims of realized live fills.
-
-## Research records
-
-- `docs/nifty_calendar/RESEARCH_PLAN.md`
-- `docs/nifty_calendar/PHASE_STATUS.md`
-- `docs/nifty_calendar/ERROR_LOG.md`
-- `docs/nifty_calendar/CONVERSATION_LOG.md`
+P10 is planned as forward/paper-execution validation of the frozen fixed rule, using timestamped executable quotes, observed spread, brokerage/statutory charges, slippage and a pre-registered paper ledger. New intraday timing ideas require a separate development phase and unseen validation.
