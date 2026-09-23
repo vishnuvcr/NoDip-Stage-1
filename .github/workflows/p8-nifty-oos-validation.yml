@@ -56,7 +56,8 @@ jobs:
           else
             git -C data/cache/nse_fno_mirror fetch --depth=1 origin
           fi
-          git -C data/cache/nse_fno_mirror checkout --detach FETCH_HEAD
+          git -C data/cache/nse_fno_mirror fetch --depth=1 origin
+          git -C data/cache/nse_fno_mirror reset --hard origin/HEAD
           git -C data/cache/nse_fno_mirror rev-parse HEAD > data/cache/P8_MIRROR_COMMIT.txt
 
       - name: Build post-2024 cycle calendar
