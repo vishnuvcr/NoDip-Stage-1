@@ -41,3 +41,18 @@
 
 ## Research conclusion status
 - This run is a seven-offset timing screen. It does not alter the canonical P8/P9 rules until a development-selected offset survives unseen validation and execution-cost stress.
+
+## OOS paired bootstrap versus D+1
+
+- D-1: mean ₹-104.37; 95% CI ₹-1,403.35 to ₹1,114.14.
+- D0: mean ₹383.69; 95% CI ₹-797.17 to ₹1,480.94.
+- D+2: mean ₹330.85; 95% CI ₹-445.32 to ₹1,099.05.
+- D+3: mean ₹-562.94; 95% CI ₹-1,480.49 to ₹308.59.
+- D+4: mean ₹-219.25; 95% CI ₹-1,179.47 to ₹716.87.
+- D+5: mean ₹-940.37; 95% CI ₹-1,975.86 to ₹-69.96.
+
+The bootstrap is an unadjusted seven-comparison robustness analysis, not a confirmatory multiple-testing procedure.
+
+## Final status
+
+P10 COMPLETE. D0 and D+2 remain development-only candidates for a separate selection and fresh validation phase. No offset is promoted directly from this OOS screen.
