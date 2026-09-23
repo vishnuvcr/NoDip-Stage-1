@@ -136,3 +136,10 @@
 - Impact: only the already-cached UDiFF-period files were reconciled; most 2022-2024 legacy dates remained source gaps.
 - Correction: legacy filenames now use lowercase fo/bhav with an uppercase three-letter month, matching the mirror repository exactly.
 - Prevention: derive source filenames from an observed repository manifest before running bulk reconciliation.
+
+
+## 2026-09-23 — P5 secondary strike-selection independence correction
+- Event: the first successful secondary reconciliation reused the primary source's NIFTY spot open when selecting the secondary common ATM strike.
+- Impact: that run was suitable for cross-source contract recovery but was not fully independent as a strategy re-run.
+- Correction: the secondary protocol now re-applies the frozen common-ATM rule using the independent Yahoo NIFTY OPEN diagnostic. The final P5 result therefore uses 132 independently reconstructible cycles, with 27 primary rejects retaining the primary strike and 48 using an independently re-selected strike.
+- Prevention: independent-source validations must re-run every strategy input that is not an invariant contract identifier, including strike selection.
