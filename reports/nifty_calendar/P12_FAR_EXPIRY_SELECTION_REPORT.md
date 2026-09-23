@@ -9,6 +9,9 @@
 - Same ATM strike across candidates, chosen from the near-expiry 09:15 strike closest to spot; 25-point ATM QC.
 - Exit: near-expiry close.
 
+## Research-status caveat
+- The 2025+ evaluation period was already exposed in P10, so P12 is exploratory rather than confirmatory fresh OOS validation. A future fresh holdout is still required before any live/paper promotion.
+
 ## Primary adaptive selection criterion
 - Eligibility: same ATM strike, all four entry legs positive, positive entry volume.
 - Score = (near CE - near PE + far PE - far CE) / spot open.
@@ -16,16 +19,16 @@
 - Score uses entry data only; no future close/P&L is used.
 
 ## Results
-- F+1 DEVELOPMENT: 153 trades, gross ₹38,051.25, win 62.1%, PF 1.359, DD ₹17,781.25, net@2pt ₹0.00.
-- F+2 DEVELOPMENT: 152 trades, gross ₹57,793.75, win 59.9%, PF 1.403, DD ₹43,681.25, net@2pt ₹0.00.
-- F+3 DEVELOPMENT: 129 trades, gross ₹28,908.75, win 57.4%, PF 1.229, DD ₹46,613.75, net@2pt ₹0.00.
-- F+4 DEVELOPMENT: 75 trades, gross ₹50,743.75, win 54.7%, PF 1.630, DD ₹24,567.50, net@2pt ₹0.00.
-- ADAPTIVE DEVELOPMENT: 155 trades, gross ₹143,106.25, win 70.3%, PF 2.869, DD ₹13,635.00, net@2pt ₹0.00.
-- F+1 OOS: 72 trades, gross ₹29,542.50, win 52.8%, PF 1.321, DD ₹47,520.00, net@2pt ₹0.00.
-- F+2 OOS: 73 trades, gross ₹-23,165.50, win 50.7%, PF 0.836, DD ₹77,988.75, net@2pt ₹0.00.
-- F+3 OOS: 64 trades, gross ₹33,141.75, win 54.7%, PF 1.288, DD ₹53,985.00, net@2pt ₹0.00.
-- F+4 OOS: 42 trades, gross ₹90,236.75, win 69.0%, PF 2.373, DD ₹34,368.75, net@2pt ₹0.00.
-- ADAPTIVE OOS: 77 trades, gross ₹144,277.50, win 58.4%, PF 2.763, DD ₹36,963.75, net@2pt ₹0.00.
+- F+1 DEVELOPMENT: 153 trades, gross ₹38,051.25, win 62.1%, PF 1.359, DD ₹17,781.25, net@2pt ₹-110,409.11.
+- F+2 DEVELOPMENT: 152 trades, gross ₹57,793.75, win 59.9%, PF 1.403, DD ₹43,681.25, net@2pt ₹-91,796.26.
+- F+3 DEVELOPMENT: 129 trades, gross ₹28,908.75, win 57.4%, PF 1.229, DD ₹46,613.75, net@2pt ₹-98,698.54.
+- F+4 DEVELOPMENT: 75 trades, gross ₹50,743.75, win 54.7%, PF 1.630, DD ₹24,567.50, net@2pt ₹-24,389.77.
+- ADAPTIVE DEVELOPMENT: 155 trades, gross ₹143,106.25, win 70.3%, PF 2.869, DD ₹13,635.00, net@2pt ₹-8,325.28.
+- F+1 OOS: 72 trades, gross ₹29,542.50, win 52.8%, PF 1.321, DD ₹47,520.00, net@2pt ₹-76,675.51.
+- F+2 OOS: 73 trades, gross ₹-23,165.50, win 50.7%, PF 0.836, DD ₹77,988.75, net@2pt ₹-132,050.98.
+- F+3 OOS: 64 trades, gross ₹33,141.75, win 54.7%, PF 1.288, DD ₹53,985.00, net@2pt ₹-62,956.75.
+- F+4 OOS: 42 trades, gross ₹90,236.75, win 69.0%, PF 2.373, DD ₹34,368.75, net@2pt ₹26,958.30.
+- ADAPTIVE OOS: 77 trades, gross ₹144,277.50, win 58.4%, PF 2.763, DD ₹36,963.75, net@2pt ₹30,311.14.
 
 ## Adaptive selection frequency
 - DEVELOPMENT: F+1=106, F+2=25, F+3=16, F+4=8.
