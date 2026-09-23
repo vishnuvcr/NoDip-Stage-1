@@ -2,20 +2,24 @@
 
 ## Current research status — 2026-09-23
 
-**Strategy locked. P0-P4 complete. P5 robustness is active.**
+**P0-P6 complete for the 2022-2024 study. Strategy remains frozen.**
 
-The frozen 2022-2024 backtest completed successfully:
+### Independently reconciled historical result
 
-- 59 valid executable strategy cycles
-- Gross P&L: ₹52,827.50
-- Win rate: 64.41%
-- Profit factor: 2.549
-- Maximum drawdown: ₹5,650
-- 44.0% executable-cycle coverage (59 of 134 candidate cycles)
+- Candidate cycles: 134
+- Independent-secondary complete cycles: 132 (98.5% coverage)
+- All 75 primary-source rejects recovered on the independent source
+- Gross P&L: ₹127,185.00
+- Win rate: 57.58%
+- Profit factor: 1.542
+- Maximum drawdown: ₹90,152.50
+- Bootstrap 95% interval for total gross P&L: ₹-67,517.25 to ₹342,106.84
+- Primary-source comparison remains documented separately: 59 executable cycles and ₹52,827.50 gross P&L
 
-The result is therefore a **conditional subset result**, not yet a complete estimate of the whole 2022-2024 population. The principal issue is data availability: 75 candidate cycles were rejected because of missing/common-strike/exit-leg data.
+The 44.0% primary-source coverage was therefore a data-coverage limitation rather than an intentional strategy filter. Two primary-valid cycles remain source discrepancies because the independent source contains no common strike under the frozen same-strike rule.
 
 ## Frozen strategy
+
 - First trading day after previous NIFTY weekly expiry.
 - 09:15 IST market-open entry.
 - ATM = nearest listed strike to NIFTY spot open.
@@ -28,27 +32,42 @@ The result is therefore a **conditional subset result**, not yet a complete esti
 - One historical lot per leg.
 - No adjustments, rolling, target, stop-loss or averaging.
 
-## Robustness already completed
-Leg-specific slippage sensitivity at 0.25, 0.50, 1.00 and 2.00 points per execution is calculated. Brokerage and documented statutory charges are modeled, and exchange-charge sensitivity is shown without inventing a historical Paytm-specific pass-through rate.
+## Execution-cost sensitivity
 
-At a 0.50-point adverse-slippage assumption and a 0.05% exchange-charge sensitivity, the 59-trade subset remains at approximately ₹32,619 net before any additional unmodeled charges.
+At a 0.05% exchange-charge sensitivity:
 
-## Research documents
-- [Research plan](docs/nifty_calendar/RESEARCH_PLAN.md)
-- [Strategy lock](docs/nifty_calendar/STRATEGY_LOCK.md)
-- [Phase status](docs/nifty_calendar/PHASE_STATUS.md)
-- [Data specification](docs/nifty_calendar/DATA_SPEC.md)
-- [Sources and literature](docs/nifty_calendar/SOURCES.md)
-- [Cost assumptions](docs/nifty_calendar/COST_ASSUMPTIONS.md)
-- [Robustness report](reports/nifty_calendar/ROBUSTNESS_2022_2024.md)
-- [Backtest report](reports/nifty_calendar/RESULTS_2022_2024.md)
-- [Error log](docs/nifty_calendar/ERROR_LOG.md)
-- [Conversation log](docs/nifty_calendar/CONVERSATION_LOG.md)
-- [Project rules](docs/PROJECT_RULES.md)
+| Brokerage | 0 pt slip | 0.50 pt | 1.00 pt | 2.00 pt |
+|---:|---:|---:|---:|---:|
+| ₹10/order | ₹105,167.95 | ₹80,817.95 | ₹56,467.95 | ₹7,767.95 |
+| ₹15/order | ₹98,937.55 | ₹74,587.55 | ₹50,237.55 | ₹1,537.55 |
+| ₹20/order | ₹92,707.15 | ₹68,357.15 | ₹44,007.15 | ₹-4,692.85 |
 
-## Execution
-- [Main research runner](.github/workflows/execute-nifty-calendar.yml)
-- [Manual backtest workflow](.github/workflows/nifty-calendar-backtest.yml)
-- [Public ticker diagnostic](.github/workflows/diagnose-public-tickers.yml)
+These are modeled sensitivities, not claims of realized fills.
 
-P5 remains open until the rejected cycles are independently reconciled and the historical cost treatment is further validated.
+## Final manuscript and research files
+
+- reports/nifty_calendar/MANUSCRIPT_NIFTY_4LEG_CALENDAR_2022_2024.md
+- reports/nifty_calendar/FINAL_SECONDARY_STATISTICS_2022_2024.md
+- reports/nifty_calendar/P5_RECONCILIATION_REPORT_2022_2024.md
+- reports/nifty_calendar/P5_SECONDARY_RECONCILIATION_2022_2024.csv
+- reports/nifty_calendar/SECONDARY_TRADE_LEVEL_RESULTS_2022_2024.csv
+- reports/nifty_calendar/SECONDARY_COST_SENSITIVITY_2022_2024.csv
+- reports/nifty_calendar/figures/cumulative_pnl.svg
+- reports/nifty_calendar/figures/drawdown.svg
+- reports/nifty_calendar/figures/annual_pnl.svg
+- reports/nifty_calendar/figures/cost_sensitivity.svg
+- docs/nifty_calendar/RESEARCH_PLAN.md
+- docs/nifty_calendar/STRATEGY_LOCK.md
+- docs/nifty_calendar/PHASE_STATUS.md
+- docs/nifty_calendar/ERROR_LOG.md
+- docs/nifty_calendar/CONVERSATION_LOG.md
+- docs/nifty_calendar/P6_MANUSCRIPT_PLAN.md
+- .github/workflows/p6-nifty-manuscript.yml
+
+## Validation
+
+P6 GitHub Actions validation run 4 succeeded. Repository tests: 4 passed. The manuscript assets and internal research outputs passed file/link checks.
+
+## Next research directions
+
+The closed study identifies, but does not apply, future work on longer history, strict out-of-sample validation, intraday executable bid/ask replay, liquidity constraints, regime stratification, and exact historical broker contract-note validation.
