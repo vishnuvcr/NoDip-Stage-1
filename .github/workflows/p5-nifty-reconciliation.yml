@@ -108,7 +108,7 @@ jobs:
               "",
               "## Source design",
               "Primary source: public NIFTY options mirror used by the locked backtest.",
-              "Secondary contract source: NSE daily F&O bhavcopy (legacy schema through 2023-12-29; UDiFF from 2024-01-01).",
+              "Secondary contract source: an independent GitHub mirror of NSE F&O bhavcopy archives; the research uses the mirror copy for the full 2022-2024 sample.",
               "Independent spot cross-check: Yahoo Finance NIFTY 50 daily session OPEN for each candidate entry date.",
               "",
               "## Cycle coverage reconciliation",
@@ -117,8 +117,8 @@ jobs:
               f"- Primary rejected cycles: {(audit['primary_reason'].ne('VALID')).sum()}",
               f"- Secondary fully executable cycles: {len(complete)}",
               f"- Primary rejects recovered by secondary source: {len(recovered)}",
-              f"- Primary-valid cycles also complete on secondary: {len(matched)}",
-              f"- Primary-rejected cycles still non-executable or source-gap on secondary: {len(rejected) - len(recovered)}",
+              f"- Primary-valid control sample also complete on secondary: {len(matched)}",
+              "- Reconciliation scope: all primary-rejected cycles plus 10 deterministic primary-valid control cycles.",
               "",
               "## Primary rejection reasons",
               "",
@@ -204,6 +204,8 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add reports/nifty_calendar data/cache/nifty_secondary_reconciliation_2022_2024.csv docs/nifty_calendar/PHASE_STATUS.md
           git diff --cached --quiet || git commit -m "Run P5 independent NIFTY calendar reconciliation"
+          git fetch origin research-nifty-4leg-calendar-p5-reconciliation
+          git rebase origin/research-nifty-4leg-calendar-p5-reconciliation
           git push origin HEAD:research-nifty-4leg-calendar-p5-reconciliation
 
       - name: Upload P5 artifact
@@ -233,4 +235,6 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add docs/nifty_calendar/ERROR_LOG.md
           git diff --cached --quiet || git commit -m "Log P5 workflow failure"
+          git fetch origin research-nifty-4leg-calendar-p5-reconciliation || true
+          git rebase origin/research-nifty-4leg-calendar-p5-reconciliation || true
           git push origin HEAD:research-nifty-4leg-calendar-p5-reconciliation || true
