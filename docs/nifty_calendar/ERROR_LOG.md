@@ -103,3 +103,9 @@
 - Branch: research-nifty-4leg-calendar-p5-reconciliation
 - Event: push
 - The failed step should be inspected in GitHub Actions logs before interpreting any P5 result.
+
+## 2026-09-23 — P5 workflow failure
+- Run ID: 35814405549; attempt: 1
+- Branch: research-nifty-4leg-calendar-p5-reconciliation
+- Event: push
+- The failed step should be inspected in GitHub Actions logs before interpreting any P5 result.
