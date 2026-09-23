@@ -68,3 +68,11 @@
 - Losing trades had higher mean initial net debit (₹81.33 vs ₹51.45 for non-losses), lower near-call/far-call ratio (0.409 vs 0.455), and higher near-put/far-put ratio (0.529 vs 0.475).
 - Exploratory filters were tested. The combined call/put balance filter kept 28/84 trades, raised in-sample win rate to 85.71% and reduced max drawdown to ₹1,027.50, but gross P&L fell to ₹63,415 and the small retained sample creates substantial selection-bias risk.
 - No intraday stop-loss recommendation was accepted because daily entry/expiry-close data cannot establish the path or executable stop fills.
+
+
+## 2026-09-23 — P7 loss audit initiated
+- User requested an audit of losing trades, reasons for losses, improvement possibilities, and a tuned entry criterion.
+- P7 branch created: research-nifty-4leg-calendar-p7-loss-audit.
+- P6 remains frozen and unchanged.
+- P7 analysis will audit all 32 losing trades in the 84-cycle strict sample, classify leg-level loss mechanisms, and test a single interpretable term-structure balance gate.
+- The proposed gate will not be promoted into the frozen strategy without genuinely unseen post-2024 validation.
