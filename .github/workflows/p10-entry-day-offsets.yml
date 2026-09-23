@@ -1,0 +1,101 @@
+name: P10 NIFTY entry-day offset research
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/p10-entry-day-offsets.yml'
+      - 'scripts/p10_entry_day_offsets.py'
+      - 'docs/nifty_calendar/P10_ENTRY_DAY_OFFSET_PLAN.md'
+      - 'docs/nifty_calendar/P10_TRIGGER.md'
+
+concurrency:
+  group: p10-entry-day-offsets
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  offsets:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Checkout P10 branch
+        uses: actions/checkout@v4
+        with:
+          ref: research-nifty-4leg-calendar-p10-entry-day-offsets
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --disable-pip-version-check pandas numpy requests tabulate
+
+      - name: Restore cached NSE F&O mirror
+        uses: actions/cache@v4
+        with:
+          path: data/cache/nse_fno_mirror/.git
+          key: nse-fno-mirror-p10-day-offsets-v1
+          restore-keys: |
+            nse-fno-mirror-p10-
+            nse-fno-mirror-p8-2025-onward-
+
+      - name: Prepare NSE F&O mirror snapshot
+        run: |
+          mkdir -p data/cache
+          if [ ! -d data/cache/nse_fno_mirror/.git ]; then
+            git clone --filter=blob:none --depth=1 --no-checkout https://github.com/SantoshSrinivas79/NSE-FNO-Data-bank.git data/cache/nse_fno_mirror
+          fi
+          git -C data/cache/nse_fno_mirror rev-parse HEAD > data/cache/P10_MIRROR_COMMIT.txt
+
+      - name: Run P10 seven-offset study
+        env:
+          PYTHONPATH: .
+        run: |
+          python scripts/p10_entry_day_offsets.py \
+            --mirror-root data/cache/nse_fno_mirror \
+            --dev-cycles reports/nifty_calendar/CYCLE_AUDIT_2022_2024.csv \
+            --oos-cycles reports/nifty_calendar/P8_CYCLES_2025_ONWARD.csv \
+            --out-ledger reports/nifty_calendar/P10_ENTRY_DAY_OFFSET_LEDGER.csv \
+            --out-summary reports/nifty_calendar/P10_ENTRY_DAY_OFFSET_SUMMARY.csv \
+            --out-paired reports/nifty_calendar/P10_ENTRY_DAY_OFFSET_PAIRED.csv \
+            --out-report reports/nifty_calendar/P10_ENTRY_DAY_OFFSET_REPORT.md
+
+      - name: Add mirror provenance
+        run: |
+          printf '\n\nNSE F&O mirror commit: ' >> reports/nifty_calendar/P10_ENTRY_DAY_OFFSET_REPORT.md
+          cat data/cache/P10_MIRROR_COMMIT.txt >> reports/nifty_calendar/P10_ENTRY_DAY_OFFSET_REPORT.md
+
+      - name: Commit P10 results conflict-safely
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git fetch origin research-nifty-4leg-calendar-p10-entry-day-offsets
+          git reset --hard origin/research-nifty-4leg-calendar-p10-entry-day-offsets
+          git add reports/nifty_calendar/P10_ENTRY_DAY_OFFSET_LEDGER.csv reports/nifty_calendar/P10_ENTRY_DAY_OFFSET_SUMMARY.csv reports/nifty_calendar/P10_ENTRY_DAY_OFFSET_PAIRED.csv reports/nifty_calendar/P10_ENTRY_DAY_OFFSET_REPORT.md data/cache/P10_MIRROR_COMMIT.txt
+          git diff --cached --quiet || git commit -m 'Complete P10 entry-day offset research'
+          git push origin HEAD:research-nifty-4leg-calendar-p10-entry-day-offsets
+
+      - name: Log workflow failure
+        if: failure()
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import os
+          p=Path('docs/nifty_calendar/ERROR_LOG.md')
+          with p.open('a',encoding='utf-8') as f:
+              f.write('\n## 2026-09-23 — P10 entry-day offset workflow failure\n')
+              f.write('Run ID: '+os.getenv('GITHUB_RUN_ID','unknown')+'\n')
+              f.write('Step failure requires inspection before any numerical interpretation.\n')
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add docs/nifty_calendar/ERROR_LOG.md
+          git diff --cached --quiet || git commit -m 'Log P10 entry-day offset workflow failure'
+          git push origin HEAD:research-nifty-4leg-calendar-p10-entry-day-offsets
