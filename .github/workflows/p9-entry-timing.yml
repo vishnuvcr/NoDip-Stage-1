@@ -1,0 +1,43 @@
+name: P9 NIFTY event-driven entry timing
+
+on:
+  workflow_dispatch:
+    inputs:
+      cutoff:
+        description: "Maximum entry time for a sensitivity run"
+        required: true
+        default: "15:30"
+        type: choice
+        options:
+          - "15:00"
+          - "15:15"
+          - "15:30"
+          - "15:40"
+      data_path:
+        description: "Repository path to timestamped intraday option/spot data"
+        required: true
+        default: "data/intraday/P9"
+
+jobs:
+  validate-design:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate P9 research specification
+        env:
+          DATA_PATH: ${{ inputs.data_path }}
+          CUTOFF: ${{ inputs.cutoff }}
+        run: |
+          set -euo pipefail
+          test -f docs/nifty_calendar/P9_ENTRY_TIMING_PLAN.md
+          test -f docs/nifty_calendar/P9_TRIGGER.md
+          grep -q 'CBR <= 1.20' docs/nifty_calendar/P9_ENTRY_TIMING_PLAN.md
+          grep -q 'No threshold search in P9' docs/nifty_calendar/P9_ENTRY_TIMING_PLAN.md
+          if [ ! -d "${DATA_PATH}" ]; then
+            echo "P9 DATA BLOCKED: ${DATA_PATH} is not present."
+            echo "A valid P9 dataset must contain timestamped NIFTY spot plus near/far option observations."
+            exit 2
+          fi
+          echo "P9 design validation passed for cutoff ${CUTOFF}."
