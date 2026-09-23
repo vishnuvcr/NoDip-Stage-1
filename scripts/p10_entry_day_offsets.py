@@ -143,13 +143,13 @@ def evaluate(cycles: pd.DataFrame, trading: list[pd.Timestamp], daily: dict[pd.T
     return pd.DataFrame(rows)
 
 def strategy_metrics(sub: pd.DataFrame) -> dict:
-    x=sub.copy(); x['strategy_pnl']=np.where((x.status=='EXECUTABLE')&(x.gate_pass.astype(bool)),pd.to_numeric(x.pnl_inr,errors='coerce'),0.0)
+    x=sub.copy(); x['strategy_pnl']=np.where((x.status=='EXECUTABLE') & x.gate_pass.eq(True),pd.to_numeric(x.pnl_inr,errors='coerce'),0.0)
     a=x.strategy_pnl.to_numpy(float); pos=a[a>0]; neg=a[a<0]; curve=np.cumsum(a); dd=curve-np.maximum.accumulate(curve)
     gross=float(a.sum()); ntr=int(((x.status=='EXECUTABLE')&(x.gate_pass.astype(bool))).sum())
     return {'cycles':len(x),'trades':ntr,'gross':gross,'mean_cycle':float(a.mean()),'win':float((a>0).mean()),'pf':float(pos.sum()/(-neg.sum())) if len(neg) else np.inf,'dd':float(dd.min()),'worst':float(a.min())}
 
 def net_total(sub:pd.DataFrame, slip:float)->float:
-    x=sub[(sub.status=='EXECUTABLE')&sub.gate_pass.astype(bool)].copy(); total=0.0
+    x=sub[(sub.status=='EXECUTABLE') & sub.gate_pass.eq(True)].copy(); total=0.0
     for _,r in x.iterrows(): total+=p8m.net_cost(r,slip,0.0005)
     return float(total)
 
@@ -177,11 +177,13 @@ def main():
         s=ledger[ledger.sample==sample]
         for off in OFFSETS:
             x=s[s.offset==off]; m=strategy_metrics(x)
-            summaries.append({'sample':sample,'offset':off,'offset_label':OFFSET_LABEL[off],**m,'net_0pt':net_total(x,0.0),'net_0.5pt':net_total(x,0.5),'net_1pt':net_total(x,1.0),'net_2pt':net_total(x,2.0),'gate_pass_executable':int(((x.status=='EXECUTABLE')&x.gate_pass.astype(bool)).sum()),'executable_cycles':int((x.status=='EXECUTABLE').sum()),'coverage':float((x.status=='EXECUTABLE').mean()),'median_atm_points':float(pd.to_numeric(x.loc[x.status=='EXECUTABLE','atm_distance_points'],errors='coerce').median()) if (x.status=='EXECUTABLE').any() else np.nan})
-        base=x[x.offset==1][['cycle_id','strategy_pnl']].copy(); base.columns=['cycle_id','base_pnl'] if len(base) else ['cycle_id','base_pnl']
+            summaries.append({'sample':sample,'offset':off,'offset_label':OFFSET_LABEL[off],**m,'net_0pt':net_total(x,0.0),'net_0.5pt':net_total(x,0.5),'net_1pt':net_total(x,1.0),'net_2pt':net_total(x,2.0),'gate_pass_executable':int(((x.status=='EXECUTABLE') & x.gate_pass.eq(True)).sum()),'executable_cycles':int((x.status=='EXECUTABLE').sum()),'coverage':float((x.status=='EXECUTABLE').mean()),'median_atm_points':float(pd.to_numeric(x.loc[x.status=='EXECUTABLE','atm_distance_points'],errors='coerce').median()) if (x.status=='EXECUTABLE').any() else np.nan})
+            base=x[x.offset==1][['cycle_id','status','gate_pass','pnl_inr']].copy()
+        base['base_pnl']=np.where((base['status']=='EXECUTABLE') & base['gate_pass'].eq(True),pd.to_numeric(base['pnl_inr'],errors='coerce'),0.0)
+        base=base[['cycle_id','base_pnl']]
         if len(base):
             for off in OFFSETS:
-                y=x[x.offset==off].copy(); y['strategy_pnl']=np.where((y.status=='EXECUTABLE')&y.gate_pass.astype(bool),pd.to_numeric(y.pnl_inr,errors='coerce'),0.0)
+                y=x[x.offset==off].copy(); y['strategy_pnl']=np.where((y.status=='EXECUTABLE')&y.gate_pass.eq(True),pd.to_numeric(y.pnl_inr,errors='coerce'),0.0)
                 z=base.merge(y[['cycle_id','strategy_pnl']],on='cycle_id',how='inner'); z['delta_vs_Dplus1']=z.strategy_pnl-z.base_pnl
                 if off==1: continue
                 paired.append({'sample':sample,'offset':off,'offset_label':OFFSET_LABEL[off],'paired_cycles':len(z),'sum_delta_vs_Dplus1':float(z.delta_vs_Dplus1.sum()),'mean_delta_vs_Dplus1':float(z.delta_vs_Dplus1.mean()) if len(z) else np.nan,'median_delta_vs_Dplus1':float(z.delta_vs_Dplus1.median()) if len(z) else np.nan,'offset_higher_cycles':int((z.delta_vs_Dplus1>0).sum()),'offset_lower_cycles':int((z.delta_vs_Dplus1<0).sum()),'same_cycles':int((z.delta_vs_Dplus1==0).sum())})
