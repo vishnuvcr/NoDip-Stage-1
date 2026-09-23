@@ -22,11 +22,6 @@ jobs:
           python-version: '3.12'
       - name: Install data tools
         run: python -m pip install --disable-pip-version-check pandas pyarrow numpy duckdb huggingface_hub
-      - name: Restore Rissin raw cache
-        uses: actions/cache@v4
-        with:
-          path: /home/runner/.cache/huggingface/hub/datasets--rissin--nse-options-intraday
-          key: p9-rissin-nifty-v1
       - name: Restore primary NIFTY index cache
         uses: actions/cache@v4
         with:
@@ -34,11 +29,6 @@ jobs:
           key: p9-hf-thetrademarkk-${{ runner.os }}-v1
       - name: Run Rissin secondary OOS comparison
         run: python scripts/p9_rissin_oos_compare.py
-      - name: Save Rissin raw cache
-        uses: actions/cache/save@v4
-        with:
-          path: /home/runner/.cache/huggingface/hub/datasets--rissin--nse-options-intraday
-          key: p9-rissin-nifty-v1
       - name: Commit Rissin results conflict-safely
         run: |
           set -euo pipefail
