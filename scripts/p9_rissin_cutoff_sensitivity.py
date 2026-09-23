@@ -63,7 +63,7 @@ def main() -> None:
     df = pd.DataFrame(rows)
     lines = ['# P9 Rissin pre-specified latest-entry sensitivity', '', '- This is a pre-specified operational cutoff sensitivity, not a post-hoc parameter search.', '- Entry rule remains frozen: first intraday qualifying CBR <= 1.20 with a true ATM common strike and all four executable legs.', '- ATM QC: NIFTY strike interval is 50 points; common strike must be within 25 points of contemporaneous spot.', '- Signal uses the minute close; entry uses the next available minute open.', '', '## Summary']
     for _, r in df.iterrows():
-        lines.append(f\"- {r['cutoff']}: {int(r['event_trades'])} trades, gross ₹{r['gross_pnl_inr']:,.2f}, PF {r['profit_factor']:.3f}, net at 1-point slippage ₹{r['event_net_1pt_inr']:,.2f}, net at 2-point slippage ₹{r['event_net_2pt_inr']:,.2f}.\")
+        lines.append(f"- {r['cutoff']}: {int(r['event_trades'])} trades, gross ₹{r['gross_pnl_inr']:,.2f}, PF {r['profit_factor']:.3f}, net at 1-point slippage ₹{r['event_net_1pt_inr']:,.2f}, net at 2-point slippage ₹{r['event_net_2pt_inr']:,.2f}.")
     lines += ['', '## Interpretation rule', 'No cutoff is selected for profitability. The cutoffs are reported as pre-registered sensitivity checks.', '', 'NSE contract specification source:', 'https://www.nseindia.com/static/products-services/equity-derivatives-nifty50']
     REPORT.write_text('\n'.join(lines) + '\n', encoding='utf-8')
 
