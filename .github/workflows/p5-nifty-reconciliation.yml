@@ -103,6 +103,21 @@ jobs:
         run: |
           python scripts/reconcile_rejections_nse.py             --audit reports/nifty_calendar/CYCLE_AUDIT_2022_2024.csv             --out reports/nifty_calendar/P5_SECONDARY_RECONCILIATION_2022_2024.csv             --rows-out data/cache/nifty_secondary_reconciliation_2022_2024.csv             --cache-dir data/cache/nse_reconciliation_raw             --mirror-root data/cache/nse_fno_mirror
 
+      - name: Rebuild secondary ledger from current reconciliation
+        run: |
+          python - <<'PY'
+          import pandas as pd
+          recon = pd.read_csv("reports/nifty_calendar/P5_SECONDARY_RECONCILIATION_2022_2024.csv")
+          complete = recon[
+              recon["secondary_status"].eq("SECONDARY_COMPLETE")
+          ][["entry_date","near_expiry","far_expiry","secondary_strike"]].copy()
+          complete.to_csv(
+              "reports/nifty_calendar/SECONDARY_FULL_TRADE_LEDGER_2022_2024.csv",
+              index=False,
+          )
+          print(f"Rebuilt current secondary ledger with {len(complete)} complete cycles")
+          PY
+
       - name: Build complete secondary trade ledger and cost sensitivity
         env:
           PYTHONPATH: .
@@ -120,7 +135,8 @@ jobs:
           recon = pd.read_csv("reports/nifty_calendar/P5_SECONDARY_RECONCILIATION_2022_2024.csv")
 
           complete = recon[recon["secondary_status"].eq("SECONDARY_COMPLETE")].copy()
-          recovered = recon[recon["comparison_status"].eq("RECOVERED_BY_SECONDARY")].copy()
+          recovered = recon[recon["comparison_status"].eq("RECOVERED_BY_SECONDARY_EXACT")].copy()
+          reselected = recon[recon["comparison_status"].eq("RECOVERED_BY_SECONDARY_RESELECTED")].copy()
           matched = recon[recon["comparison_status"].eq("PRIMARY_VALID_SECONDARY_COMPLETE")].copy()
           rejected = recon[recon["primary_reason"].ne("VALID")]
 
@@ -137,7 +153,8 @@ jobs:
               f"- Primary valid cycles: {(audit['primary_reason'].eq('VALID')).sum()}",
               f"- Primary rejected cycles: {(audit['primary_reason'].ne('VALID')).sum()}",
               f"- Secondary fully executable cycles: {len(complete)}",
-              f"- Primary rejects recovered by secondary source: {len(recovered)}",
+              f"- Primary rejects recovered at the same strike as the primary source: {len(recovered)}",
+              f"- Primary rejects recovered after independent secondary strike re-selection: {len(reselected)}",
               f"- Primary-valid cycles also complete on secondary: {len(matched)}",
               "- Reconciliation scope: all 134 candidate cycles.",
               "",
@@ -161,12 +178,20 @@ jobs:
 
           lines += ["", "## Secondary P&L", ""]
           if len(complete):
-              x = pd.to_numeric(complete["secondary_pnl_inr"], errors="coerce").dropna()
+              all_pnl = pd.to_numeric(complete["secondary_pnl_inr"], errors="coerce").dropna()
+              recovered_pnl = pd.to_numeric(recovered["secondary_pnl_inr"], errors="coerce").dropna()
+              reselected_pnl = pd.to_numeric(reselected["secondary_pnl_inr"], errors="coerce").dropna()
+              matched_pnl = pd.to_numeric(matched["secondary_pnl_inr"], errors="coerce").dropna()
               lines += [
-                  f"- Secondary complete cycles: {len(x)}",
-                  f"- Secondary total P&L across complete cycles: ₹{x.sum():,.2f}",
-                  f"- Secondary mean trade: ₹{x.mean():,.2f}",
-                  f"- Secondary win rate: {(x > 0).mean():.2%}",
+                  f"- Complete independent cycles: {len(all_pnl)}",
+                  f"- Complete independent gross P&L: ₹{all_pnl.sum():,.2f}",
+                  f"- Mean trade: ₹{all_pnl.mean():,.2f}",
+                  f"- Median trade: ₹{all_pnl.median():,.2f}",
+                  f"- Win rate: {(all_pnl > 0).mean():.2%}",
+                  f"- Profit factor: {all_pnl[all_pnl > 0].sum() / (-all_pnl[all_pnl < 0].sum()):.3f}",
+                  f"- Primary rejects recovered at same strike: {len(recovered_pnl)} cycles; gross P&L ₹{recovered_pnl.sum():,.2f}",
+                  f"- Primary rejects recovered after re-selection: {len(reselected_pnl)} cycles; gross P&L ₹{reselected_pnl.sum():,.2f}",
+                  f"- Primary-valid control subset: {len(matched_pnl)} cycles; gross P&L ₹{matched_pnl.sum():,.2f}",
               ]
           else:
               lines.append("- No complete secondary cycles were available.")
@@ -201,9 +226,8 @@ jobs:
           ]].copy()
           recovered_out.to_csv("reports/nifty_calendar/SECONDARY_RECOVERED_TRADES_2022_2024.csv", index=False)
 
-          full = complete[["entry_date","near_expiry","far_expiry","secondary_strike","secondary_pnl_inr"]].copy()
-          full["secondary_pnl_inr"] = pd.to_numeric(full["secondary_pnl_inr"], errors="coerce")
-          full.to_csv("reports/nifty_calendar/SECONDARY_FULL_TRADE_LEDGER_2022_2024.csv", index=False)
+          # The complete trade-level ledger is rebuilt before the cost step from
+          # the current reconciliation file; the report does not overwrite it.
           PY
 
       - name: Update P5 phase state
@@ -239,6 +263,8 @@ jobs:
             reports/nifty_calendar/P5_RECONCILIATION_REPORT_2022_2024.md
             reports/nifty_calendar/SECONDARY_RECOVERED_TRADES_2022_2024.csv
             reports/nifty_calendar/SECONDARY_FULL_TRADE_LEDGER_2022_2024.csv
+            reports/nifty_calendar/SECONDARY_TRADE_LEVEL_RESULTS_2022_2024.csv
+            reports/nifty_calendar/SECONDARY_COST_SENSITIVITY_2022_2024.csv
             data/cache/nifty_secondary_reconciliation_2022_2024.csv
 
       - name: Log workflow failure
