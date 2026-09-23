@@ -67,33 +67,31 @@ Frozen:
 - no stop/target/roll/averaging/adjustment.
 
 Execution:
-- primary public source was subjected to source-quality QC and rejected for P9 performance because far-expiry intraday coverage was too sparse;
-- secondary Rissin/Upstox 1-minute option data were used on the same 86-cycle post-2024 OOS population;
+- primary public source failed ATM/far-expiry source-quality QC and was rejected;
+- secondary Rissin/Upstox 1-minute options were tested on the same 86-cycle post-2024 OOS population;
 - signal on completed 1-minute close;
 - next available minute open execution;
 - positive four-leg volume/price requirement;
-- explicit adverse slippage and transaction-cost sensitivity.
+- deterministic ATM QC: common strike within 25 points of contemporaneous spot.
 
 Final P9 result:
-- fixed 09:15 secondary-source control: 26 trades, gross ₹40,506.25, win rate 80.77%, PF 5.029, gross max DD ₹7,489.50;
-- event-driven arm: 70 trades, gross ₹37,291.40, win rate 62.86%, PF 1.576, gross max DD ₹26,467.50;
-- event-only incremental trades: 44, gross ₹-3,214.85, win rate 52.27%, PF 0.941;
-- 24 originally gate-fail dates that only qualified later: gross ₹-13,964.60, PF 0.665;
-- event-driven modeled net P&L at 0.05% exchange stress: ₹9,222.87 / ₹-10,837.13 / ₹-30,897.13 / ₹-71,017.13 for 0 / 0.5 / 1 / 2 points adverse slippage;
-- therefore the event-driven timing adaptation is not promoted.
-
-Primary-source QC:
-The thetrademarkk source acquired 192/201 requested expiry files, but the far expiry on 2026-04-01 contained only 903 rows for the day. The only four-leg common strike at sampled qualifying timestamps was 20,500 while NIFTY was around 22,900. The primary timing output was rejected before performance interpretation.
+- fixed source diagnostic: 14 executable trades, gross ₹19,737.25, win rate 78.57%, PF 5.613;
+- event-driven: 65 executable trades, gross ₹43,607.25, win rate 64.62%, PF 1.755, gross max DD ₹33,429;
+- event-driven modeled net at 0.05% exchange stress: ₹17,798.70 / ₹-781.30 / ₹-19,361.30 / ₹-56,521.30 for 0 / 0.5 / 1 / 2 points adverse slippage;
+- on 33 event dates that passed the canonical 09:15 P8 gate, event gross was ₹42,312.50 versus canonical P8 fixed-gate ₹104,231.75; mean paired difference ₹-1,876.34, median ₹-746.25, bootstrap 95% CI approximately ₹-3,990.63 to ₹-347.55;
+- 32 dates failed the 09:15 gate but qualified later; those event trades produced gross ₹1,294.75 and PF 1.029;
+- pre-registered cutoffs 15:00/15:15/15:30/15:40 all remained negative at 0.5-point adverse slippage and beyond.
 
 P9 conclusion:
-Adaptive first-qualifying intraday entry does not improve the frozen strategy under the secondary OOS test and is highly cost/slippage sensitive. Keep the fixed-time reference frozen.
+Adaptive first-qualifying intraday entry does not support replacing the fixed 09:15 entry. The threshold, four-leg structure and exit remain frozen.
 
 P9 outputs:
 - reports/nifty_calendar/P9_FINAL_RESEARCH_CONCLUSION.md
 - reports/nifty_calendar/P9_SECONDARY_VALIDATION_REPORT.md
 - reports/nifty_calendar/P9_RISSIN_OOS_COMPARISON.csv
 - reports/nifty_calendar/P9_RISSIN_OOS_COSTS.csv
-- docs/nifty_calendar/P9_ALTERNATE_DATA_SOURCE_AUDIT.md
+- reports/nifty_calendar/P9_RISSIN_CUTOFF_SENSITIVITY.csv
+- reports/nifty_calendar/P9_RISSIN_CUTOFF_SENSITIVITY_REPORT.md
 
 ### P10 — Forward / paper-execution validation
 Status: PLANNED.
