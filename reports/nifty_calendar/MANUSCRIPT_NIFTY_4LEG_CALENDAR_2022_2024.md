@@ -3,7 +3,7 @@
 ## Abstract
 This study evaluates a frozen four-leg NIFTY 50 weekly/three-week calendar rule with no discretionary adjustment. The primary public dataset initially produced only 59 complete cycles from 134 candidate cycles. Independent reconciliation against a public mirror of NSE F&O bhavcopy archives and an independent NIFTY spot-open diagnostic reconstructed 132 complete cycles. The independent secondary re-run re-applies the frozen common-ATM rule using the independent spot open when selecting the common strike.
 
-Across 132 complete secondary cycles, cumulative gross P&L was Rs 188,237.50, mean cycle P&L Rs 1,426.04, median Rs 580.63, win rate 59.09%, profit factor 1.889, maximum drawdown Rs -57,380.00, best cycle Rs 62,080.00, and worst cycle Rs -31,597.50. The 20,000-replication circular three-cycle block bootstrap 95% interval for total gross P&L was Rs 6,927.47 to Rs 408,770.34.
+Across 132 complete secondary cycles, cumulative gross P&L was Rs 188,237.50, mean cycle P&L Rs 1,426.04, median Rs 580.63, win rate 59.09%, profit factor 1.889, maximum drawdown Rs 57,380.00, best cycle Rs 62,080.00, and worst cycle Rs -31,597.50. The 20,000-replication circular three-cycle block bootstrap 95% interval for total gross P&L was Rs 6,927.47 to Rs 408,770.34.
 
 The key validation finding is that the original 44.0% coverage was primarily a source-coverage limitation, not an intentional trading filter. All 75 primary-source rejections were reconstructed on the independent public source; 27 retained the primary strike and 48 required independent re-selection of the common ATM strike. Two primary-valid cycles remained non-executable on the independent source because no common strike was present there.
 
