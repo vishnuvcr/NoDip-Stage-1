@@ -76,3 +76,13 @@
 - P6 remains frozen and unchanged.
 - P7 analysis will audit all 32 losing trades in the 84-cycle strict sample, classify leg-level loss mechanisms, and test a single interpretable term-structure balance gate.
 - The proposed gate will not be promoted into the frozen strategy without genuinely unseen post-2024 validation.
+
+
+## 2026-09-23 — P7 loss audit completed
+- Canonical strict 84-cycle ledger was regenerated from P5 reconciliation plus the canonical secondary trade ledger after an initial manual-ledger mismatch was discovered.
+- Final loss audit: 32 losing trades; 20 (62.5%) had both near-expiry legs individually adverse; 19/32 had both far-expiry legs net favorable.
+- Entry-state association: losing trades had median calendar-balance ratio 1.278 versus 1.061 for winning trades.
+- Candidate gate locked for future validation: (far CE / near CE) / (far PE / near PE) <= 1.20.
+- Canonical full-sample candidate diagnostics: 52 trades retained, gross P&L ₹84,981.25, win rate 80.77%, profit factor 8.457, maximum drawdown ₹3,355.00.
+- Conservative cost scenario (₹20/order, 0.05000% exchange-charge sensitivity, 2-point adverse slippage): ₹34,163.77 modeled net P&L.
+- The gate is not promoted into P6 and is not a validated live-trading rule. It is reserved for genuinely unseen post-2024 validation.
