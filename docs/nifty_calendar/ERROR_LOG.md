@@ -81,3 +81,12 @@
 - Impact: the patch was rejected before any repository write; no research artifact was changed by that failed call.
 - Correction: the script patch was resent with explicit declarations and committed successfully.
 - Prevention: validate tool-side patch construction before invoking repository writes.
+
+
+## 2026-09-23 — P5 secondary-source result was a source-availability failure, not a market classification
+- Event: P5 run 18 completed successfully at the workflow level, but every secondary contract lookup was classified as SECONDARY_SOURCE_GAP.
+- Root cause: the NSE archive host timed out on the candidate-date downloads; the workflow logs show repeated ReadTimeout errors from nsearchives.nseindia.com.
+- Impact: the earlier P5 report's zero recovered cycles cannot be used to conclude that the 75 primary rejections are genuine non-trades.
+- Additional data-spec correction: independent NSE archive documentation/mirrors show the F&O schema transition in July 2024, not January 2024. The reconciliation code was corrected to use legacy format through 2024-07-05 and UDiFF from 2024-07-08.
+- Correction: the P5 reconciler now tries the independent GitHub mirror SantoshSrinivas79/NSE-FNO-Data-bank, which stores original NSE F&O bhavcopy ZIPs for 2020 onward, before falling back to NSE.
+- Current state: P5 run 12 is in progress with the corrected mirror-first acquisition path.
