@@ -274,7 +274,11 @@ def secondary_cycle(cycle: pd.Series, daily: dict[pd.Timestamp, pd.DataFrame], y
         + (prices["entry_far_pe"] - prices["exit_far_pe"]) * fs
     )
     row["secondary_pnl_inr"] = pnl
-    row["secondary_status"] = "SECONDARY_COMPLETE"
+    row["secondary_status"] = (
+        "SECONDARY_EXACT_STRIKE_COMPLETE"
+        if row["strike_mode"] == "EXACT_PRIMARY_STRIKE"
+        else "SECONDARY_GRID_ALTERNATIVE_COMPLETE"
+    )
     row["secondary_strike"] = strike
     return row
 
