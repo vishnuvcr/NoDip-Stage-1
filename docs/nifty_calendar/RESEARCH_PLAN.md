@@ -86,3 +86,8 @@ The robustness report models:
 ## Stop condition
 
 Research stops after P6 or earlier if data quality cannot support a defensible conclusion. A result that fails validation is recorded as a research outcome, not silently repaired.
+
+
+### P7 — Loss audit / entry tuning
+Status: IN PROGRESS.
+Audit every losing trade in the strict 84-cycle sample, classify leg-level loss mechanisms, derive interpretable entry-time term-structure features, and propose one candidate entry gate without altering P6. The candidate must be reserved for independent post-2024 validation because repeated historical parameter search can create backtest overfitting.
