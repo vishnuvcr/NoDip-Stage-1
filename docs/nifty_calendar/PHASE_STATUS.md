@@ -1,6 +1,6 @@
 # Phase Status
 
-Last updated: 2026-09-23 — P0-P8 complete; P9 event-driven entry-timing phase active; primary-source QC exposed a far-expiry sparsity failure; secondary-source validation is running
+Last updated: 2026-09-23 — P0-P8 complete; P9 event-driven entry-timing phase COMPLETE; event-driven timing not promoted; P10 forward/paper validation planned
 
 | Phase | Status | Notes |
 |---|---|---|
@@ -13,34 +13,50 @@ Last updated: 2026-09-23 — P0-P8 complete; P9 event-driven entry-timing phase 
 | P6 Final manuscript | COMPLETE | Strict 84-cycle manuscript, figures, statistics, trade-level appendix and cost/slippage sensitivity committed |
 | P7 Loss audit / entry tuning | COMPLETE | 32 losses audited; candidate calendar-balance gate <=1.20 identified; P6 unchanged |
 | P8 Unseen post-2024 validation | COMPLETE | Frozen 1.20 gate tested unchanged on 2025+ temporal holdout; supported for further research, not promoted to live trading |
-| P9 Event-driven intraday entry timing | IN PROGRESS / SECONDARY SOURCE VALIDATION | Primary HF acquisition succeeded (192/201 expiry files; ~671.8 MB; 157/170 cycles with both near/far files), but the first primary timing output is rejected because far-expiry coverage is too sparse and produced an invalid 20,500 strike against NIFTY near 22,899. Rissin secondary-source OOS validation is running. |
-| P10 Forward / paper-execution validation | PLANNED | Fixed rule only after P9 design is settled; timestamped executable quotes, real costs and forward paper ledger |
+| P9 Event-driven intraday entry timing | COMPLETE | Primary public source failed ATM/far-expiry coverage QC; secondary Rissin OOS test found 70 event trades vs 26 fixed-control trades, but 44 incremental trades lost ₹3,214.85 gross and event net P&L became negative from 0.5-point slippage onward |
+| P10 Forward / paper-execution validation | PLANNED | Return to the frozen fixed rule; use timestamped executable quotes, observed spreads, real costs and a pre-registered paper ledger |
 
-## P9 boundary
+## P9 final decision
 
-P6 and P8 remain reference results. P9 may change entry timing only; it may not rewrite the frozen 1.20 threshold or the four-leg/exit structure.
+Event-driven first-qualifying entry is not promoted. P9 did not alter the CBR threshold, four-leg structure, strike semantics, or exit rule.
 
-## P9 data-source finding
+### Secondary-source OOS result
 
-The source audit identified public 1-minute datasets with explicit expiry/strike information. None of the currently identified public schemas provides reliable historical bid/ask quotes.
+| Metric | Fixed 09:15 | Event-driven |
+|---|---:|---:|
+| Executable trades | 26 | 70 |
+| Gross P&L | ₹40,506.25 | ₹37,291.40 |
+| Win rate | 80.77% | 62.86% |
+| Profit factor | 5.029 | 1.576 |
+| Gross max drawdown | ₹7,489.50 | ₹26,467.50 |
+| Worst trade | ₹-5,391.75 | ₹-9,984.75 |
+| 0-point slippage net | ₹29,499.84 | ₹9,222.87 |
+| 0.5-point slippage net | ₹22,139.84 | ₹-10,837.13 |
+| 1-point slippage net | ₹14,779.84 | ₹-30,897.13 |
+| 2-point slippage net | ₹59.84 | ₹-71,017.13 |
 
-- Primary candidate: thetrademarkk/india-index-options-1m — 1-minute NIFTY index plus option files partitioned by actual expiry date, with strike, CE/PE, OHLCV and OI.
-- Secondary candidate: rissin/nse-options-intraday — 1-minute NIFTY options with explicit expiry, strike and option type; intraday provenance is Upstox.
-- 2024 cross-check: Kaggle Historical Nifty Options 2024 All Expiries, with expiry/trade-day file structure and separate NIFTY spot files.
-- Higher-fidelity fallback: QuantDev-stack OptionVault, which advertises 1-minute, 1-second, tick/Level-2 and Greeks samples; full historical access is licensed/commercial.
+### Incremental event-only trades
 
-## P9 acquisition result
+- 44 additional trades were admitted by waiting intraday.
+- Aggregate gross P&L: ₹-3,214.85.
+- Win rate: 52.27%.
+- Profit factor: 0.941.
+- 20 were originally gate-pass at the fixed observation: +₹10,749.75 gross.
+- 24 were originally gate-fail but became CBR<=1.20 later: ₹-13,964.60 gross.
 
-- 170 input research cycles
-- 201 unique option expiry files requested
-- 192 expiry files downloaded
-- ~671.8 MB downloaded in the successful acquisition run
-- 1-minute NIFTY index file downloaded
-- 157/170 cycles ready for intraday reconstruction (92.35%)
-- 13/170 cycles source-gapped because required later-2026 expiry files are absent from the source snapshot
+### Quality diagnostics
 
-The initial successful workflow cached only the manifest, not the raw Hugging Face directory. The workflow has since been corrected to cache the actual Hugging Face dataset directory under a stable key.
+- Event median signal time: 09:16 IST.
+- Event median ATM distance: 48.3 points / 0.189%.
+- Event 90th percentile ATM distance: 306.65 points / 1.212%.
+- Maximum event ATM distance: 844.35 points / 3.617%.
 
-## P9 immediate blocker
+## P9 source-quality finding
 
-Primary-source timing output is rejected on source-quality grounds, not strategy performance grounds. The 2026-04-01 audit shows the NIFTY index series is around 22,843–22,899 during the opening minutes, while the primary option panel is so sparse on the far expiry that the reconstructed event trade selected strike 20,500. P9 will not interpret any performance result until a secondary option source passes ATM-distance, four-leg completeness, error-rate and paired-reference checks.
+The primary thetrademarkk source successfully acquired 192/201 required expiry files and 1-minute NIFTY spot, but far-expiry intraday coverage was too sparse. On 2026-04-01 the far expiry had only 903 rows for the day, and the only four-leg common strike at the sampled qualifying timestamps was 20,500 while NIFTY was about 22,900.
+
+The primary-source event result was therefore rejected as a performance estimate before the secondary test.
+
+## Research stop / next phase
+
+P9 stops here. The next phase is P10 forward/paper-execution validation of the frozen fixed rule. Any new intraday timing/filter idea must be a separate development phase with a new unseen temporal holdout.
