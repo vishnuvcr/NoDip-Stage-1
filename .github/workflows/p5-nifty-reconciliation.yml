@@ -89,9 +89,6 @@ jobs:
           mkdir -p data/cache
           if [ ! -d data/cache/nse_fno_mirror/.git ]; then
             git clone --filter=blob:none --depth=1 --no-checkout               https://github.com/SantoshSrinivas79/NSE-FNO-Data-bank.git               data/cache/nse_fno_mirror
-          else
-            git -C data/cache/nse_fno_mirror fetch --depth=1 origin main
-            git -C data/cache/nse_fno_mirror reset --hard origin/main
           fi
 
       - name: Build detailed primary cycle audit
@@ -104,7 +101,7 @@ jobs:
         env:
           PYTHONPATH: .
         run: |
-          python scripts/reconcile_rejections_nse.py             --audit reports/nifty_calendar/CYCLE_AUDIT_2022_2024.csv             --out reports/nifty_calendar/P5_SECONDARY_RECONCILIATION_2022_2024.csv             --rows-out data/cache/nifty_secondary_reconciliation_2022_2024.csv             --cache-dir data/cache/nse_reconciliation_raw             --rejected-only             --valid-sample 10
+          python scripts/reconcile_rejections_nse.py             --audit reports/nifty_calendar/CYCLE_AUDIT_2022_2024.csv             --out reports/nifty_calendar/P5_SECONDARY_RECONCILIATION_2022_2024.csv             --rows-out data/cache/nifty_secondary_reconciliation_2022_2024.csv             --cache-dir data/cache/nse_reconciliation_raw             --mirror-root data/cache/nse_fno_mirror             --rejected-only             --valid-sample 10
 
       - name: Write P5 reconciliation report
         run: |
