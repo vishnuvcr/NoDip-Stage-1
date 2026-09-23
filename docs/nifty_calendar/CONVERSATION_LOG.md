@@ -129,3 +129,11 @@
 - 32 dates failed the 09:15 gate but qualified later; those event trades produced gross ₹1,294.75 and PF 1.029.
 - Pre-registered latest-entry sensitivity at 15:00/15:15/15:30/15:40 remained negative at 0.5-point adverse slippage and beyond.
 - P9 is COMPLETE; event-driven timing is not promoted. P10 returns to the frozen 09:15 rule for forward/paper validation without retuning.
+
+## 2026-09-23 — P10 entry-day offset research initiated
+- User asked to discard the event-driven intraday-entry idea and test fixed 09:15 entry on seven sessions relative to the previous expiry: D-1, D0, D+1, D+2, D+3, D+4 and D+5.
+- Research interpretation is trading-session offsets, not calendar-day offsets; this is pre-registered because markets do not trade every calendar day.
+- Frozen criteria: CBR<=1.20, common ATM strike, four-leg structure, near-expiry close exit, historical lot sizes, brokerage/statutory costs and slippage stress.
+- Development sample: 2022-2024. Unseen OOS: 2025 onward.
+- All seven offsets will be reported; OOS will not be used to choose an offset.
+- New branch: research-nifty-4leg-calendar-p10-entry-day-offsets.
