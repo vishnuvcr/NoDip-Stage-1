@@ -1,6 +1,6 @@
 # Phase Status
 
-Last updated: 2026-09-23 — P0-P9 complete; P10 entry-day offset research IN PROGRESS; P11 forward/paper validation planned
+Last updated: 2026-09-23 — P0-P10 complete; P10 offset screen closed without direct promotion; P11 forward/paper validation planned
 
 | Phase | Status | Notes |
 |---|---|---|
@@ -14,7 +14,7 @@ Last updated: 2026-09-23 — P0-P9 complete; P10 entry-day offset research IN PR
 | P7 Loss audit / entry tuning | COMPLETE | 32 losses audited; candidate calendar-balance gate <=1.20 identified; P6 unchanged |
 | P8 Unseen post-2024 validation | COMPLETE | Frozen 1.20 gate tested unchanged on 2025+ temporal holdout; supported for further research, not promoted to live trading |
 | P9 Event-driven intraday entry timing | COMPLETE | Primary source failed ATM/far-expiry coverage QC. After deterministic 25-point ATM QC, Rissin OOS had 65 event trades, gross ₹43,607.25, PF 1.755; modeled event net was negative from 0.5-point slippage. On 33 event dates that passed the canonical P8 09:15 gate, mean event-minus-fixed was ₹-1,876.34 with bootstrap 95% CI ₹-3,990.63 to ₹-347.55. Event-driven timing is not promoted. |
-| P10 Entry-day offset research | IN PROGRESS | Testing D-1, D0, D+1, D+2, D+3, D+4 and D+5 trading-session entry offsets at the frozen 09:15 and CBR<=1.20 criteria; development 2022-2024, unseen OOS 2025+ |
+| P10 Entry-day offset research | COMPLETE | Seven pre-registered trading-session offsets tested at frozen 09:15 + CBR<=1.20. Corrected OOS has 88 cycles. D0 and D+2 show the strongest raw OOS net under 2-point stress, but paired bootstrap CIs versus D+1 include zero; D+5 is negative and has a paired CI entirely below zero. No offset promoted directly from OOS. |
 | P11 Forward / paper-execution validation | PLANNED | Freeze any development-selected offset only after unseen validation; use timestamped executable quotes, observed spreads, real costs and a pre-registered paper ledger |
 
 ## P9 final decision
@@ -64,11 +64,16 @@ The primary-source event result was therefore rejected as a performance estimate
 ## Research stop / next phase
 
 P9 stops here. The next phase is P10 forward/paper-execution validation of the frozen fixed rule. Any new intraday timing/filter idea must be a separate development phase with a new unseen temporal holdout.
-## P10 entry-day offset protocol
+## P10 entry-day offset conclusion
 
-- D-1 = trading session immediately before previous expiry.
-- D0 = previous-expiry trading session.
-- D+1 through D+5 = subsequent trading sessions.
-- Entry remains 09:15 IST with CBR<=1.20.
-- Four-leg structure and near-expiry close exit remain unchanged.
-- All seven offsets are pre-registered; OOS results are not used to select a candidate.
+- OOS population: 88 expiry cycles, with 88 distinct previous-expiry dates after the corrected mapping audit.
+- D0: 42 trades, gross ₹133,757.75, PF 11.925, net ₹69,890.36 at 2-point adverse slippage.
+- D+2: 44 trades, gross ₹129,107.75, PF 8.100, net ₹63,387.53 at 2-point adverse slippage.
+- D+1 canonical reference: 36 trades, gross ₹99,992.75, PF 4.540, net ₹46,131.90 at 2-point adverse slippage.
+- D+5: 19 trades, gross ₹17,240.00, net ₹-10,274.78 at 2-point slippage.
+- Paired OOS bootstrap vs D+1: D0 mean +₹383.69 (CI −₹797.17 to +₹1,480.94); D+2 mean +₹330.85 (CI −₹445.32 to +₹1,099.05); D+5 mean −₹940.37 (CI −₹1,975.86 to −₹69.96).
+- No offset is promoted directly from the seven-offset OOS screen.
+
+## Research stop / next phase
+
+P10 stops here. P11 is forward/paper execution after a development-only offset-selection rule and a fresh unseen temporal holdout. No additional day offsets are searched in P10.
