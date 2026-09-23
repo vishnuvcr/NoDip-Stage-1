@@ -164,3 +164,10 @@
 - Impact: P6 validation run 3 exited successfully from the Python step without creating the requested output files, so the following cat command failed.
 - Correction: added the standard if __name__ == "__main__" entry point.
 - Prevention: every repository CLI script now requires an explicit execution smoke test before being placed in a workflow.
+
+
+## 2026-09-23 — P6 validation string check lagged the final manuscript status
+- Event: after the manuscript was finalized as P0-P6 complete, the validation workflow still searched for the older text P0-P5 are complete.
+- Impact: P6 validation run 5 failed only in the manuscript-text assertion; tests and statistics recomputation had already succeeded.
+- Correction: the workflow assertion is updated to the final P0-P6 completion statement.
+- Prevention: validation strings must be updated whenever phase status text changes.
