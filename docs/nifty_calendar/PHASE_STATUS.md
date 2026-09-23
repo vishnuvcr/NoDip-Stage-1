@@ -1,6 +1,6 @@
 # Phase Status
 
-Last updated: 2026-09-23 — P0-P8 complete; P9 event-driven entry-timing phase opened and is currently data-blocked pending timestamped intraday multi-expiry option data
+Last updated: 2026-09-23 — P0-P8 complete; P9 event-driven entry-timing phase opened; public intraday source audit complete and acquisition path prepared
 
 | Phase | Status | Notes |
 |---|---|---|
@@ -13,13 +13,22 @@ Last updated: 2026-09-23 — P0-P8 complete; P9 event-driven entry-timing phase 
 | P6 Final manuscript | COMPLETE | Strict 84-cycle manuscript, figures, statistics, trade-level appendix and cost/slippage sensitivity committed |
 | P7 Loss audit / entry tuning | COMPLETE | 32 losses audited; candidate calendar-balance gate <=1.20 identified; P6 unchanged |
 | P8 Unseen post-2024 validation | COMPLETE | Frozen 1.20 gate tested unchanged on 2025+ temporal holdout; supported for further research, not promoted to live trading |
-| P9 Event-driven intraday entry timing | IN PROGRESS / DATA-BLOCKED | Test first qualifying intraday timestamp with CBR<=1.20 and all four legs executable; no threshold re-optimization. Current repository lacks the required timestamped near/far intraday option quote archive |
+| P9 Event-driven intraday entry timing | IN PROGRESS / ACQUISITION PREPARED | Alternate-source audit completed. Primary public candidate is Hugging Face thetrademarkk 1-minute NIFTY option data; Kaggle 2024 and rissin HF are secondary/cross-check sources; acquisition workflow committed but no workflow run has yet been observed |
 | P10 Forward / paper-execution validation | PLANNED | Fixed rule only after P9 design is settled; timestamped executable quotes, real costs and forward paper ledger |
 
 ## P9 boundary
 
 P6 and P8 remain reference results. P9 may change entry timing only; it may not rewrite the frozen 1.20 threshold or the four-leg/exit structure.
 
+## P9 data-source finding
+
+The source audit identified public 1-minute datasets with explicit expiry/strike information. None of the currently identified public schemas provides reliable historical bid/ask quotes.
+
+- Primary candidate: `thetrademarkk/india-index-options-1m` — 1-minute NIFTY index plus option files partitioned by actual expiry date, with strike, CE/PE, OHLCV and OI.
+- Secondary candidate: `rissin/nse-options-intraday` — 1-minute NIFTY options with explicit expiry, strike and option type; intraday provenance is Upstox.
+- 2024 cross-check: Kaggle `Historical Nifty Options 2024 All Expiries`, with expiry/trade-day file structure and separate NIFTY spot files.
+- Higher-fidelity fallback: QuantDev-stack OptionVault, which advertises 1-minute, 1-second, tick/Level-2 and Greeks samples; full historical access is licensed/commercial.
+
 ## P9 immediate blocker
 
-Daily OPEN/CLOSE data cannot establish when the 1.20 gate becomes valid during the day or reconstruct contemporaneous four-leg fills. A qualifying P9 dataset must contain timestamped NIFTY spot plus near/far option observations at the same timestamps, preferably bid/ask and quote size.
+Numerical event-driven scoring remains blocked until a runner successfully materializes and validates the timestamped multi-expiry source files. No P9 performance result has been claimed.
