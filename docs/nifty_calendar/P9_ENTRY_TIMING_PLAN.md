@@ -2,7 +2,7 @@
 
 ## Phase status
 
-Status: PROPOSED / DATA-BLOCKED
+Status: COMPLETE — EVENT-DRIVEN TIMING NOT PROMOTED
 
 Parent phase: P8 unseen post-2024 validation.
 Branch: `research-nifty-4leg-calendar-p9-entry-timing`
@@ -203,6 +203,19 @@ P9 stops without promotion if:
 - final P9 conclusion
 - updated manuscript/research plan if the phase produces a defensible result
 
+## Final P9 result
+
+The event-driven rule was tested on the unseen post-2024 population using a secondary 1-minute NIFTY option source.
+
+- Fixed 09:15 control: 26 trades, gross ₹40,506.25, win rate 80.77%, PF 5.029.
+- Event-driven: 70 trades, gross ₹37,291.40, win rate 62.86%, PF 1.576.
+- Event-only incremental trades: 44, gross ₹-3,214.85, PF 0.941.
+- Event-only trades from dates that were gate-fail at the fixed observation: 24 trades, gross ₹-13,964.60, PF 0.665.
+- Event-driven net at 0.05% exchange stress: ₹9,222.87 at 0-point slippage and negative from 0.5-point slippage onward.
+- Therefore the event-driven entry condition is not promoted.
+
+The primary public source was rejected for performance inference because far-expiry intraday coverage was too sparse to support defensible current-ATM reconstruction.
+ 
 ## Important interpretation
 
 This phase asks whether **entry timing can be adaptive while the entry criterion remains frozen**. It does not yet ask whether the 1.20 threshold itself should be changed.
