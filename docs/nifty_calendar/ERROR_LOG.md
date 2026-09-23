@@ -231,3 +231,14 @@ Step failure requires inspection before any numerical interpretation.
 ## 2026-09-23 — P11 forward validation workflow failure
 Run ID: 35846127246
 Step failure requires inspection before any numerical interpretation.
+
+## 2026-09-23 — P11 run 35846642900 cancelled by concurrency replacement
+- Event: run 35846642900 began after the P11 script fix but was cancelled when the workflow-file trigger created run 35846661383.
+- Impact: no numerical output from the cancelled run was interpreted.
+- Handling: run 35846661383 completed successfully and produced the authoritative P11 fresh-data gate result.
+
+## 2026-09-23 — P11 fresh-data gate completed successfully
+- Event: run 35846661383 completed after syntax validation and P11 execution.
+- Result: latest source trading date available to the runner was 2026-06-29; the frozen P10 OOS cutoff is 2026-08-26; zero completed fresh P11 cycles were available after the cutoff.
+- Interpretation: P11 stopped for data availability. This is not a strategy-loss result and no P10 OOS observations were reused.
+- Prevention: do not resume P11 until a completed post-cutoff cycle is added to the pinned intraday cache.
