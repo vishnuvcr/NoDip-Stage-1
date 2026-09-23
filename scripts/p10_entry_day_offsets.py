@@ -172,10 +172,19 @@ def evaluate(cycles: pd.DataFrame, trading: list[pd.Timestamp], daily: dict[pd.T
     return pd.DataFrame(rows)
 
 def strategy_metrics(sub: pd.DataFrame) -> dict:
-    x=sub.copy(); x['strategy_pnl']=np.where((x.status=='EXECUTABLE') & x.gate_pass.eq(True),pd.to_numeric(x.pnl_inr,errors='coerce'),0.0)
-    a=x.strategy_pnl.to_numpy(float); pos=a[a>0]; neg=a[a<0]; curve=np.cumsum(a); dd=curve-np.maximum.accumulate(curve)
-    gross=float(a.sum()); ntr=int(((x.status=='EXECUTABLE')&(x.gate_pass.astype(bool))).sum())
-    return {'cycles':len(x),'trades':ntr,'gross':gross,'mean_cycle':float(a.mean()),'win':float((a>0).mean()),'pf':float(pos.sum()/(-neg.sum())) if len(neg) else np.inf,'dd':float(dd.min()),'worst':float(a.min())}
+    x=sub.copy()
+    trade_mask=(x.status=='EXECUTABLE') & x.gate_pass.eq(True)
+    x['strategy_pnl']=np.where(trade_mask,pd.to_numeric(x.pnl_inr,errors='coerce'),0.0)
+    cycle_pnl=x['strategy_pnl'].to_numpy(float)
+    trade_pnl=x.loc[trade_mask,'strategy_pnl'].to_numpy(float)
+    pos=trade_pnl[trade_pnl>0]; neg=trade_pnl[trade_pnl<0]
+    curve=np.cumsum(cycle_pnl); dd=curve-np.maximum.accumulate(curve)
+    gross=float(trade_pnl.sum()) if len(trade_pnl) else 0.0
+    ntr=int(len(trade_pnl))
+    win=float((trade_pnl>0).mean()) if len(trade_pnl) else np.nan
+    pf=float(pos.sum()/(-neg.sum())) if len(neg) else np.inf
+    worst=float(trade_pnl.min()) if len(trade_pnl) else np.nan
+    return {'cycles':len(x),'trades':ntr,'gross':gross,'mean_cycle':float(cycle_pnl.mean()) if len(cycle_pnl) else np.nan,'win':win,'pf':pf,'dd':float(dd.min()) if len(dd) else np.nan,'worst':worst}
 
 def net_total(sub:pd.DataFrame, slip:float)->float:
     x=sub[(sub.status=='EXECUTABLE') & sub.gate_pass.eq(True)].copy(); total=0.0
