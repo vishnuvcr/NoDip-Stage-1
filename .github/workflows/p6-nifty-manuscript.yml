@@ -71,9 +71,12 @@ jobs:
           test -s reports/nifty_calendar/figures/drawdown.svg
           test -s reports/nifty_calendar/figures/annual_pnl.svg
           test -s reports/nifty_calendar/figures/cost_sensitivity.svg
-          grep -q "132 / 134" reports/nifty_calendar/MANUSCRIPT_NIFTY_4LEG_CALENDAR_2022_2024.md
-          grep -q "Rs 188,237.50" reports/nifty_calendar/MANUSCRIPT_NIFTY_4LEG_CALENDAR_2022_2024.md
-          grep -q "Research status: P0-P6 complete" reports/nifty_calendar/MANUSCRIPT_NIFTY_4LEG_CALENDAR_2022_2024.md
+          grep -q "84-cycle strict frozen-protocol" reports/nifty_calendar/MANUSCRIPT_NIFTY_4LEG_CALENDAR_2022_2024.md
+          grep -q "₹83,030.00" reports/nifty_calendar/MANUSCRIPT_NIFTY_4LEG_CALENDAR_2022_2024.md
+          grep -q "P0-P6 are complete" reports/nifty_calendar/MANUSCRIPT_NIFTY_4LEG_CALENDAR_2022_2024.md
+          test -s reports/nifty_calendar/STRICT_TRADE_LEVEL_RESULTS_2022_2024.csv
+          test -s reports/nifty_calendar/STRICT_COST_SENSITIVITY_2022_2024.csv
+          test -s reports/nifty_calendar/STRICT_ANNUAL_RESULTS_2022_2024.csv
 
       - name: Update final phase status
         run: |
