@@ -46,3 +46,13 @@
 - The 59-trade primary-source result remains in the manuscript as a source-coverage comparison rather than the final population result.
 - Full secondary trade-level price ledger and Paytm Money brokerage/exchange/slippage sensitivity are now cached in the repository.
 - P5 is COMPLETE. P6 manuscript phase is now in progress.
+
+
+## 2026-09-23 — Final P5/P6 correction and manuscript completion
+- Final verification identified zero-open option observations with zero contract volume as non-executable; those observations were removed from fill eligibility rather than treated as fills.
+- Corrected independent reconciliation: 57 primary-valid cycles reproduced; 27 primary rejects recovered at the same strike; 28 source-specific strike-reselection cycles retained as sensitivity only; 20 primary rejects remain non-executable; 2 primary-valid cycles remain source-discrepant.
+- Final strict frozen-protocol validation sample: 84 cycles of 134 candidates (62.7% coverage).
+- Final strict gross P&L: ₹83,030.00; mean ₹988.45; median ₹598.75; win rate 61.90%; profit factor 2.942; maximum drawdown ₹8,022.50.
+- Final 3-cycle circular-block bootstrap 95% interval: ₹31,147 to ₹139,294.
+- Final cost sensitivity at 0.05000% exchange-charge assumption remains positive at ₹20/order brokerage and 2.00-point adverse slippage: approximately ₹1,206.81.
+- P6 manuscript, figures, strict trade ledger, annual results and cost-sensitivity files were rebuilt and committed on research-nifty-4leg-calendar-p6-manuscript.
