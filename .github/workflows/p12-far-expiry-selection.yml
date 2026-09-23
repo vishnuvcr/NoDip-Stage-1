@@ -1,0 +1,64 @@
+name: P12 NIFTY far-expiry selection
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/p12-far-expiry-selection.yml'
+      - 'scripts/p12_far_expiry_selection.py'
+      - 'docs/nifty_calendar/P12_FAR_EXPIRY_SELECTION_PLAN.md'
+
+concurrency:
+  group: p12-far-expiry-selection
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  research:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - name: Checkout P12 branch
+        uses: actions/checkout@v4
+        with:
+          ref: research-nifty-4leg-calendar-p12-far-expiry-selection
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: python -m pip install --disable-pip-version-check pandas numpy pyarrow huggingface_hub requests tabulate
+
+      - name: Validate syntax
+        run: python -m py_compile scripts/p12_far_expiry_selection.py
+
+      - name: Run P12
+        run: python scripts/p12_far_expiry_selection.py
+
+      - name: Commit P12 outputs
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git fetch origin research-nifty-4leg-calendar-p12-far-expiry-selection
+          git reset --hard origin/research-nifty-4leg-calendar-p12-far-expiry-selection
+          python scripts/p12_far_expiry_selection.py
+          git add reports/nifty_calendar/P12_* docs/nifty_calendar/P12_* docs/nifty_calendar/PHASE_STATUS.md README.md
+          git diff --cached --quiet || git commit -m 'Complete P12 far-expiry selection research'
+          git push origin HEAD:research-nifty-4leg-calendar-p12-far-expiry-selection
+
+      - name: Log failure
+        if: failure()
+        run: |
+          set -euo pipefail
+          printf '\n## 2026-09-23 — P12 far-expiry workflow failure\nRun ID: %s\nStep failure requires inspection before numerical interpretation.\n' "$GITHUB_RUN_ID" >> docs/nifty_calendar/ERROR_LOG.md
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add docs/nifty_calendar/ERROR_LOG.md
+          git diff --cached --quiet || git commit -m 'Log P12 far-expiry workflow failure'
+          git push origin HEAD:research-nifty-4leg-calendar-p12-far-expiry-selection
