@@ -179,3 +179,8 @@
 - Event: corrected workflow run 35838201255 completed successfully after two earlier syntax-failure/cancellation attempts.
 - Result: 15:00/15:15/15:30/15:40 produced 63/64/65/65 event trades; all were negative at 0.5-point adverse slippage and beyond.
 - Interpretation: the cutoff analysis is a pre-registered robustness table; no cutoff was selected for profitability.
+
+## 2026-09-23 — P10 entry-day offset phase initiated
+- Event: the user discarded the P9 event-driven timing idea and requested fixed 09:15 entry testing on D-1, D0, D+1, D+2, D+3, D+4 and D+5 relative to the previous expiry.
+- Correction to phase design: entry offsets are defined on NSE trading sessions rather than calendar days; this avoids non-trading dates and is recorded before scoring.
+- Prevention: all seven offsets are pre-registered, CBR remains frozen at 1.20, and OOS data are not used to select an offset.
