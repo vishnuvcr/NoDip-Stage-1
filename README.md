@@ -93,3 +93,15 @@ P6 GitHub Actions validation is rerun from the corrected independent 132-cycle l
 ## Next research directions
 
 The closed study identifies, but does not apply, future work on longer history, strict out-of-sample validation, intraday executable bid/ask replay, liquidity constraints, regime stratification, and exact historical broker contract-note validation.
+
+
+## P7 loss audit / entry candidate
+
+P7 audited all 32 losing trades in the strict 84-cycle sample. A candidate entry gate was identified:
+`(far CE / near CE) / (far PE / near PE) <= 1.20`.
+
+The gate retains 52/84 cycles in the historical sample and is **not** promoted into the frozen P6 strategy. It requires a genuinely unseen post-2024 validation before any live-use consideration.
+
+- [P7 loss audit report](https://github.com/vishnuvcr/NoDip-Stage-1/blob/research-nifty-4leg-calendar-p7-loss-audit/reports/nifty_calendar/ENTRY_TUNING_REPORT_2022_2024.md)
+- [P7 candidate entry criteria](https://github.com/vishnuvcr/NoDip-Stage-1/blob/research-nifty-4leg-calendar-p7-loss-audit/reports/nifty_calendar/ENTRY_CRITERIA_CANDIDATE_2022_2024.md)
+- [P7 loss ledger](https://github.com/vishnuvcr/NoDip-Stage-1/blob/research-nifty-4leg-calendar-p7-loss-audit/reports/nifty_calendar/LOSS_AUDIT_2022_2024.csv)
