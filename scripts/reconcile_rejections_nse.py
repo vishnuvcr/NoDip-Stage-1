@@ -190,6 +190,7 @@ def secondary_cycle(cycle: pd.Series, daily: dict[pd.Timestamp, pd.DataFrame], y
         "secondary_strike": "",
         "secondary_status": "",
         "comparison_status": "",
+        "strike_mode": "",
         "secondary_missing_entry": "",
         "secondary_missing_exit": "",
         "secondary_max_abs_price_diff": "",
@@ -200,14 +201,24 @@ def secondary_cycle(cycle: pd.Series, daily: dict[pd.Timestamp, pd.DataFrame], y
         row["secondary_status"] = "SECONDARY_SOURCE_GAP"
         return row
 
-    # Preserve the frozen protocol's primary spot source for strike selection.
-    # Yahoo is an independent diagnostic only; it must not redefine the trade.
-    strike = choose_common_strike(entry_df, near, far, primary_spot)
-    if strike is None:
-        row["secondary_status"] = "SECONDARY_CONFIRMS_NO_COMMON_STRIKE"
-        return row
-
-    row["secondary_strike"] = strike
+    primary_strike = pd.to_numeric(pd.Series([cycle.get("primary_strike", None)]), errors="coerce").iloc[0]
+    # For cycles where the primary source selected a strike, validate that exact
+    # frozen-protocol strike against the independent source. Do not silently
+    # substitute a different strike.
+    if pd.notna(primary_strike):
+        strike = float(primary_strike)
+        row["secondary_strike"] = strike
+        row["strike_mode"] = "EXACT_PRIMARY_STRIKE"
+    else:
+        # When the primary source found no common strike, the independent source
+        # may expose a common listed strike. That is a data-grid diagnostic only;
+        # its P&L is not treated as an exact replication of the primary selection.
+        strike = choose_common_strike(entry_df, near, far, primary_spot)
+        if strike is None:
+            row["secondary_status"] = "SECONDARY_CONFIRMS_NO_COMMON_STRIKE"
+            return row
+        row["secondary_strike"] = strike
+        row["strike_mode"] = "SECONDARY_GRID_ALTERNATIVE"
     legs = {
         "near_pe": (near, "PE"),
         "near_ce": (near, "CE"),
