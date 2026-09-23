@@ -2,7 +2,7 @@
 
 ## Current research status — 2026-09-23
 
-**P0-P10 complete. P9 event-driven timing remains discarded. P10 tested seven fixed entry sessions relative to the previous expiry; no offset is promoted directly from OOS. P11 forward/paper validation is planned after development-only offset selection and fresh unseen validation.**
+**P0-P10 complete. P9 event-driven timing remains discarded. P10 tested seven fixed entry sessions relative to the previous expiry; no offset is promoted directly from OOS. P11 reached the fresh-data gate and is closed for this dataset because no completed cycle exists after the P10 cutoff.**
 
 ## Frozen validated reference
 
@@ -78,6 +78,22 @@ The first public source acquisition succeeded for 192/201 required expiry files,
 - docs/nifty_calendar/ERROR_LOG.md
 - docs/nifty_calendar/CONVERSATION_LOG.md
 
+## P11 — Forward / paper-execution validation
+
+### Final status
+
+**BLOCKED — FRESH DATA UNAVAILABLE**
+
+A deterministic development-only selection rule was preregistered: require >=90% development coverage and PF>2, then select the highest development net P&L at 2-point adverse slippage. This selects **D-1** using 2022-2024 development data only.
+
+The P10 OOS cutoff is 2026-08-26. The pinned option source available to the P11 runner contains no completed cycle after that cutoff, so P11 cannot legitimately evaluate D-1 without reusing already-seen OOS observations.
+
+- [P11 plan](docs/nifty_calendar/P11_FORWARD_VALIDATION_PLAN.md)
+- [P11 report](reports/nifty_calendar/P11_FORWARD_VALIDATION_REPORT.md)
+- [P11 conclusion](reports/nifty_calendar/P11_FINAL_RESEARCH_CONCLUSION.md)
+- [Final research manuscript](reports/nifty_calendar/FINAL_RESEARCH_MANUSCRIPT_2026.md)
+- [P11 ledger](reports/nifty_calendar/P11_FORWARD_TRADE_LEDGER.csv)
+
 ## P10 — Entry-day offset research
 
 The frozen 09:15 + CBR<=1.20 criteria were tested on seven trading-session offsets relative to the previous expiry: D-1, D0, D+1, D+2, D+3, D+4, D+5.
@@ -115,10 +131,6 @@ No offset is promoted directly from the OOS screen. D0 and D+2 remain developmen
 - Detailed report: reports/nifty_calendar/P10_ENTRY_DAY_OFFSET_REPORT.md
 - Ledger: reports/nifty_calendar/P10_ENTRY_DAY_OFFSET_LEDGER.csv
 
-## Next phase
-
-P11 is planned as forward/paper-execution validation after a development-only offset selection rule and a fresh unseen temporal holdout, using timestamped executable quotes, observed spread, brokerage/statutory charges, slippage and a pre-registered paper ledger.
-
 ## Research stop condition
 
-P10 is closed. No additional entry-day offsets will be searched in this phase.
+P0-P10 are closed. P11 is closed at the fresh-data availability gate. No additional entry-day offsets or parameter searches are performed on the existing sample. A future run may resume P11 only after genuinely fresh post-cutoff option data are added to the pinned cache.
