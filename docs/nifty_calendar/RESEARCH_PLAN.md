@@ -93,9 +93,46 @@ P9 outputs:
 - reports/nifty_calendar/P9_RISSIN_CUTOFF_SENSITIVITY.csv
 - reports/nifty_calendar/P9_RISSIN_CUTOFF_SENSITIVITY_REPORT.md
 
-### P10 — Forward / paper-execution validation
+### P10 — Entry-day offset research
+Status: IN PROGRESS.
+
+Research question:
+> Keeping the 09:15 IST entry, CBR<=1.20 gate, four-leg structure and near-expiry exit fixed, does changing the trading session relative to the previous expiry improve robustness?
+
+Pre-registered offsets:
+- D-1: session immediately before previous expiry.
+- D0: previous-expiry session.
+- D+1: first session after previous expiry.
+- D+2, D+3, D+4, D+5: subsequent sessions.
+
+Interpretation:
+- Offsets are trading-session offsets, not calendar-day offsets.
+- If an offset falls after the near expiry, the cycle is marked AFTER_NEAR_EXPIRY and is not executed.
+- All seven offsets are evaluated; no OOS-driven selection is allowed.
+
+Design:
+- Development sample: 2022-2024.
+- Unseen OOS: 2025 onward.
+- Entry: 09:15 IST daily open.
+- Frozen gate: CBR<=1.20.
+- Same common ATM strike across near/far CE/PE.
+- Exit: near-expiry close.
+- Historical lot sizes preserved.
+- Brokerage/statutory charges, 0.05% exchange stress and 0/0.5/1/2 point adverse slippage included.
+
+Selection:
+- The seven offsets are a pre-registered timing screen.
+- If a single offset is later considered for promotion, it must be chosen using a pre-registered development-only rule and then validated on a fresh temporal holdout.
+
+Outputs:
+- reports/nifty_calendar/P10_ENTRY_DAY_OFFSET_LEDGER.csv
+- reports/nifty_calendar/P10_ENTRY_DAY_OFFSET_SUMMARY.csv
+- reports/nifty_calendar/P10_ENTRY_DAY_OFFSET_PAIRED.csv
+- reports/nifty_calendar/P10_ENTRY_DAY_OFFSET_REPORT.md
+
+### P11 — Forward / paper-execution validation
 Status: PLANNED.
-If P9 produces a defensible specification, keep the exact rule frozen and record timestamped live/paper observations, actual quotes, fills, costs, slippage and residual loss mechanisms without retuning on the same observation stream.
+Freeze any development-selected offset only after unseen validation. Record timestamped quotes, actual fills, spreads, slippage, costs and residual loss mechanisms without retuning on the same observation stream.
 
 ## Current statistical outputs from P8
 
@@ -114,4 +151,4 @@ Historical and forward analyses must keep brokerage, statutory charges, exchange
 
 ## Research stop condition
 
-Research stops after the defined phases P9/P10, or earlier if data quality cannot support a defensible conclusion. Failed validation is recorded as a scientific outcome, not silently repaired.
+Research stops after the defined phases P10/P11, or earlier if data quality cannot support a defensible conclusion. Failed validation is recorded as a scientific outcome, not silently repaired.
