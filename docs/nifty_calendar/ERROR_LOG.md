@@ -97,3 +97,9 @@
 - Root cause: every candidate cycle was being reconciled, including already-valid cycles, and Yahoo spot cross-checks were performed serially.
 - Correction: P5 now reconciles all rejected cycles plus 10 valid control cycles, downloads secondary files with 16 workers, and queries Yahoo spot opens in parallel.
 - Prevention: future cross-source phases will reconcile the disputed subset exhaustively and use a small reproducible control sample for already-valid observations unless full validation is specifically required.
+
+## 2026-09-23 — P5 workflow failure
+- Run ID: 35814233249; attempt: 1
+- Branch: research-nifty-4leg-calendar-p5-reconciliation
+- Event: push
+- The failed step should be inspected in GitHub Actions logs before interpreting any P5 result.
