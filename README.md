@@ -1,117 +1,89 @@
-### Final validated result
+# NoDip Stage 1 — NIFTY 4-Leg Calendar Research
+
+## Current research status — 2026-09-23
+
+**P0-P8 complete. P9 event-driven entry timing is now open as a separate research phase and is currently data-blocked.**
+
+## Frozen validated reference
+
+P8 validated the fixed calendar-balance gate on the post-2024 temporal holdout:
+
+(far CE / near CE) / (far PE / near PE) <= 1.20
+
+P8 conclusion: supported for further research, not promoted to live trading.
+
+- P8 plan: docs/nifty_calendar/P8_OOS_VALIDATION_PLAN.md
+- P8 candidate lock: docs/nifty_calendar/P8_OOS_CANDIDATE_LOCK.md
+- P8 report: reports/nifty_calendar/P8_OOS_VALIDATION_REPORT_2025_ONWARD.md
+- P8 conclusion: reports/nifty_calendar/P8_FINAL_RESEARCH_CONCLUSION.md
+
+## P9 — Event-driven intraday entry timing
+
+User question:
+
+> Can the strategy enter when all other criteria are met during the trading day, rather than using a fixed clock time?
+
+Research rule:
+
+Enter exactly once at the first intraday timestamp on the first eligible trading day when:
+1. CBR <= 1.20;
+2. a valid current common ATM strike exists;
+3. near CE/PE and far CE/PE are all available and executable at that timestamp.
+
+The four-leg structure, 1.20 gate and near-expiry close exit remain frozen.
+
+P9 is not a threshold-optimization phase. It tests timing only.
+
+### Data requirement
+
+The existing daily OPEN/CLOSE archive cannot determine an intraday trigger time or reliable contemporaneous four-leg fills. P9 therefore requires timestamped NIFTY spot plus multi-expiry option data, preferably with bid/ask and quote size.
+
+NSE states that normal equity-derivatives trading runs from 09:15 to 15:40 IST and provides historical order/trade data as a separate historical-data service. These are candidate sources for an auditable intraday dataset.
+
+Public research projects also show that 1-minute NIFTY option datasets can exist, but coverage and contract fidelity must be independently validated before research use.
+
+### P9 files
+
+- docs/nifty_calendar/P9_ENTRY_TIMING_PLAN.md
+- docs/nifty_calendar/P9_TRIGGER.md
+- .github/workflows/p9-entry-timing.yml
+- docs/nifty_calendar/PHASE_STATUS.md
+
+### P10 planned
+
+After P9, the next planned phase is fixed-rule forward/paper-execution validation using timestamped executable quotes, explicit costs and slippage, with no contemporaneous threshold retuning.
+
+## Historical reference result
 
 | Metric | Result |
 |---|---:|
 | Candidate cycles | 134 |
 | Strict frozen-protocol cycles | 84 |
 | Strict coverage | 62.7% |
-| Primary-valid and independently reproduced | 57 |
-| Primary rejects recovered at same strike | 27 |
-| Source-specific strike-reselection sensitivity cycles | 28 |
-| Primary rejects still non-executable | 20 |
-| Primary-valid source discrepancies | 2 |
 | Gross P&L | ₹83,030.00 |
-| Mean cycle | ₹988.45 |
-| Median cycle | ₹598.75 |
 | Win rate | 61.90% |
 | Profit factor | 2.942 |
 | Maximum drawdown | ₹8,022.50 |
 | Bootstrap 95% interval | ₹31,147.19 to ₹139,293.78 |
 
-The strict result excludes source-specific strike re-selection and treats zero-open/non-traded option rows as non-executable. The prior 132-cycle union is retained only as a superseded validation intermediate.
+## P8 OOS reference
 
-# NoDip Stage 1 — NIFTY 4-Leg Calendar Research
+| Metric | Fixed P7 gate |
+|---|---:|
+| Executable post-2024 cycles | 86 |
+| Gate trades | 42 |
+| Gross P&L | ₹126,460.50 |
+| Win rate | 76.19% |
+| Profit factor | 5.115 |
+| Gross max drawdown | ₹13,406.25 |
+| Worst trade | ₹-12,502.75 |
+| Net at 2-point slippage, 0.05% exchange stress | ₹64,304.41 |
 
-## Current research status — 2026-09-23
+These are historical modeled results, not claims of realized live fills.
 
-**P0-P6 complete for the 2022-2024 study. Strategy remains frozen.**
+## Research records
 
-### Independently reconciled historical result
-
-- Candidate cycles: 134
-- Independent-secondary complete cycles: 132 (98.5% coverage)
-- All 75 primary-source rejects recovered on the independent source
-- Gross P&L: ₹188,237.50
-- Win rate: 59.09%
-- Profit factor: 1.889
-- Maximum drawdown: ₹57,380.00
-- Bootstrap 95% interval for total gross P&L: ₹6,927.47 to ₹408,770.34
-- Primary-source comparison remains documented separately: 59 executable cycles and ₹52,827.50 gross P&L
-
-The 44.0% primary-source coverage was therefore a data-coverage limitation rather than an intentional strategy filter. Two primary-valid cycles remain source discrepancies because the independent source contains no common strike under the frozen same-strike rule.
-
-## Frozen strategy
-
-- First trading day after previous NIFTY weekly expiry.
-- 09:15 IST market-open entry.
-- ATM = nearest listed strike to NIFTY spot open.
-- Buy near ATM PE.
-- Sell near ATM CE.
-- Buy same-strike far ATM CE.
-- Sell same-strike far ATM PE.
-- Far expiry = three weekly intervals after near expiry.
-- Exit all four legs at near-expiry trading-day close.
-- One historical lot per leg.
-- No adjustments, rolling, target, stop-loss or averaging.
-
-## Execution-cost sensitivity
-
-At a 0.05% exchange-charge sensitivity:
-
-| Brokerage | 0 pt slip | 0.50 pt | 1.00 pt | 2.00 pt |
-|---:|---:|---:|---:|---:|
-| ₹10/order | ₹166,171.23 | ₹141,821.23 | ₹117,471.23 | ₹68,771.23 |
-| ₹15/order | ₹159,940.83 | ₹135,590.83 | ₹111,240.83 | ₹62,540.83 |
-| ₹20/order | ₹153,710.43 | ₹129,360.43 | ₹105,010.43 | ₹56,310.43 |
-
-These are modeled sensitivities, not claims of realized fills.
-
-## Final manuscript and research files
-
-- reports/nifty_calendar/MANUSCRIPT_NIFTY_4LEG_CALENDAR_2022_2024.md
-- reports/nifty_calendar/FINAL_SECONDARY_STATISTICS_2022_2024.md
-- reports/nifty_calendar/P5_RECONCILIATION_REPORT_2022_2024.md
-- reports/nifty_calendar/P5_SECONDARY_RECONCILIATION_2022_2024.csv
-- reports/nifty_calendar/SECONDARY_TRADE_LEVEL_RESULTS_2022_2024.csv
-- reports/nifty_calendar/SECONDARY_COST_SENSITIVITY_2022_2024.csv
-- reports/nifty_calendar/figures/cumulative_pnl.svg
-- reports/nifty_calendar/figures/drawdown.svg
-- reports/nifty_calendar/figures/annual_pnl.svg
-- reports/nifty_calendar/figures/cost_sensitivity.svg
 - docs/nifty_calendar/RESEARCH_PLAN.md
-- docs/nifty_calendar/STRATEGY_LOCK.md
 - docs/nifty_calendar/PHASE_STATUS.md
 - docs/nifty_calendar/ERROR_LOG.md
 - docs/nifty_calendar/CONVERSATION_LOG.md
-- docs/nifty_calendar/P6_MANUSCRIPT_PLAN.md
-- .github/workflows/p6-nifty-manuscript.yml
-
-## Validation
-
-P6 GitHub Actions validation is rerun from the corrected independent 132-cycle ledger; repository tests and manuscript/asset checks pass. Repository tests: 4 passed. The manuscript assets and internal research outputs passed file/link checks.
-
-## Next research directions
-
-The closed study identifies, but does not apply, future work on longer history, strict out-of-sample validation, intraday executable bid/ask replay, liquidity constraints, regime stratification, and exact historical broker contract-note validation.
-
-
-## P7 loss audit / entry candidate
-
-P7 audited all 32 losing trades in the strict 84-cycle sample. A candidate entry gate was identified:
-`(far CE / near CE) / (far PE / near PE) <= 1.20`.
-
-The gate retains 52/84 cycles in the historical sample and is **not** promoted into the frozen P6 strategy. It requires a genuinely unseen post-2024 validation before any live-use consideration.
-
-- [P7 loss audit report](https://github.com/vishnuvcr/NoDip-Stage-1/blob/research-nifty-4leg-calendar-p7-loss-audit/reports/nifty_calendar/ENTRY_TUNING_REPORT_2022_2024.md)
-- [P7 candidate entry criteria](https://github.com/vishnuvcr/NoDip-Stage-1/blob/research-nifty-4leg-calendar-p7-loss-audit/reports/nifty_calendar/ENTRY_CRITERIA_CANDIDATE_2022_2024.md)
-- [P7 loss ledger](https://github.com/vishnuvcr/NoDip-Stage-1/blob/research-nifty-4leg-calendar-p7-loss-audit/reports/nifty_calendar/LOSS_AUDIT_2022_2024.csv)
-
-## P8 unseen post-2024 validation
-The fixed P7 candidate gate was evaluated unchanged on the post-2024 temporal holdout.
-- P8 plan: docs/nifty_calendar/P8_OOS_VALIDATION_PLAN.md
-- P8 candidate lock: docs/nifty_calendar/P8_OOS_CANDIDATE_LOCK.md
-- P8 OOS report: reports/nifty_calendar/P8_OOS_VALIDATION_REPORT_2025_ONWARD.md
-- P8 OOS ledger: reports/nifty_calendar/P8_OOS_TRADE_LEDGER_2025_ONWARD.csv
-
-- P8 final research conclusion: reports/nifty_calendar/P8_FINAL_RESEARCH_CONCLUSION.md
-- P8 data manifest: reports/nifty_calendar/P8_DATA_MANIFEST_2025_ONWARD.csv
