@@ -56,11 +56,26 @@ jobs:
           PYTHONPATH: .
         run: |
           python - <<'PY'
+          from pathlib import Path
           import pandas as pd
-          df = pd.read_csv("reports/nifty_calendar/STRICT_TRADE_LEVEL_RESULTS_2022_2024.csv")
-          assert len(df) == 84, len(df)
-          assert abs(df["pnl_inr"].sum() - 83030.0) < 1e-6
-          print("Strict P6 statistics validated: 84 cycles, gross P&L ₹83,030.00")
+
+          ledger = pd.read_csv("reports/nifty_calendar/STRICT_TRADE_LEVEL_RESULTS_2022_2024.csv")
+          stats = pd.read_csv("reports/nifty_calendar/FINAL_SECONDARY_STATISTICS_2022_2024.csv")
+          manuscript = Path("reports/nifty_calendar/MANUSCRIPT_NIFTY_4LEG_CALENDAR_2022_2024.md").read_text(encoding="utf-8")
+
+          gross = float(ledger["pnl_inr"].sum())
+          n = len(ledger)
+          reported_n = int(stats.loc[0, "strict_frozen_cycles"])
+          reported_gross = float(stats.loc[0, "gross_pnl_inr"])
+
+          print({"ledger_cycles": n, "ledger_gross": gross, "reported_cycles": reported_n, "reported_gross": reported_gross})
+          assert n == 84
+          assert reported_n == 84
+          assert abs(gross - 83030.0) < 1e-6
+          assert abs(reported_gross - 83030.0) < 1e-6
+          assert "84-cycle strict frozen-protocol" in manuscript
+          assert "₹83,030.00" in manuscript
+          print("Strict P6 statistics validated")
           PY
 
       - name: Validate manuscript assets
