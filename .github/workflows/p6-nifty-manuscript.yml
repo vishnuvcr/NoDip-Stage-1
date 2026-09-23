@@ -2,6 +2,13 @@ name: P6 NIFTY Calendar Manuscript Validation
 
 on:
   workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/p6-nifty-manuscript.yml'
+      - 'reports/nifty_calendar/MANUSCRIPT_NIFTY_4LEG_CALENDAR_2022_2024.md'
+      - 'reports/nifty_calendar/SECONDARY_TRADE_LEVEL_RESULTS_2022_2024.csv'
+      - 'reports/nifty_calendar/SECONDARY_COST_SENSITIVITY_2022_2024.csv'
+      - 'scripts/compute_secondary_statistics.py'
 
 jobs:
   validate-manuscript:
