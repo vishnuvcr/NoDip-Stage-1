@@ -150,3 +150,10 @@
 - Impact: validation run 1 stopped with `pytest: command not found`; no manuscript or research result was invalidated.
 - Correction: the P6 workflow now installs pytest explicitly before running the repository test suite.
 - Prevention: phase validation workflows must install every executable dependency they invoke.
+
+
+## 2026-09-23 — P6 validation dependency gap: requests
+- Event: after pytest was installed, collection failed because tests import the public-data preparation script, which requires requests.
+- Impact: P6 validation run 2 stopped before statistics or manuscript checks.
+- Correction: the validation workflow is being expanded to install requests with the scientific Python dependencies.
+- Prevention: use a repository dependency manifest when one exists; otherwise inspect imports used by the full test suite before defining validation dependencies.
