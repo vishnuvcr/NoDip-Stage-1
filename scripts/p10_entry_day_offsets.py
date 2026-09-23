@@ -52,7 +52,7 @@ def load_rissin_daily(cycles: pd.DataFrame, cache_dir: Path) -> tuple[list[pd.Ti
         df["strike"]=pd.to_numeric(df["strike"],errors="coerce")
         df["open"]=pd.to_numeric(df["open"],errors="coerce")
         df["close"]=pd.to_numeric(df["close"],errors="coerce")
-            df["volume"]=pd.to_numeric(df["volume"],errors="coerce")
+        df["volume"]=pd.to_numeric(df["volume"],errors="coerce")
         df["underlying"]=df["underlying"].astype(str).str.upper()
         df["option_type"]=df["option_type"].astype(str).str.upper()
         df=df[(df["underlying"]=="NIFTY") & (df["granularity"].astype(str).str.lower()=="1d")]
