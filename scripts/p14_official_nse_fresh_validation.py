@@ -76,7 +76,7 @@ def choose_strike(entry,near,spot):
 
 def cand(entry,exitd,near,far,strike,spot):
     names={'entry_near_ce':(near,'CE'),'entry_near_pe':(near,'PE'),'entry_far_ce':(far,'CE'),'entry_far_pe':(far,'PE')}
-    e={k:get1(entry,*v,'open') for k,v in names.items()}
+    e={k:get1(entry,v[0],strike,v[1],'open') for k,v in names.items()}
     vols=[]
     for exp,opt in [(near,'CE'),(near,'PE'),(far,'CE'),(far,'PE')]:
         m=entry[(entry.expiry==pd.Timestamp(exp))&(entry.strike==strike)&(entry.option_type==opt)]
