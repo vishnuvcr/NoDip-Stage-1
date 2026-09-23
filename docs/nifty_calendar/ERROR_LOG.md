@@ -282,3 +282,10 @@ Step failure requires inspection before numerical interpretation.
 ## 2026-09-23 — P14 official NSE fresh validation failure
 Run ID: 35889214874
 Step failure requires inspection before numerical interpretation.
+
+
+## 2026-09-23 — P14 official NSE source access ultimately completed after retry
+- Earlier P14 runs failed before numerical interpretation because the NSE archive response could not be parsed and the initial runner headers were not sufficient.
+- Correction: P14 adopted the validated NSE F&O downloader headers and both official archive hosts, then retried the fresh range.
+- Final run succeeded and produced the authoritative P14 result: 3 fresh completed cycles, all 3 selected F+1, adaptive net ₹2,976.46 at 2-point adverse slippage.
+- Interpretation: sample is too small for promotion; result remains prospective-paper-monitoring only.
