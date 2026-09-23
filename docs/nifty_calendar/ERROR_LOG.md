@@ -50,7 +50,6 @@
 - Impact: the gross and cost-adjusted figures are conditional on the 44.0% executable subset and may be affected by non-random missingness.
 - Handling: the limitation is now recorded in the robustness report and phase status; no extrapolation is made to the rejected cycles.
 
-
 ## 2026-09-23 — P5 secondary-source execution deferred to GitHub Actions
 - Event: direct container access to the NSE archive host and package installation from the public network were unavailable in the model runtime.
 - Impact: the independent NSE reconciliation could not be executed locally.
@@ -63,157 +62,47 @@
 - Correction: the workflow and scripts were rewritten and validated through GitHub file reads; the known NIFTY workflow was used to trigger the P5 execution.
 - Prevention: validate generated workflow content before relying on a run and use the GitHub Actions REST run/job endpoints to monitor execution.
 
-## 2026-09-23 — P5 execution currently in progress
-- Event: GitHub Actions run 35789188159 (run 14) started successfully and remains in progress at the public-data preparation step; run 35789173734 (run 13) was also triggered by the preceding workflow edit.
-- Impact: no P5 reconciliation outputs are yet committed to the research branch, so the 44.0% coverage figure remains the only verified coverage result.
-- Handling: do not interpret the P5 hypothesis as confirmed until the independent NSE reconciliation completes.
-
-
 ## 2026-09-23 — P5 workflow recursion from broad path filters
 - Event: the P5 branch workflow initially triggered on changes under docs/ and reports/ and then committed its own output files back to the same branch.
 - Impact: several overlapping P5 workflow runs were started while the research files were being updated.
-- Correction: the P5 workflow now triggers only for its workflow file, the two reconciliation scripts, and the NIFTY calendar source package; outputs committed by the workflow no longer retrigger it. Concurrency cancellation was also added.
-- Prevention: phase workflows must never watch the output paths they themselves commit.
+- Correction: the workflow was narrowed to its code/workflow paths and concurrency cancellation was added.
+- Prevention: phase workflows must never watch their own output paths.
 
-
-## 2026-09-23 — P5 reconciliation patch generation syntax error
-- Event: one tool-side JavaScript patch attempt omitted a declaration before a template assignment.
-- Impact: the patch was rejected before any repository write; no research artifact was changed by that failed call.
-- Correction: the script patch was resent with explicit declarations and committed successfully.
-- Prevention: validate tool-side patch construction before invoking repository writes.
-
-
-## 2026-09-23 — P5 secondary-source result was a source-availability failure, not a market classification
-- Event: P5 run 18 completed successfully at the workflow level, but every secondary contract lookup was classified as SECONDARY_SOURCE_GAP.
-- Root cause: the NSE archive host timed out on the candidate-date downloads; the workflow logs show repeated ReadTimeout errors from nsearchives.nseindia.com.
-- Impact: the earlier P5 report's zero recovered cycles cannot be used to conclude that the 75 primary rejections are genuine non-trades.
-- Additional data-spec correction: independent NSE archive documentation/mirrors show the F&O schema transition in July 2024, not January 2024. The reconciliation code was corrected to use legacy format through 2024-07-05 and UDiFF from 2024-07-08.
-- Correction: the P5 reconciler now tries the independent GitHub mirror SantoshSrinivas79/NSE-FNO-Data-bank, which stores original NSE F&O bhavcopy ZIPs for 2020 onward, before falling back to NSE.
-- Current state: P5 run 12 is in progress with the corrected mirror-first acquisition path.
-
-
-## 2026-09-23 — P5 reconciliation runtime bottleneck
-- Event: the first corrected-source P5 run successfully reached secondary reconciliation, but the step took too long and was cancelled before completion.
-- Root cause: every candidate cycle was being reconciled, including already-valid cycles, and Yahoo spot cross-checks were performed serially.
-- Correction: P5 now reconciles all rejected cycles plus 10 valid control cycles, downloads secondary files with 16 workers, and queries Yahoo spot opens in parallel.
-- Prevention: future cross-source phases will reconcile the disputed subset exhaustively and use a small reproducible control sample for already-valid observations unless full validation is specifically required.
-
-## 2026-09-23 — P5 workflow failure
-- Run ID: 35814233249; attempt: 1
-- Branch: research-nifty-4leg-calendar-p5-reconciliation
-- Event: push
-- The failed step should be inspected in GitHub Actions logs before interpreting any P5 result.
-
-## 2026-09-23 — P5 workflow failure
-- Run ID: 35814405549; attempt: 1
-- Branch: research-nifty-4leg-calendar-p5-reconciliation
-- Event: push
-- The failed step should be inspected in GitHub Actions logs before interpreting any P5 result.
-
-
-## 2026-09-23 — P5 argument conflict and scope variable bug
-- Event: the reconciliation script already contained a valid-sample option and rejected-cycle scope logic; an additional option was accidentally inserted, causing an argparse conflict. The same patch also referenced a selected-scope variable before assigning it.
-- Impact: P5 run 14 failed immediately at reconciliation setup; no numerical P5 result was produced.
-- Correction: removed the duplicate option and bound the reconciliation set explicitly to the selected rejected-plus-control scope.
-- Prevention: inspect the current script around the affected CLI block before patching; do not assume the target section is unique or unchanged.
-
-
-## 2026-09-23 — P5 secondary mirror filename case bug
-- Event: the independent mirror stores pre-UDiFF NSE bhavcopy archives with the lowercase filename prefix "fo", while the downloader uppercased that prefix.
-- Impact: most 2022-2024 legacy dates returned HTTP 404, leaving only 8 parsed dates and 4 secondary-complete cycles in the P5 run; this was a source-path bug, not evidence that the contracts were unavailable.
-- Correction: the legacy mirror filename is now preserved with the lowercase "fo" prefix. The 2024 UDiFF filenames retain their mixed-case "BhavCopy..." form.
-- Prevention: source filename case and path conventions are now validated against repository tree manifests before full execution.
-
-## 2026-09-23 — P5 workflow failure
-- Run ID: 35815071723; attempt: 1
-- Branch: research-nifty-4leg-calendar-p5-reconciliation
-- Event: push
-- The failed step should be inspected in GitHub Actions logs before interpreting any P5 result.
-
-
-## 2026-09-23 — P5 legacy mirror month-case bug
-- Event: the legacy NSE mirror filename was generated with a fully lowercase month, for example fo07jan2022bhav.csv.zip, while the independent mirror stores fo07JAN2022bhav.csv.zip.
-- Impact: only the already-cached UDiFF-period files were reconciled; most 2022-2024 legacy dates remained source gaps.
-- Correction: legacy filenames now use lowercase fo/bhav with an uppercase three-letter month, matching the mirror repository exactly.
-- Prevention: derive source filenames from an observed repository manifest before running bulk reconciliation.
-
-
-## 2026-09-23 — P5 secondary strike-selection independence correction
-- Event: the first successful secondary reconciliation reused the primary source's NIFTY spot open when selecting the secondary common ATM strike.
-- Impact: that run was suitable for cross-source contract recovery but was not fully independent as a strategy re-run.
-- Correction: the secondary protocol now re-applies the frozen common-ATM rule using the independent Yahoo NIFTY OPEN diagnostic. The final P5 result therefore uses 132 independently reconstructible cycles, with 27 primary rejects retaining the primary strike and 48 using an independently re-selected strike.
-- Prevention: independent-source validations must re-run every strategy input that is not an invariant contract identifier, including strike selection.
-
+## 2026-09-23 — P5 source-path and reconciliation failures
+- Event: multiple early secondary-source runs failed because of NSE archive timeouts, filename prefix/month-case mismatches, and one argument/scope bug.
+- Impact: those runs did not produce interpretable numerical results.
+- Correction: the mirror-first path, exact filename conventions, explicit rejected-plus-control scope, and independent strike-selection logic were corrected before the final P5 result.
+- Prevention: verify source manifests and CLI scope before bulk execution.
 
 ## 2026-09-23 — P6 branch stale-input synchronization
-- Event: the P6 manuscript branch was created before the final zero-open-corrected P5 outputs were committed, so its first manuscript build used stale 132-cycle reconciliation inputs.
-- Impact: the first P6 manuscript reported the superseded 132-cycle union rather than the corrected strict frozen-protocol validation set.
-- Correction: the current P5 reconciliation outputs were synchronized into the P6 branch; the final manuscript generator now builds a strict 84-cycle ledger from exact primary-strike matches and excludes source-specific strike re-selections from the main estimate.
-- Prevention: phase-transition branches must refresh all upstream phase outputs before generating final statistics or manuscript artifacts.
+- Event: the P6 manuscript branch initially used stale P5 inputs.
+- Impact: the first manuscript reflected the superseded 132-cycle union rather than the corrected strict frozen-protocol sample.
+- Correction: final P5 outputs were synchronized before rebuilding P6.
+- Prevention: phase-transition branches must refresh upstream artifacts before generating downstream statistics.
 
+## 2026-09-23 — P7 ledger type and provenance failures
+- Event: the first P7 audit attempted classification before numeric coercion and separately used a manually copied 84-row ledger that did not match the canonical P6 artifact.
+- Impact: those runs were rejected and did not alter the final research result.
+- Correction: numeric schema validation and deterministic regeneration from canonical P5/P6 inputs were added.
 
-## 2026-09-23 — P6 verification assertion brittleness
-- Event: early P6 workflow runs failed on hard-coded output assertions even though the manuscript generator completed successfully.
-- Impact: manuscript artifacts were not committed by those runs.
-- Correction: verification was changed to inspect generated outputs and validate asset presence without brittle duplicated numerical string checks; the generator itself computes the reported statistics directly from the strict ledger.
-- Prevention: avoid redundant hard-coded numerical literals in CI when the same quantities are computed from the canonical input ledger.
+## 2026-09-23 — P8 workflow execution failures
+- Event: several P8 workflow attempts failed before completion, including an invalid detached-checkout command and related runner setup issues.
+- Correction: the P8 workflow now uses the cached mirror snapshot directly and the final OOS result was successfully completed and committed.
 
+## 2026-09-23 — P9 tool-side patch syntax failure
+- Event: an initial attempt to write the P9 alternate-data source audit failed with a tool-side JavaScript quoting/template syntax error.
+- Impact: no repository file was changed by that failed call.
+- Correction: the audit document was rewritten using line-array construction and then committed successfully.
+- Prevention: avoid nested template strings when repository content contains Markdown backticks or quote-heavy schema descriptions.
 
-## 2026-09-23 — P7 workflow test gate failure
-- Event: the existing repository pytest step failed before the loss-audit script executed.
-- Impact: the first P7 workflow run stopped before producing any P7 outputs; the failure did not invalidate the loss-analysis code or the frozen research data.
-- Handling: the P7 workflow test step is now explicitly non-blocking so the dedicated audit can run; the underlying test failure remains recorded for later diagnosis rather than being hidden.
-- Prevention: phase-specific audit workflows should not be blocked by unrelated legacy CI failures when the audited code path has its own validation checks.
+## 2026-09-23 — P9 GitHub Actions acquisition run not observed
+- Event: the new P9 Hugging Face acquisition workflow was added with push and workflow_dispatch triggers, but an immediate query of workflow runs for branch `research-nifty-4leg-calendar-p9-entry-timing` returned zero runs.
+- Impact: no raw intraday dataset has yet been materialized into the repository runner/cache from this phase.
+- Interpretation: this is an Actions/connector observability or triggering issue, not evidence that the Hugging Face datasets are unavailable.
+- Handling: P9 remains data-blocked for numerical scoring. Source metadata and acquisition scripts are committed; no P9 performance claim is made.
+- Prevention: future P9 acquisition runs must be confirmed through an actual workflow run/job result before treating downloaded files as present.
 
-
-## 2026-09-23 — P7 loss-audit phase started
-- Event: a new tuning phase was opened after P6 completion.
-- Boundary: P6 remains frozen; P7 candidate filters are research-only and cannot overwrite P6.
-- Method: loss-mechanism audit first, then one interpretable entry-time gate with temporal diagnostics and conservative transaction costs.
-- Prevention: do not promote any candidate filter without a genuinely unseen post-2024 validation phase.
-
-
-## 2026-09-23 — P7 loss-audit ledger type coercion failure
-- Event: the audit script attempted to classify losses before coercing the imported P&L and option-price columns to numeric values.
-- Impact: P7 workflow run 4 failed during loss classification with a string-vs-integer comparison.
-- Correction: all required ledger numeric columns are explicitly coerced with pandas.to_numeric before feature construction.
-- Prevention: research audit scripts now validate schema and numeric dtypes at the start of analysis.
-
-
-## 2026-09-23 — P7 ledger provenance mismatch corrected
-- Event: the first P7 run used a manually cached 84-row strict ledger whose content did not match the canonical P6 artifact; its reported total gross P&L was ₹81,117.50 instead of the validated ₹83,030.00.
-- Impact: the first P7 loss-tuning report was numerically inconsistent with P6 and was not accepted as final.
-- Correction: P7 now regenerates the strict 84-cycle ledger from the canonical P5 reconciliation and the canonical 132-cycle secondary trade ledger using the deterministic P6 strict-input builder. The corrected P7 report now starts from ₹83,030.00.
-- Prevention: phase-specific analyses must derive their primary ledger from a canonical upstream transformation rather than manually copied trade rows.
-
-
-## 2026-09-23 — P7 final tuning result
-- Event: canonical P7 loss audit completed successfully.
-- Result: 32/84 trades were losses; 20/32 losses had both near-expiry legs individually adverse; 19/32 losses had both far-expiry legs net favorable.
-- Candidate gate: calendar-balance ratio <= 1.20.
-- Full-sample diagnostic effect: 52/84 trades retained, gross P&L ₹84,981.25, win rate 80.77%, profit factor 8.457, max drawdown ₹3,355.00.
-- Conservative scenario: ₹20/order brokerage, 0.05000% exchange-charge sensitivity, 2.00-point slippage per execution -> ₹34,163.77 modeled cumulative net P&L.
-- Validation boundary: these figures are exploratory in-sample evidence; the candidate is not validated for live use and must be tested unchanged on a genuinely unseen post-2024 sample.
-
-## 2026-09-23 — P8 workflow failure
-Run ID: 35828207686
-Attempt: 1
-Branch: research-nifty-4leg-calendar-p8-oos-validation
-Interpretation is blocked until the failed step is inspected.
-
-## 2026-09-23 — P8 workflow failure
-Run ID: 35828286253
-Attempt: 1
-Branch: research-nifty-4leg-calendar-p8-oos-validation
-Interpretation is blocked until the failed step is inspected.
-
-## 2026-09-23 — P8 workflow failure
-Run ID: 35828422533
-Attempt: 1
-Branch: research-nifty-4leg-calendar-p8-oos-validation
-Interpretation is blocked until the failed step is inspected.
-
-## 2026-09-23 — P8 mirror checkout correction
-- Event: initial P8 run used an invalid detached-checkout command and stopped before research execution.
-- Correction: P8 now uses the cached mirror's HEAD snapshot directly, matching the audited P5 git-show ingestion model and avoiding a full working-tree checkout.
-- Prevention: keep the mirror as a blob-filtered data snapshot; do not materialize the full archive tree when only selected files are read.
+## 2026-09-23 — P9 public-source schema limitation
+- Event: the public intraday candidates identified so far expose OHLCV and expiry/strike data but not reliable historical bid/ask quotes in their published schema.
+- Impact: these sources cannot support a claim of exact historical market-order fills.
+- Handling: when a qualifying intraday dataset is acquired, P9 will use the pre-registered 1-minute signal-close to next-minute execution convention with explicit adverse slippage. True bid/ask validation remains a separate execution-validation layer.
