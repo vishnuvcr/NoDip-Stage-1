@@ -217,3 +217,9 @@ Step failure requires inspection before any numerical interpretation.
 - Correction: previous-expiry mapping now uses the already-normalized YYYY-MM-DD strings and includes a sanity check requiring multiple distinct mapped previous-expiry dates.
 - Impact: the OOS results from run 35841355984 are rejected and replaced by a re-run after the mapping fix.
 - Prevention: all date-key joins in phase scripts must normalize both sides to the same explicit string/date representation before mapping.
+
+## 2026-09-23 — P10 workflow commit step discarded regenerated outputs
+- Event: run 35841545509 executed the corrected script successfully, but its conflict-safe commit step reset the workspace to the branch tip after computation and did not rerun the generator. The generated files were therefore overwritten by the previously committed P10 outputs, so no new result commit was produced.
+- Correction: the conflict-safe commit step now regenerates the P10 outputs after the branch reset and before `git add`/push.
+- Impact: run 35841545509 output files are not accepted as the authoritative corrected result despite the computation step succeeding.
+- Prevention: conflict-safe output workflows must regenerate artifacts after any `git reset --hard` that can overwrite generated files.
