@@ -186,5 +186,16 @@ Therefore the current research conclusion is **PAPER MONITORING ONLY — INSUFFI
 - P11 report: `reports/nifty_calendar/P11_FORWARD_VALIDATION_REPORT.md`
 - P11 conclusion: `reports/nifty_calendar/P11_FINAL_RESEARCH_CONCLUSION.md`
 - P11 ledger: `reports/nifty_calendar/P11_FORWARD_TRADE_LEDGER.csv`
+- P12 report: `reports/nifty_calendar/P12_FAR_EXPIRY_SELECTION_REPORT.md`
+- P12 summary: `reports/nifty_calendar/P12_FAR_EXPIRY_SUMMARY.csv`
+- P12 adaptive comparisons: `reports/nifty_calendar/P12_ADAPTIVE_PAIRED_COMPARISONS.csv`
+- P13 report: `reports/nifty_calendar/P13_FRESH_FAR_EXPIRY_VALIDATION_REPORT.md`
+- P14 plan: `docs/nifty_calendar/P14_OFFICIAL_NSE_FRESH_VALIDATION_PLAN.md`
+- P14 source manifest: `reports/nifty_calendar/P14_NSE_SOURCE_MANIFEST.csv`
+- P14 ledger: `reports/nifty_calendar/P14_OFFICIAL_NSE_FRESH_LEDGER.csv`
+- P14 summary: `reports/nifty_calendar/P14_OFFICIAL_NSE_FRESH_SUMMARY.csv`
+- P14 cost sensitivity: `reports/nifty_calendar/P14_OFFICIAL_NSE_FRESH_COSTS.csv`
+- P14 report: `reports/nifty_calendar/P14_OFFICIAL_NSE_FRESH_VALIDATION_REPORT.md`
+- P14 conclusion: `reports/nifty_calendar/P14_FINAL_RESEARCH_CONCLUSION.md`
 - Error log: `docs/nifty_calendar/ERROR_LOG.md`
 - Phase status: `docs/nifty_calendar/PHASE_STATUS.md`
