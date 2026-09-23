@@ -153,3 +153,12 @@
 - Impact: workflow conclusion was failure even though the analysis code step succeeded; persisted output required subsequent branch reconciliation.
 - Correction: classify the run as a persistence-layer failure separately from the numerical QC failure and avoid interpreting the generated file as validated research output.
 - Prevention: future generated-output workflows should synchronize to the latest branch before committing generated artifacts, rather than rebasing a local commit that modifies the same generated file.
+
+
+## 2026-09-23 — P9 secondary Rissin OOS validation completed
+- Event: the secondary Rissin/Upstox 1-minute option source completed the predefined OOS timing comparison on all 86 post-2024 executable cycles.
+- Result: fixed 09:15 control produced 26 executable trades; first-qualifying event-driven entry produced 70 executable trades.
+- The 44 incremental event-only trades produced gross P&L ₹-3,214.85 and PF 0.941.
+- The 24 incremental trades that were gate-fail at the fixed observation but later became CBR<=1.20 produced gross P&L ₹-13,964.60 and PF 0.665.
+- At 0.05% exchange-charge stress, event-driven modeled net P&L was ₹9,222.87 with zero added slippage and negative at 0.5/1/2-point adverse slippage.
+- Interpretation: P9 does not support promoting event-driven timing. No threshold or structure was retuned.
