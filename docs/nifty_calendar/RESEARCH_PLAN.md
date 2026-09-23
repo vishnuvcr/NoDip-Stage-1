@@ -52,7 +52,7 @@ Status: COMPLETE.
 The 1.20 gate passed one genuine temporal holdout and is supported for further research, but not approved for live capital.
 
 ### P9 — Event-driven intraday entry timing
-Status: IN PROGRESS / SOURCE-QUALITY VALIDATION.
+Status: COMPLETE — NOT PROMOTED.
 
 Research question:
 > On each eligible trading day, can the strategy enter at the first timestamp at which CBR <= 1.20 and all four near/far legs are simultaneously executable, instead of using a fixed opening timestamp?
@@ -66,58 +66,34 @@ Frozen:
 - one lot per leg;
 - no stop/target/roll/averaging/adjustment.
 
-Primary signal rule:
-- scan forward through the trading session;
-- select the current ATM strike from timestamped NIFTY spot;
-- require all four contracts at that strike;
-- require executable contemporaneous quotes;
-- enter exactly once at the first qualifying timestamp;
-- skip the day if no qualifying timestamp occurs.
+Execution:
+- primary public source was subjected to source-quality QC and rejected for P9 performance because far-expiry intraday coverage was too sparse;
+- secondary Rissin/Upstox 1-minute option data were used on the same 86-cycle post-2024 OOS population;
+- signal on completed 1-minute close;
+- next available minute open execution;
+- positive four-leg volume/price requirement;
+- explicit adverse slippage and transaction-cost sensitivity.
 
-No-lookahead rule:
-- tick/quote data: signal and fill use contemporaneous executable prices;
-- 1-minute OHLC-only data: signal on minute close and execute at the next available minute price, with slippage;
-- daily data cannot test P9.
+Final P9 result:
+- fixed 09:15 secondary-source control: 26 trades, gross ₹40,506.25, win rate 80.77%, PF 5.029, gross max DD ₹7,489.50;
+- event-driven arm: 70 trades, gross ₹37,291.40, win rate 62.86%, PF 1.576, gross max DD ₹26,467.50;
+- event-only incremental trades: 44, gross ₹-3,214.85, win rate 52.27%, PF 0.941;
+- 24 originally gate-fail dates that only qualified later: gross ₹-13,964.60, PF 0.665;
+- event-driven modeled net P&L at 0.05% exchange stress: ₹9,222.87 / ₹-10,837.13 / ₹-30,897.13 / ₹-71,017.13 for 0 / 0.5 / 1 / 2 points adverse slippage;
+- therefore the event-driven timing adaptation is not promoted.
 
-Comparison arms:
-1. P8 fixed-time CBR<=1.20 reference;
-2. P9 first-qualifying event-driven entry;
-3. skipped day when the event never occurs.
+Primary-source QC:
+The thetrademarkk source acquired 192/201 requested expiry files, but the far expiry on 2026-04-01 contained only 903 rows for the day. The only four-leg common strike at sampled qualifying timestamps was 20,500 while NIFTY was around 22,900. The primary timing output was rejected before performance interpretation.
 
-Pre-specified latest-entry sensitivity:
-- 15:00, 15:15, 15:30 and full 15:40 derivatives session where data quality permits.
-These are operational cutoffs, not parameters to select after seeing results.
+P9 conclusion:
+Adaptive first-qualifying intraday entry does not improve the frozen strategy under the secondary OOS test and is highly cost/slippage sensitive. Keep the fixed-time reference frozen.
 
-Required data:
-- timestamped NIFTY spot;
-- timestamped NIFTY options covering at least near and far weekly expiries on common strikes;
-- price, expiry, strike, CE/PE, volume and OI;
-- preferred bid/ask and quote size;
-- tick/1-second preferred, 1-minute acceptable secondary.
-
-Current blocker:
-The first public intraday source was acquired, but its far-expiry coverage is too sparse on the audited 2026-04-01 sample to support valid ATM selection. The resulting one-trade primary scan used an implausible 20,500 strike while validated NIFTY spot was about 22,899, so that output is rejected. A secondary intraday option source must pass source-quality checks before any P9 performance result is interpreted.
-
-P9 work packages:
-1. data-source audit and coverage validation, including spot/strike ATM-consistency QC;
-2. secondary-source cross-validation before strategy scoring;
-3. deterministic event detector;
-4. executable four-leg fill model;
-4. paired fixed-vs-event-driven historical comparison;
-5. residual loss-mechanism analysis;
-6. unseen temporal holdout.
-
-Primary statistics:
-- paired trade-date comparison;
-- bootstrap confidence intervals for cumulative and mean P&L;
-- win rate, profit factor, drawdown and tail losses;
-- entry-time distribution;
-- cost/slippage sensitivity;
-- regime and year breakdown;
-- non-parametric paired tests where appropriate.
-
-P9 stop condition:
-Stop without promotion if contemporaneous four-leg execution cannot be reconstructed or if the apparent effect disappears under executable cost/slippage assumptions.
+P9 outputs:
+- reports/nifty_calendar/P9_FINAL_RESEARCH_CONCLUSION.md
+- reports/nifty_calendar/P9_SECONDARY_VALIDATION_REPORT.md
+- reports/nifty_calendar/P9_RISSIN_OOS_COMPARISON.csv
+- reports/nifty_calendar/P9_RISSIN_OOS_COSTS.csv
+- docs/nifty_calendar/P9_ALTERNATE_DATA_SOURCE_AUDIT.md
 
 ### P10 — Forward / paper-execution validation
 Status: PLANNED.
