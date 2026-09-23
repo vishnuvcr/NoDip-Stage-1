@@ -31,6 +31,14 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: Restore Hugging Face cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/huggingface/hub
+          key: p12-hf-nifty-v1-${{ runner.os }}
+          restore-keys: |
+            p12-hf-nifty-v1-
+
       - name: Install dependencies
         run: python -m pip install --disable-pip-version-check pandas numpy pyarrow huggingface_hub requests tabulate
 
