@@ -102,7 +102,8 @@ def main():
     cost_rows=[]
     for arm,status_col,prefix in [('fixed','fixed_status','fixed_'),('event','event_status','event_')]:
         sub=out[out[status_col].eq('EXECUTABLE')].copy()
-        p=perf(sub[f'{prefix}pnl_inr'])
+        pnl_col=f'{prefix}pnl_inr'
+        p=perf(sub[pnl_col]) if pnl_col in sub.columns else perf(pd.Series(dtype=float))
         for slip in (0.0,0.5,1.0,2.0):
             net_sum=0.0
             for _,rr in sub.iterrows():
@@ -119,6 +120,9 @@ def main():
     pd.DataFrame(cost_rows).to_csv(COST,index=False)
 
     paired=out[(out.fixed_status.eq('EXECUTABLE'))&(out.event_status.eq('EXECUTABLE'))].copy()
+    paired_cols={'fixed_pnl_inr','event_pnl_inr'}
+    if not paired_cols.issubset(set(paired.columns)):
+        paired=paired.iloc[0:0].copy()
     summary=[
         '# P9 OOS Fast Fixed-vs-Event Comparison','',
         f'- OOS cycles: {len(out)}',
