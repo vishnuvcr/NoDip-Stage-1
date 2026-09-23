@@ -46,3 +46,10 @@
 - The 59-trade primary-source result remains in the manuscript as a source-coverage comparison rather than the final population result.
 - Full secondary trade-level price ledger and Paytm Money brokerage/exchange/slippage sensitivity are now cached in the repository.
 - P5 is COMPLETE. P6 manuscript phase is now in progress.
+
+
+## 2026-09-23 — P6 manuscript and validation completed
+- The final manuscript was committed at reports/nifty_calendar/MANUSCRIPT_NIFTY_4LEG_CALENDAR_2022_2024.md.
+- Final independently reconciled statistics were committed at reports/nifty_calendar/FINAL_SECONDARY_STATISTICS_2022_2024.md.
+- P6 validation workflow run 4 succeeded; repository tests: 4 passed and manuscript/asset checks passed.
+- P0-P6 are now complete for the 2022-2024 study. Future work is documented separately and does not modify the frozen historical rule.
