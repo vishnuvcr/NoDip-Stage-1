@@ -5,7 +5,6 @@ import importlib.util
 import duckdb
 import pandas as pd
 import numpy as np
-from huggingface_hub import hf_hub_download
 
 ROOT=Path(__file__).resolve().parents[1]
 OOS=ROOT/'reports/nifty_calendar/P8_OOS_TRADE_LEDGER_2025_ONWARD.csv'
@@ -43,26 +42,24 @@ def normalize(df):
 
 def load_year(con,year,dates,expiries):
     if not dates or not expiries:return pd.DataFrame()
-    filename=f'upstox_intraday/NIFTY/NIFTY_{year}.parquet'
-    path=hf_hub_download(repo_id=HF_RISSIN,repo_type='dataset',filename=filename)
+    path=f"hf://datasets/{HF_RISSIN}/upstox_intraday/NIFTY/NIFTY_{year}.parquet"
     date_sql=','.join("'" + d + "'" for d in sorted(dates))
     exp_sql=','.join("'" + e + "'" for e in sorted(expiries))
     q=f"""
     SELECT timestamp, date, expiry, strike, option_type, open, close, volume
-    FROM read_parquet(?)
+    FROM read_parquet('{path}')
     WHERE date IN ({date_sql})
       AND expiry IN ({exp_sql})
       AND option_type IN ('CE','PE')
     """
-    return normalize(con.execute(q,[path]).fetch_df())
+    return normalize(con.execute(q).fetch_df())
 
 def load_spot(con,dates):
-    spot_path=hf_hub_download(repo_id='thetrademarkk/india-index-options-1m',repo_type='dataset',filename='index/NIFTY.parquet')
-    url=spot_path
+    path='hf://datasets/thetrademarkk/india-index-options-1m/index/NIFTY.parquet'
     date_sql=','.join("'" + d + "'" for d in sorted(dates))
     q=f"""
     SELECT timestamp, close AS spot_close
-    FROM read_parquet('{url}')
+    FROM read_parquet('{path}')
     WHERE CAST(timestamp AS DATE) IN ({date_sql})
     """
     df=con.execute(q).fetch_df()
@@ -71,7 +68,6 @@ def load_spot(con,dates):
         df['timestamp']=df['timestamp'].dt.tz_convert('Asia/Kolkata').dt.tz_localize(None)
     df['spot_close']=pd.to_numeric(df['spot_close'],errors='coerce')
     return df.dropna(subset=['timestamp','spot_close'])
-
 def panel(df,date,near,far):
     x=df[(df.date.eq(date))&(df.expiry.isin([near,far]))&(df.volume.fillna(0)>0)].copy()
     x=x[x.open.gt(0)&x.close.gt(0)]
