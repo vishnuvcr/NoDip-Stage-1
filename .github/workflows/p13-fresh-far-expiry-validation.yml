@@ -1,0 +1,73 @@
+name: P13 fresh far-expiry validation
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/p13-fresh-far-expiry-validation.yml'
+      - 'scripts/p13_fresh_far_expiry_validation.py'
+      - 'docs/nifty_calendar/P13_FRESH_FAR_EXPIRY_VALIDATION_PLAN.md'
+
+concurrency:
+  group: p13-fresh-far-expiry-validation
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - name: Checkout P13 branch
+        uses: actions/checkout@v4
+        with:
+          ref: research-nifty-4leg-calendar-p13-fresh-far-expiry-validation
+          fetch-depth: 0
+
+      - name: Restore cached Hugging Face data
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/huggingface/hub
+          key: p13-hf-nifty-v1-${{ runner.os }}
+          restore-keys: |
+            p13-hf-nifty-v1-
+            p12-hf-nifty-v1-
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: python -m pip install --disable-pip-version-check pandas numpy pyarrow huggingface_hub requests tabulate
+
+      - name: Validate syntax
+        run: python -m py_compile scripts/p13_fresh_far_expiry_validation.py
+
+      - name: Run P13 fresh validation
+        run: python scripts/p13_fresh_far_expiry_validation.py
+
+      - name: Commit P13 outputs
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git fetch origin research-nifty-4leg-calendar-p13-fresh-far-expiry-validation
+          git reset --hard origin/research-nifty-4leg-calendar-p13-fresh-far-expiry-validation
+          python scripts/p13_fresh_far_expiry_validation.py
+          git add reports/nifty_calendar/P13_* docs/nifty_calendar/P13_* docs/nifty_calendar/PHASE_STATUS.md README.md
+          git diff --cached --quiet || git commit -m 'Complete P13 fresh far-expiry validation'
+          git push origin HEAD:research-nifty-4leg-calendar-p13-fresh-far-expiry-validation
+
+      - name: Log failure
+        if: failure()
+        run: |
+          set -euo pipefail
+          printf '\n## 2026-09-23 — P13 fresh far-expiry validation failure\nRun ID: %s\nStep failure requires inspection before numerical interpretation.\n' "$GITHUB_RUN_ID" >> docs/nifty_calendar/ERROR_LOG.md
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+vishnuvcr@users.noreply.github.com'
+          git add docs/nifty_calendar/ERROR_LOG.md
+          git diff --cached --quiet || git commit -m 'Log P13 fresh far-expiry workflow failure'
+          git push origin HEAD:research-nifty-4leg-calendar-p13-fresh-far-expiry-validation
