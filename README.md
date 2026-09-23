@@ -66,6 +66,17 @@ The 84-trade strict baseline contains **32 losing trades**. The loss audit found
 - [Sources and literature](https://github.com/vishnuvcr/NoDip-Stage-1/blob/research-nifty-4leg-calendar-p6-manuscript/docs/nifty_calendar/SOURCES.md)
 - [Cost assumptions](https://github.com/vishnuvcr/NoDip-Stage-1/blob/research-nifty-4leg-calendar-p6-manuscript/docs/nifty_calendar/COST_ASSUMPTIONS.md)
 
+## P7 loss audit / entry candidate
+
+P7 audited all 32 losing trades in the strict 84-cycle sample. A candidate entry gate was identified:
+`(far CE / near CE) / (far PE / near PE) <= 1.20`.
+
+The gate retains 52/84 cycles in the historical sample and is **not** promoted into the frozen P6 strategy. It requires a genuinely unseen post-2024 validation before any live-use consideration.
+
+- [P7 loss audit report](https://github.com/vishnuvcr/NoDip-Stage-1/blob/research-nifty-4leg-calendar-p7-loss-audit/reports/nifty_calendar/ENTRY_TUNING_REPORT_2022_2024.md)
+- [P7 candidate entry criteria](https://github.com/vishnuvcr/NoDip-Stage-1/blob/research-nifty-4leg-calendar-p7-loss-audit/reports/nifty_calendar/ENTRY_CRITERIA_CANDIDATE_2022_2024.md)
+- [P7 loss ledger](https://github.com/vishnuvcr/NoDip-Stage-1/blob/research-nifty-4leg-calendar-p7-loss-audit/reports/nifty_calendar/LOSS_AUDIT_2022_2024.csv)
+
 ## Phase infrastructure
 
 - [P5 reconciliation workflow](https://github.com/vishnuvcr/NoDip-Stage-1/blob/research-nifty-4leg-calendar-p6-manuscript/.github/workflows/p5-nifty-reconciliation.yml)
