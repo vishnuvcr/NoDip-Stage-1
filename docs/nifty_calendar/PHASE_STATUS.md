@@ -1,6 +1,6 @@
 # Phase Status
 
-Last updated: 2026-09-23  — P0-P6 complete for 2022-2024 study
+Last updated: 2026-09-23  — P5 complete; P6 manuscript in progress
 
 | Phase | Status | Notes |
 |---|---|---|
@@ -10,4 +10,4 @@ Last updated: 2026-09-23  — P0-P6 complete for 2022-2024 study
 | P3 Engine/tests | COMPLETE | Frozen engine, historical lot sizes, CI fixes and regression tests completed |
 | P4 Historical backtest | COMPLETE | 59 valid executable trades; gross P&L ₹52,827.50; trade ledger and annual results committed |
 | P5 Verification/robustness | COMPLETE | Full 134-cycle reconciliation completed against an independent public mirror of NSE F&O bhavcopy plus Yahoo spot-open cross-check; 132/134 cycles complete on secondary source; all 75 primary rejects recovered |
-| P6 Final manuscript | COMPLETE | Final manuscript, four figures, final statistics, appendices and validation workflow committed; repository tests and manuscript checks pass |
+| P6 Final manuscript | IN PROGRESS | Drafting final manuscript, figures, source-coverage interpretation, cost sensitivity and appendices from the 132-cycle independent ledger |
