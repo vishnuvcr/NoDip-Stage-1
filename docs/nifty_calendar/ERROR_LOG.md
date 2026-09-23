@@ -209,3 +209,11 @@ Step failure requires inspection before any numerical interpretation.
 - Correction: summary filtering now uses the explicit `ledger['sample']` column reference.
 - Impact: no numerical P10 result from this run is accepted.
 - Prevention: avoid DataFrame attribute access for columns whose names overlap pandas methods (`sample`, `size`, `mean`, etc.).
+
+## 2026-09-23 — P10 OOS previous-expiry mapping bug
+- Event: P10 run 35841355984 completed the seven-offset computation but its OOS summary was invalid because every OOS cycle inherited the fallback previous-expiry date 2024-12-26.
+- Root cause: the OOS near-expiry column was normalized to YYYY-MM-DD strings, while the previous-expiry lookup keys were built from raw NumPy datetime representations, so the dictionary lookup missed every row and fell back to the first-cycle date.
+- Detection: the OOS ledger showed identical D-1/D0/D+1 entry dates for nearly all cycles and only two OOS cycles were executable.
+- Correction: previous-expiry mapping now uses the already-normalized YYYY-MM-DD strings and includes a sanity check requiring multiple distinct mapped previous-expiry dates.
+- Impact: the OOS results from run 35841355984 are rejected and replaced by a re-run after the mapping fix.
+- Prevention: all date-key joins in phase scripts must normalize both sides to the same explicit string/date representation before mapping.
