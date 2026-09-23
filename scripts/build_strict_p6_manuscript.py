@@ -121,9 +121,7 @@ def main() -> None:
     fig.savefig(args.fig_dir / "cost_sensitivity.svg")
     plt.close(fig)
 
-    strict_out = strict.copy()
-    strict_out["year"] = strict_out["entry_date"].dt.year
-    strict_out.to_csv(args.out_annual, index=False)
+    annual.to_csv(args.out_annual, index=False)
 
     report = f"""
 # NIFTY 4-Leg Weekly / 3-Week Calendar — 2022-2024 Research Manuscript
