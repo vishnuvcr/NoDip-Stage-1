@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - 'scripts/p9_oos_intraday_compare.py'
+      - 'scripts/p9_fetch_hf_oos.py'
       - '.github/workflows/p9-oos-intraday-validation.yml'
   workflow_dispatch:
 
@@ -33,8 +34,8 @@ jobs:
           path: /home/runner/.cache/huggingface/hub/datasets--thetrademarkk--india-index-options-1m
           key: p9-hf-thetrademarkk-${{ runner.os }}-v1
 
-      - name: Ensure required primary-source files exist
-        run: python scripts/p9_fetch_hf_intraday.py
+      - name: Fetch only OOS-required primary-source files
+        run: python scripts/p9_fetch_hf_oos.py
 
       - name: Run OOS paired intraday comparison
         run: python scripts/p9_oos_intraday_compare.py
