@@ -3,6 +3,7 @@ from __future__ import annotations
 import io, hashlib, zipfile, importlib.util
 from datetime import date, timedelta
 from pathlib import Path
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import numpy as np
 import pandas as pd
@@ -27,7 +28,7 @@ def fetch_day(sess,d):
     if path.exists() and path.stat().st_size>1000:
         return {'date':d.isoformat(),'url':url,'status':'CACHED','bytes':path.stat().st_size,'sha256':hashlib.sha256(path.read_bytes()).hexdigest()}
     try:
-        r=sess.get(url,headers=rec.HEADERS,timeout=30)
+        r=sess.get(url,headers=rec.HEADERS,timeout=15)
         if r.status_code!=200 or not r.content.startswith(b'PK'):
             return {'date':d.isoformat(),'url':url,'status':f'HTTP_{r.status_code}','bytes':len(r.content),'sha256':''}
         path.write_bytes(r.content)
@@ -98,9 +99,19 @@ def perf(x):
 
 def main():
     sess=requests.Session(); manifest=[]
-    for d in daterange(START,END):
-        if d.weekday()>=5:continue
-        manifest.append(fetch_day(sess,d))
+    days=[d for d in daterange(START,END) if d.weekday()<5]
+    def one(d):
+        local=requests.Session()
+        for attempt in range(3):
+            m=fetch_day(local,d)
+            if m['status'] in ('CACHED','DOWNLOADED') or m['status'].startswith('HTTP_404'):
+                return m
+        return m
+    with ThreadPoolExecutor(max_workers=4) as ex:
+        futs={ex.submit(one,d):d for d in days}
+        for fut in as_completed(futs):
+            manifest.append(fut.result())
+    manifest=sorted(manifest,key=lambda x:x['date'])
     pd.DataFrame(manifest).to_csv(OUT/'P14_NSE_SOURCE_MANIFEST.csv',index=False)
     frames=[]
     for m in manifest:
