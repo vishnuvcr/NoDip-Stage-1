@@ -158,7 +158,10 @@ def main():
         p=perf(x.pnl_inr if 'pnl_inr' in x else pd.Series(dtype=float))
         summary.append({'strategy':label,'scheduled_cycles':len(fresh),'executable_trades':len(x),'coverage':len(x)/len(fresh) if len(fresh) else np.nan,**p})
         for slip in [0,0.5,1,2]:
-            y=x.dropna(subset=['lot_near','lot_far','pnl_inr']).copy()
+            if all(col in x.columns for col in ['lot_near','lot_far','pnl_inr']):
+                y=x.dropna(subset=['lot_near','lot_far','pnl_inr']).copy()
+            else:
+                y=x.iloc[0:0].copy()
             net=float(y.apply(lambda r:net_cost(r,slip),axis=1).sum()) if not y.empty else 0.0
             costs.append({'strategy':label,'slippage_points':slip,'net_pnl_inr':net})
     sel=ledger[ledger['status'].eq('ADAPTIVE_SELECTED')].copy()
