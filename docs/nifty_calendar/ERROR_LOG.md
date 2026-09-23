@@ -184,3 +184,9 @@
 - Event: the user discarded the P9 event-driven timing idea and requested fixed 09:15 entry testing on D-1, D0, D+1, D+2, D+3, D+4 and D+5 relative to the previous expiry.
 - Correction to phase design: entry offsets are defined on NSE trading sessions rather than calendar days; this avoids non-trading dates and is recorded before scoring.
 - Prevention: all seven offsets are pre-registered, CBR remains frozen at 1.20, and OOS data are not used to select an offset.
+
+## 2026-09-23 — P10 local execution network unavailable
+- Event: a local container validation attempt could not clone the research branch because the runtime could not resolve github.com.
+- Impact: local syntax execution could not be used as an independent check.
+- Correction: GitHub Actions remains the authoritative execution environment for P10, consistent with earlier P5/P8 network constraints.
+- Prevention: keep CI execution as the reproducibility path when the model runtime has no external network access.
