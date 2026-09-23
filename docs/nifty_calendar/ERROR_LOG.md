@@ -136,3 +136,11 @@
 - Impact: only the already-cached UDiFF-period files were reconciled; most 2022-2024 legacy dates remained source gaps.
 - Correction: legacy filenames now use lowercase fo/bhav with an uppercase three-letter month, matching the mirror repository exactly.
 - Prevention: derive source filenames from an observed repository manifest before running bulk reconciliation.
+
+
+## 2026-09-23 — P5 zero-open false-executability discovered
+- Event: the independent NSE bhavcopy mirror contains many option rows with OPEN = 0 and CONTRACTS = 0. The initial P5 reconciler treated any non-null open as executable and therefore overstated recovered-cycle coverage.
+- Evidence: the P5 cached secondary dataset contains 96,410 option rows; 32,037 have OPEN = 0 and CONTRACTS = 0. These are not valid entry fills for the frozen 09:15-open protocol.
+- Impact: the prior P5 result of 123 exact-strike and 9 grid-alternative complete cycles is not accepted as the final validation result.
+- Correction: primary backtest, cycle audit and secondary reconciliation now require a strictly positive option OPEN for executable entry strikes/legs. The P5 phase has been reopened pending a corrected rerun.
+- Prevention: daily option "open" fields are now treated as executable only when they represent a positive traded premium; null/zero observations cannot create synthetic fills.
