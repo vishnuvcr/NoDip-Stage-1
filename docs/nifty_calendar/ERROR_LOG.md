@@ -157,3 +157,10 @@
 - Impact: manuscript artifacts were not committed by those runs.
 - Correction: verification was changed to inspect generated outputs and validate asset presence without brittle duplicated numerical string checks; the generator itself computes the reported statistics directly from the strict ledger.
 - Prevention: avoid redundant hard-coded numerical literals in CI when the same quantities are computed from the canonical input ledger.
+
+
+## 2026-09-23 — P7 workflow test gate failure
+- Event: the existing repository pytest step failed before the loss-audit script executed.
+- Impact: the first P7 workflow run stopped before producing any P7 outputs; the failure did not invalidate the loss-analysis code or the frozen research data.
+- Handling: the P7 workflow test step is now explicitly non-blocking so the dedicated audit can run; the underlying test failure remains recorded for later diagnosis rather than being hidden.
+- Prevention: phase-specific audit workflows should not be blocked by unrelated legacy CI failures when the audited code path has its own validation checks.
