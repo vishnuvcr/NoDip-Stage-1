@@ -64,6 +64,13 @@ The combined balance filter reduces the strict sample to a small subset. Its imp
 ## Cost-aware filter interpretation
 At the 0.05000% exchange-charge sensitivity, the strict baseline remains positive at ₹20/order brokerage and 2.00-point slippage (about ₹1,206.81). The exploratory filters also remain positive across the tested cost grid, but this is not out-of-sample evidence.
 
+## Literature context for the loss mechanism
+The observed concentration in front-week repricing is directionally consistent with literature treating weekly options as highly sensitive to short-horizon tail and jump risk, and with calendar-spread research emphasizing maturity-dependent dependence and term structure. This literature supports investigating volatility-regime and term-structure balance variables, but it does not prove that the P7 loss signatures are caused by any single market variable.
+- Andersen, Fusari & Todorov (2017): https://www.nber.org/papers/w21491
+- Schneider & Tavin (2018): https://www.sciencedirect.com/science/article/pii/S0378426616302424
+- Jayanesh et al. (2026): https://zenodo.org/records/19220278
+- Sajjan (2026): https://papers.ssrn.com/sol3/Delivery.cfm/6918100.pdf?abstractid=6918100&mirid=1
+
 ## Practical improvement path
 1. First priority: improve execution measurement, not the payoff formula. The major losses originate in front-week option repricing, so synchronized bid/ask or tick data are required to know whether entry/exit slippage and transient adverse moves are larger than the daily-bar model indicates.
 2. Second: investigate a pre-trade term-structure balance filter using the two premium-ratio diagnostics. Treat it as a hypothesis and validate it on a held-out period before adoption.
