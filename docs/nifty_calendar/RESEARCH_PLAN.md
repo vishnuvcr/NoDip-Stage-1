@@ -1,8 +1,12 @@
 # Research Plan — NIFTY 4-Leg Calendar
 
-## Research question
+## Core research question
 
-Does the frozen four-leg structure produce a persistent positive expected return on NIFTY after realistic transaction costs and execution slippage when entered at the first trading session after weekly expiry and exited at the following weekly expiry?
+Does the frozen four-leg structure produce a persistent positive expected return on NIFTY after realistic transaction costs and execution slippage when entered on the first eligible trading day after weekly expiry and exited at the following weekly expiry?
+
+## Current extension question
+
+Can the frozen P7/P8 calendar-balance gate (CBR <= 1.20) be converted from a fixed-time entry into an event-driven entry, where the strategy enters at the first intraday timestamp on the eligible day when all other frozen criteria are simultaneously satisfied?
 
 ## Aims
 
@@ -10,91 +14,129 @@ Does the frozen four-leg structure produce a persistent positive expected return
 - Separate gross option-payoff behaviour from executable net returns.
 - Quantify drawdowns, tail losses, capital use and sensitivity to execution costs.
 - Detect data or contract-definition failures before interpreting performance.
+- Test whether adaptive entry timing adds robustness without re-optimizing the gate.
 
 ## Phases
 
 ### P0 — Specification freeze
 Status: COMPLETE.
-Freeze entry, expiry selection, ATM rule, four legs, exit and no-adjustment rule.
 
 ### P1 — Literature / market structure
 Status: COMPLETE.
-Review NIFTY weekly-option market design, expiry changes, strike scheme, settlement, liquidity/execution literature, transaction-cost rules and public implementations.
 
 ### P2 — Data acquisition and validation
-Status: COMPLETE for the 2022-2024 public-source dataset.
-The source was downloaded/cached, its ticker schema was diagnosed, C/P was mapped to CE/PE, and the normalized trade-input data was produced.
+Status: COMPLETE for the 2022-2024 public-source daily dataset.
 
 ### P3 — Mechanical engine and tests
 Status: COMPLETE.
-Expiry mapping, four-leg construction, historical lot-size handling, P&L and regression tests are implemented.
 
 ### P4 — Historical backtest
 Status: COMPLETE for the 2022-2024 public-source subset.
-The frozen strategy produced 59 valid executable cycles and gross P&L of ₹52,827.50.
 
 ### P5 — Verification / robustness
-Status: COMPLETE for the 2022-2024 validation sample.
-Completed: exact leg-specific slippage sensitivity; historical Paytm brokerage-cohort scenarios; documented brokerage/statutory costs; exchange-charge sensitivity; full cycle-coverage audit; independent public mirror of NSE F&O bhavcopy reconciliation for all 134 candidate cycles; Yahoo NIFTY 50 OPEN cross-check; full secondary trade-level ledger and cost sensitivity.
-Residual limitation: 2 of 134 candidate cycles are not constructible on the independent mirror because no common strike is present there, while the primary source treated them as valid. This is retained as a source-discrepancy limitation, not silently resolved. For the secondary re-run, the frozen ATM/common-strike rule is re-applied using the independent Yahoo NIFTY OPEN diagnostic; 27 primary rejects reproduce the primary strike and 48 require independent secondary-source strike re-selection.
-
-No exact historical Paytm client-specific exchange pass-through was available from public pricing data, so the study retains explicit exchange-charge sensitivities rather than inventing a contract-note rate.
+Status: COMPLETE.
 
 ### P6 — Final manuscript
 Status: COMPLETE.
-The manuscript is finalized from the strict 84-cycle frozen-protocol independent validation sample, with the 59-cycle primary-source result retained as a source-coverage comparison and the 28 source-specific re-selection cycles retained only as sensitivity evidence. It includes tables, charts, trade-level appendix, methods, statistical inference, limitations and supplementary material.
-
-## Current statistical outputs
-
-Primary 2022-2024 source result:
-- 59 valid trades
-- Gross P&L ₹52,827.50
-- Win rate 64.41%
-- Profit factor 2.549
-- Max drawdown ₹5,650
-
-Strict independent validation result:
-- 84 strict frozen-protocol cycles of 134 candidates (62.7% coverage)
-- Gross P&L ₹83,030.00
-- Mean cycle ₹988.45
-- Median cycle ₹598.75
-- Win rate 61.90%
-- Profit factor 2.942
-- Max drawdown ₹8,022.50
-- Best trade ₹18,742.50
-- Worst trade ₹-5,363.75
-- 3-trade circular-block bootstrap 95% interval for total P&L: ₹31,147 to ₹139,294
-
-Coverage interpretation:
-- 57 of 59 primary-valid cycles were independently executable;
-- 27 primary rejects were recovered at the same primary-selected strike;
-- 28 primary rejects were executable only after source-specific secondary strike re-selection and are not counted in the strict estimate;
-- 20 primary rejects remained non-executable on the independent source;
-- 2 primary-valid cycles were not independently reproduced.
-
-## Execution-cost analysis
-
-The robustness report models:
-- ₹80/₹120/₹160 brokerage per strategy cycle under the documented ₹10/₹15/₹20 historical Paytm Money client-cohort scenarios (8 executed option orders)
-- 0.0625% historical STT on option sales through the sample window
-- 0.003% buy-side stamp duty
-- 0.0001% SEBI fee
-- 18% GST on applicable broker/regulatory/exchange charges
-- exchange-charge sensitivity rather than an invented Paytm-specific historical pass-through rate
-- exact per-leg slippage at 0.25, 0.50, 1.00 and 2.00 index points per execution
-
-## Stop condition
-
-Research stops after P6 or earlier if data quality cannot support a defensible conclusion. A result that fails validation is recorded as a research outcome, not silently repaired.
-
 
 ### P7 — Loss audit / entry tuning
 Status: COMPLETE.
-Audit every losing trade in the strict 84-cycle sample, classify leg-level loss mechanisms, derive interpretable entry-time term-structure features, and propose one candidate entry gate without altering P6. The candidate must be reserved for independent post-2024 validation because repeated historical parameter search can create backtest overfitting.
+The only retained candidate gate is:
 
+(far CE / near CE) / (far PE / near PE) <= 1.20
 
-P7 final candidate gate: enter only when the calendar-balance ratio is <= 1.20, where (far CE / near CE) / (far PE / near PE). This is a research candidate and must be validated unchanged on genuinely unseen post-2024 data; it does not alter the P6 frozen result.
+It remains unchanged.
 
 ### P8 — Unseen post-2024 validation
 Status: COMPLETE.
-The 1.20 candidate threshold was frozen before OOS scoring. P8 performed one temporal holdout evaluation without threshold re-optimization.
+The 1.20 gate passed one genuine temporal holdout and is supported for further research, but not approved for live capital.
+
+### P9 — Event-driven intraday entry timing
+Status: IN PROGRESS / DATA-BLOCKED.
+
+Research question:
+> On each eligible trading day, can the strategy enter at the first timestamp at which CBR <= 1.20 and all four near/far legs are simultaneously executable, instead of using a fixed opening timestamp?
+
+Frozen:
+- eligible day;
+- four-leg structure;
+- CBR threshold 1.20;
+- same-strike rule;
+- near-expiry close exit;
+- one lot per leg;
+- no stop/target/roll/averaging/adjustment.
+
+Primary signal rule:
+- scan forward through the trading session;
+- select the current ATM strike from timestamped NIFTY spot;
+- require all four contracts at that strike;
+- require executable contemporaneous quotes;
+- enter exactly once at the first qualifying timestamp;
+- skip the day if no qualifying timestamp occurs.
+
+No-lookahead rule:
+- tick/quote data: signal and fill use contemporaneous executable prices;
+- 1-minute OHLC-only data: signal on minute close and execute at the next available minute price, with slippage;
+- daily data cannot test P9.
+
+Comparison arms:
+1. P8 fixed-time CBR<=1.20 reference;
+2. P9 first-qualifying event-driven entry;
+3. skipped day when the event never occurs.
+
+Pre-specified latest-entry sensitivity:
+- 15:00, 15:15, 15:30 and full 15:40 derivatives session where data quality permits.
+These are operational cutoffs, not parameters to select after seeing results.
+
+Required data:
+- timestamped NIFTY spot;
+- timestamped NIFTY options covering at least near and far weekly expiries on common strikes;
+- price, expiry, strike, CE/PE, volume and OI;
+- preferred bid/ask and quote size;
+- tick/1-second preferred, 1-minute acceptable secondary.
+
+Current blocker:
+The repository contains daily option data but no validated intraday multi-expiry quote dataset adequate for P9. No numerical P9 performance result is claimed until that data exists.
+
+P9 work packages:
+1. data-source audit and coverage validation;
+2. deterministic event detector;
+3. executable four-leg fill model;
+4. paired fixed-vs-event-driven historical comparison;
+5. residual loss-mechanism analysis;
+6. unseen temporal holdout.
+
+Primary statistics:
+- paired trade-date comparison;
+- bootstrap confidence intervals for cumulative and mean P&L;
+- win rate, profit factor, drawdown and tail losses;
+- entry-time distribution;
+- cost/slippage sensitivity;
+- regime and year breakdown;
+- non-parametric paired tests where appropriate.
+
+P9 stop condition:
+Stop without promotion if contemporaneous four-leg execution cannot be reconstructed or if the apparent effect disappears under executable cost/slippage assumptions.
+
+### P10 — Forward / paper-execution validation
+Status: PLANNED.
+If P9 produces a defensible specification, keep the exact rule frozen and record timestamped live/paper observations, actual quotes, fills, costs, slippage and residual loss mechanisms without retuning on the same observation stream.
+
+## Current statistical outputs from P8
+
+- 86 executable post-2024 cycles
+- 42 fixed-gate trades
+- Fixed-gate gross P&L ₹126,460.50
+- Win rate 76.19%
+- Profit factor 5.115
+- Gross max drawdown ₹13,406.25
+- Worst trade ₹-12,502.75
+- At 2-point adverse slippage and 0.05% exchange-charge stress: modeled net P&L ₹64,304.41
+
+## Execution-cost policy
+
+Historical and forward analyses must keep brokerage, statutory charges, exchange-charge sensitivity and adverse slippage explicit. Modeled costs are not claims of realized Paytm Money fills.
+
+## Research stop condition
+
+Research stops after the defined phases P9/P10, or earlier if data quality cannot support a defensible conclusion. Failed validation is recorded as a scientific outcome, not silently repaired.
