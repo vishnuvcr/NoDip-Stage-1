@@ -89,3 +89,41 @@ No P9 performance result will be interpreted until these tests pass.
 ## Important execution limitation
 
 None of the currently identified public datasets provides reliable historical bid/ask quotes in the exposed schema. P9 therefore cannot claim true historical market-order fills from these sources. It can, however, test the event-driven signal using minute OHLC with conservative next-minute execution and explicit adverse-slippage sensitivity. A future bid/ask dataset can become a separate execution-validation layer.
+
+## Acquisition result — 2026-09-23
+
+The first CI acquisition run completed successfully on GitHub Actions.
+
+- Candidate source: `thetrademarkk/india-index-options-1m`
+- Research cycles requested: 170 (84 historical strict + 86 P8 OOS executable)
+- Unique NIFTY option expiry files required: 201
+- Expiry files downloaded: 192
+- Expiry files missing from the source manifest: 10
+- Total downloaded option/index bytes during the run: ~671.8 MB
+- 1-minute NIFTY index file downloaded successfully.
+- Cycles for which both near and far expiry files are present: 157/170 (92.35%)
+- Cycles blocked by a missing near or far expiry file: 13/170 (7.65%)
+
+The missing files identified were:
+- 2026-06-16
+- 2026-06-23
+- 2026-06-30
+- 2026-08-11
+- 2026-08-18
+- 2026-08-25
+- 2026-09-01
+- 2026-09-08
+- 2026-09-15
+- 2026-09-22
+
+The gap pattern is concentrated in later 2026 expiries and should be treated as a source-coverage boundary, not as strategy skips.
+
+### Persistence correction
+
+The first workflow successfully downloaded the raw files onto the GitHub Actions runner, but its cache step stored only the local manifest path rather than the Hugging Face raw-file cache. The workflow has now been corrected to cache:
+
+`/home/runner/.cache/huggingface/hub/datasets--thetrademarkk--india-index-options-1m`
+
+under a stable P9 cache key. The corrected workflow also adds parquet schema validation and the first event-driven timing scan.
+
+Because the available connector does not expose a manual workflow-dispatch action, the corrected workflow has not yet produced a second run. No event-driven performance result is therefore claimed from this stage.
