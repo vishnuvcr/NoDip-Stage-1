@@ -118,10 +118,7 @@ def build_fresh_cycles(daily: pd.DataFrame) -> pd.DataFrame:
             }
         )
 
-    out = pd.DataFrame(rows).drop_duplicates("cycle_id")
-    if out.empty:
-        raise RuntimeError("No completed fresh P11 cycles were found after 2026-08-26")
-    return out
+    return pd.DataFrame(rows).drop_duplicates("cycle_id")
 
 
 def load_intraday(cycles: pd.DataFrame):
@@ -325,6 +322,105 @@ def run():
 
     daily = load_daily_2026()
     cycles = build_fresh_cycles(daily)
+    if cycles.empty:
+        last_source_date = pd.Timestamp(daily["date"].max()).strftime("%Y-%m-%d")
+        selected_rule = f"D-1 entry at 09:15 IST with CBR <= {CBR_THRESHOLD:.2f}"
+        OUT_LEDGER.parent.mkdir(parents=True, exist_ok=True)
+        pd.DataFrame([{
+            "selected_offset": "D-1",
+            "status": "BLOCKED_NO_FRESH_COMPLETED_CYCLE",
+            "p10_oos_cutoff_entry_date": P10_OOS_CUTOFF.strftime("%Y-%m-%d"),
+            "latest_source_trading_date": last_source_date,
+        }]).to_csv(OUT_LEDGER, index=False)
+        pd.DataFrame([{
+            "selected_offset": "D-1",
+            "status": "BLOCKED_NO_FRESH_COMPLETED_CYCLE",
+            "slippage_points": 0.0,
+            "net_pnl_inr": np.nan,
+        },{
+            "selected_offset": "D-1",
+            "status": "BLOCKED_NO_FRESH_COMPLETED_CYCLE",
+            "slippage_points": 0.5,
+            "net_pnl_inr": np.nan,
+        },{
+            "selected_offset": "D-1",
+            "status": "BLOCKED_NO_FRESH_COMPLETED_CYCLE",
+            "slippage_points": 1.0,
+            "net_pnl_inr": np.nan,
+        },{
+            "selected_offset": "D-1",
+            "status": "BLOCKED_NO_FRESH_COMPLETED_CYCLE",
+            "slippage_points": 2.0,
+            "net_pnl_inr": np.nan,
+        }]).to_csv(OUT_COSTS, index=False)
+        report = [
+            "# P11 Forward / Paper-Execution Validation Report",
+            "",
+            "## Frozen selection",
+            "Development-only selection rule: coverage >= 90%, PF > 2, maximize development net P&L at 2-point adverse slippage.",
+            f"Selected offset: D-1 (development net at 2-point slippage = ₹{selected_dev['net_2pt']:,.2f}).",
+            f"Frozen rule: {selected_rule}.",
+            "No 2025+ P10 OOS result was used to select the offset.",
+            "",
+            "## Fresh-data gate",
+            f"P10 OOS cutoff entry date: {P10_OOS_CUTOFF.strftime('%Y-%m-%d')}",
+            f"Latest completed NIFTY daily source date available to the P11 runner: {last_source_date}",
+            "Completed fresh P11 cycles after the cutoff: 0",
+            "Executable fresh trades: 0",
+            "",
+            "## Decision",
+            "**PAPER-MONITORING ONLY / INSUFFICIENT FRESH SAMPLE**",
+            "",
+            "No fresh completed cycle exists beyond the frozen P10 cutoff in the pinned option-data source. Therefore P11 cannot test the development-selected D-1 rule without reusing observations that were already in the P10 OOS sample.",
+            "",
+            "This is a data-availability stop, not a strategy-loss result. No additional entry-day offsets are searched.",
+            "",
+            "## Execution/data limitation",
+            "The Rissin/Upstox source used for P10 provides the required 1-minute OHLCV fields but no historical bid/ask quote series. Modeled slippage is therefore a sensitivity, not a claim of realized Paytm Money fills.",
+        ]
+        OUT_REPORT.write_text("\n".join(report) + "\n", encoding="utf-8")
+        OUT_CONCLUSION.write_text(
+            "\n".join([
+                "# P11 Final Research Conclusion",
+                "",
+                f"Selected development-only rule: {selected_rule}.",
+                f"P10 OOS cutoff: {P10_OOS_CUTOFF.strftime('%Y-%m-%d')}.",
+                f"Latest source date available: {last_source_date}.",
+                "Fresh completed cycles after the cutoff: 0.",
+                "Decision: **PAPER-MONITORING ONLY / INSUFFICIENT FRESH SAMPLE**.",
+                "",
+                "The absence of a fresh completed cycle prevents an unbiased forward validation. The P10 seven-offset study remains closed and no additional timing offsets are searched in this research phase.",
+                "A future prospective paper-validation run may begin only when a completed post-cutoff expiry cycle is added to the pinned intraday dataset.",
+            ]) + "\n",
+            encoding="utf-8",
+        )
+        OUT_STATUS.write_text(
+            "\n".join([
+                "# Phase Status",
+                "",
+                "Last updated: 2026-09-23 — P11 stopped at the fresh-data availability gate.",
+                "",
+                "| Phase | Status | Notes |",
+                "|---|---|---|",
+                "| P0 Specification freeze | COMPLETE | Frozen four-leg calendar structure and 09:15 entry. |",
+                "| P1 Literature / market structure | COMPLETE | Sources, market structure and cost literature reviewed. |",
+                "| P2 Data acquisition | COMPLETE | 2022-2024 source data and later validation datasets cached/validated. |",
+                "| P3 Engine/tests | COMPLETE | Frozen engine and regression controls complete. |",
+                "| P4 Historical backtest | COMPLETE | Original 59-trade result preserved. |",
+                "| P5 Verification/robustness | COMPLETE | Independent reconciliation completed. |",
+                "| P6 Final manuscript | COMPLETE | Strict 84-cycle manuscript completed. |",
+                "| P7 Loss audit / entry tuning | COMPLETE | 32 losses audited; CBR <= 1.20 retained only as candidate. |",
+                "| P8 Unseen post-2024 validation | COMPLETE | Fixed 09:15 CBR gate validated on 2025+ holdout; not live-approved. |",
+                "| P9 Event-driven intraday entry timing | COMPLETE | Event-driven replacement rejected after source QC and cost sensitivity. |",
+                "| P10 Entry-day offset research | COMPLETE | Seven offsets tested; no direct OOS promotion. |",
+                "| P11 Forward / paper-execution validation | BLOCKED — FRESH DATA UNAVAILABLE | No completed cycle exists after the P10 cutoff in the pinned option source; no reuse of P10 OOS data permitted. |",
+                "",
+                "Research stop condition: P11 is closed for this dataset. No further offsets or parameter searches are performed.",
+            ]) + "\n",
+            encoding="utf-8",
+        )
+        print(OUT_REPORT.read_text())
+        return
     raw, spot = load_intraday(cycles)
 
     rows = [run_cycle(c, raw, spot) for c in cycles.to_dict("records")]
