@@ -162,3 +162,9 @@
 - The 24 incremental trades that were gate-fail at the fixed observation but later became CBR<=1.20 produced gross P&L ₹-13,964.60 and PF 0.665.
 - At 0.05% exchange-charge stress, event-driven modeled net P&L was ₹9,222.87 with zero added slippage and negative at 0.5/1/2-point adverse slippage.
 - Interpretation: P9 does not support promoting event-driven timing. No threshold or structure was retuned.
+## 2026-09-23 — P9 cutoff-sensitivity workflow syntax failure
+- Event: the first P9 latest-entry sensitivity workflow (run 35837987402) failed before producing outputs.
+- Root cause: the generated Python source contained escaped quotes (`\\\"`) inside an f-string expression, producing a Python `SyntaxError` at line 66.
+- Correction: the f-string was rewritten with normal Python quotes; the workflow commit step also now uses plain `\${GITHUB_REF_NAME}` shell expansion after fetch/reset.
+- Impact: no numerical cutoff-sensitivity result was produced by the failed run.
+- Prevention: validate generated Python syntax in CI before interpreting downstream results, and avoid double-escaping source-code quotes during repository writes.
