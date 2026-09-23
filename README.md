@@ -112,3 +112,6 @@ The fixed P7 candidate gate was evaluated unchanged on the post-2024 temporal ho
 - P8 candidate lock: docs/nifty_calendar/P8_OOS_CANDIDATE_LOCK.md
 - P8 OOS report: reports/nifty_calendar/P8_OOS_VALIDATION_REPORT_2025_ONWARD.md
 - P8 OOS ledger: reports/nifty_calendar/P8_OOS_TRADE_LEDGER_2025_ONWARD.csv
+
+- P8 final research conclusion: reports/nifty_calendar/P8_FINAL_RESEARCH_CONCLUSION.md
+- P8 data manifest: reports/nifty_calendar/P8_DATA_MANIFEST_2025_ONWARD.csv
