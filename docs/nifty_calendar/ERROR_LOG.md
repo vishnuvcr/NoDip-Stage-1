@@ -194,3 +194,9 @@
 - Full-sample diagnostic effect: 52/84 trades retained, gross P&L ₹84,981.25, win rate 80.77%, profit factor 8.457, max drawdown ₹3,355.00.
 - Conservative scenario: ₹20/order brokerage, 0.05000% exchange-charge sensitivity, 2.00-point slippage per execution -> ₹34,163.77 modeled cumulative net P&L.
 - Validation boundary: these figures are exploratory in-sample evidence; the candidate is not validated for live use and must be tested unchanged on a genuinely unseen post-2024 sample.
+
+## 2026-09-23 — P8 workflow failure
+Run ID: 35828207686
+Attempt: 1
+Branch: research-nifty-4leg-calendar-p8-oos-validation
+Interpretation is blocked until the failed step is inspected.
