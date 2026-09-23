@@ -4,6 +4,8 @@ on:
   push:
     paths:
       - 'scripts/p9_fetch_hf_intraday.py'
+      - 'scripts/p9_validate_hf_panel.py'
+      - 'scripts/p9_scan_event_timing.py'
       - '.github/workflows/p9-data-acquisition.yml'
       - 'docs/nifty_calendar/P9_ALTERNATE_DATA_SOURCE_AUDIT.md'
   workflow_dispatch:
@@ -15,7 +17,7 @@ concurrency:
 jobs:
   fetch-hf-source:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 120
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -28,20 +30,33 @@ jobs:
       - name: Install data tools
         run: python -m pip install --disable-pip-version-check pandas pyarrow huggingface_hub
 
+      - name: Restore Hugging Face raw-file cache
+        uses: actions/cache@v4
+        with:
+          path: /home/runner/.cache/huggingface/hub/datasets--thetrademarkk--india-index-options-1m
+          key: p9-hf-thetrademarkk-${{ runner.os }}-v1
+
       - name: Fetch and verify required Hugging Face files
         run: python scripts/p9_fetch_hf_intraday.py
 
-      - name: Cache fetched source files
-        uses: actions/cache/save@v4
-        with:
-          path: data/cache/p9_hf_probe
-          key: p9-hf-${{ runner.os }}-${{ github.sha }}
+      - name: Validate parquet schemas and data health
+        run: python scripts/p9_validate_hf_panel.py
 
-      - name: Commit manifest and report
+      - name: Run first event-driven timing scan
+        run: python scripts/p9_scan_event_timing.py
+
+      - name: Commit manifests, validation and first timing scan
         run: |
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add reports/nifty_calendar/P9_HF_FETCH_MANIFEST.csv reports/nifty_calendar/P9_HF_FETCH_REPORT.md data/cache/p9_hf_probe/P9_CYCLE_MANIFEST.csv
-          git diff --cached --quiet || git commit -m 'Record P9 alternate HF data acquisition manifest'
+          git add \
+            reports/nifty_calendar/P9_HF_FETCH_MANIFEST.csv \
+            reports/nifty_calendar/P9_HF_FETCH_REPORT.md \
+            reports/nifty_calendar/P9_HF_SCHEMA_VALIDATION.md \
+            reports/nifty_calendar/P9_HF_SCHEMA_SUMMARY.csv \
+            reports/nifty_calendar/P9_EVENT_TIMING_REPORT.md \
+            reports/nifty_calendar/P9_EVENT_TIMING_LEDGER.csv \
+            data/cache/p9_hf_probe/P9_CYCLE_MANIFEST.csv
+          git diff --cached --quiet || git commit -m 'Validate P9 HF intraday source and run event timing scan'
           git push
