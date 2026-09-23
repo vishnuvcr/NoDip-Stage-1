@@ -1,6 +1,6 @@
 # Phase Status
 
-Last updated: 2026-09-23  — P0-P7 complete for 2022-2024 study; candidate entry gate reserved for post-2024 validation
+Last updated: 2026-09-23 — P0-P8 validation completed; P6 remains frozen and the P7 ≤1.20 gate was tested unchanged on the unseen post-2024 sample
 
 | Phase | Status | Notes |
 |---|---|---|
