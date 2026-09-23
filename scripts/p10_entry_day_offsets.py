@@ -192,18 +192,21 @@ def main():
     ledger=evaluate(cycles,trading,daily,spots)
     summaries=[]; paired=[]
     for sample in ['DEVELOPMENT','OOS']:
-        s=ledger[ledger.sample==sample]
+        sample_df=ledger[ledger.sample==sample].copy()
         for off in OFFSETS:
-            x=s[s.offset==off]; m=strategy_metrics(x)
+            x=sample_df[sample_df.offset==off]
+            m=strategy_metrics(x)
             summaries.append({'sample':sample,'offset':off,'offset_label':OFFSET_LABEL[off],**m,'net_0pt':net_total(x,0.0),'net_0.5pt':net_total(x,0.5),'net_1pt':net_total(x,1.0),'net_2pt':net_total(x,2.0),'gate_pass_executable':int(((x.status=='EXECUTABLE') & x.gate_pass.eq(True)).sum()),'executable_cycles':int((x.status=='EXECUTABLE').sum()),'coverage':float((x.status=='EXECUTABLE').mean()),'median_atm_points':float(pd.to_numeric(x.loc[x.status=='EXECUTABLE','atm_distance_points'],errors='coerce').median()) if (x.status=='EXECUTABLE').any() else np.nan})
-            base=x[x.offset==1][['cycle_id','status','gate_pass','pnl_inr']].copy()
+        base=sample_df[sample_df.offset==1][['cycle_id','status','gate_pass','pnl_inr']].copy()
         base['base_pnl']=np.where((base['status']=='EXECUTABLE') & base['gate_pass'].eq(True),pd.to_numeric(base['pnl_inr'],errors='coerce'),0.0)
         base=base[['cycle_id','base_pnl']]
         if len(base):
             for off in OFFSETS:
-                y=x[x.offset==off].copy(); y['strategy_pnl']=np.where((y.status=='EXECUTABLE')&y.gate_pass.eq(True),pd.to_numeric(y.pnl_inr,errors='coerce'),0.0)
-                z=base.merge(y[['cycle_id','strategy_pnl']],on='cycle_id',how='inner'); z['delta_vs_Dplus1']=z.strategy_pnl-z.base_pnl
                 if off==1: continue
+                y=sample_df[sample_df.offset==off].copy()
+                y['strategy_pnl']=np.where((y.status=='EXECUTABLE') & y.gate_pass.eq(True),pd.to_numeric(y.pnl_inr,errors='coerce'),0.0)
+                z=base.merge(y[['cycle_id','strategy_pnl']],on='cycle_id',how='inner')
+                z['delta_vs_Dplus1']=z.strategy_pnl-z.base_pnl
                 paired.append({'sample':sample,'offset':off,'offset_label':OFFSET_LABEL[off],'paired_cycles':len(z),'sum_delta_vs_Dplus1':float(z.delta_vs_Dplus1.sum()),'mean_delta_vs_Dplus1':float(z.delta_vs_Dplus1.mean()) if len(z) else np.nan,'median_delta_vs_Dplus1':float(z.delta_vs_Dplus1.median()) if len(z) else np.nan,'offset_higher_cycles':int((z.delta_vs_Dplus1>0).sum()),'offset_lower_cycles':int((z.delta_vs_Dplus1<0).sum()),'same_cycles':int((z.delta_vs_Dplus1==0).sum())})
     outp=args.out_ledger; outp.parent.mkdir(parents=True,exist_ok=True); ledger.to_csv(outp,index=False)
     sm=pd.DataFrame(summaries).sort_values(['sample','offset']); sm.to_csv(args.out_summary,index=False); pd.DataFrame(paired).to_csv(args.out_paired,index=False)
