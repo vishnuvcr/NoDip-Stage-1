@@ -34,37 +34,42 @@ Status: COMPLETE for the 2022-2024 public-source subset.
 The frozen strategy produced 59 valid executable cycles and gross P&L of ₹52,827.50.
 
 ### P5 — Verification / robustness
-Status: IN PROGRESS.
-Completed: exact leg-specific slippage sensitivity, documented brokerage/statutory cost model, exchange-charge sensitivity, drawdown/win-rate sensitivity and cycle-coverage audit.
+Status: COMPLETE for the 2022-2024 validation sample.
+Completed: exact leg-specific slippage sensitivity; historical Paytm brokerage-cohort scenarios; documented brokerage/statutory costs; exchange-charge sensitivity; full cycle-coverage audit; independent public mirror of NSE F&O bhavcopy reconciliation for all 134 candidate cycles; Yahoo NIFTY 50 OPEN cross-check; full secondary trade-level ledger and cost sensitivity.
+Residual limitation: 2 of 134 candidate cycles are not constructible on the independent mirror because no common strike is present there, while the primary source treated them as valid. This is retained as a source-discrepancy limitation, not silently resolved.
 
-Remaining:
-- independently reconcile rejected cycles against a second historical option source;
-- independently spot-check contract prices and 09:15 spot opens;
-- reconstruct exact historical Paytm Money exchange-charge pass-through if contract-note-level data becomes available.
+No exact historical Paytm client-specific exchange pass-through was available from public pricing data, so the study retains explicit exchange-charge sensitivities rather than inventing a contract-note rate.
 
 ### P6 — Final manuscript
-Status: PENDING.
-The manuscript will be produced after P5 closes, with tables, charts, trade-level appendix, methods, statistical inference, limitations and supplementary material.
+Status: IN PROGRESS.
+The manuscript is now being produced from the 132-cycle independently reconciled secondary ledger, with the 59-cycle primary-source result retained as a source-coverage comparison. It will include tables, charts, trade-level appendix, methods, statistical inference, limitations and supplementary material.
 
 ## Current statistical outputs
 
-Primary 2022-2024 subset:
+Primary 2022-2024 source result:
 - 59 valid trades
 - Gross P&L ₹52,827.50
 - Win rate 64.41%
 - Profit factor 2.549
 - Max drawdown ₹5,650
-- 3-trade circular-block bootstrap 95% interval for total P&L: ₹13,151.84 to ₹100,043.59
 
-Coverage:
-- 134 possible strategy cycles in the available expiry range
-- 59 valid = 44.0% executable coverage
-- 75 rejected: 9 no common strike, 62 missing entry leg, 4 missing exit leg
+Independent secondary validation result:
+- 132 complete cycles of 134 candidates (98.5% coverage)
+- Gross P&L ₹127,185.00
+- Win rate 57.58%
+- Profit factor 1.542
+- Max drawdown ₹90,152.50
+- 3-trade circular-block bootstrap 95% interval for total P&L: approximately ₹-67,517 to ₹342,107
+
+Coverage interpretation:
+- all 75 primary-source rejected cycles were complete on the independent public NSE-bhavcopy mirror;
+- 57 of 59 primary-valid cycles were also complete on the independent mirror;
+- 2 primary-valid cycles were not constructible on the independent mirror because that source lacked a common strike.
 
 ## Execution-cost analysis
 
 The robustness report models:
-- ₹80 brokerage per strategy cycle (8 executed option orders at ₹10/order)
+- ₹80/₹120/₹160 brokerage per strategy cycle under the documented ₹10/₹15/₹20 historical Paytm Money client-cohort scenarios (8 executed option orders)
 - 0.0625% historical STT on option sales through the sample window
 - 0.003% buy-side stamp duty
 - 0.0001% SEBI fee
