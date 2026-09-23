@@ -43,4 +43,4 @@ The initial successful workflow cached only the manifest, not the raw Hugging Fa
 
 ## P9 immediate blocker
 
-The data source itself is now established. The remaining blocker is execution of the corrected schema-validation/timing-scan workflow; no P9 performance result is claimed until that scan completes.
+The data source itself is now established. The first full-file DuckDB scan produced no usable timing result and was rejected because of implementation errors. A remote-predicate DuckDB scan is now running against the public Parquet source to avoid downloading whole expiry files; no P9 performance result is claimed until that scan completes.
