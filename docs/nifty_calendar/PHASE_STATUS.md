@@ -11,3 +11,5 @@ Last updated: 2026-09-23  — P0-P6 complete for 2022-2024 study
 | P4 Historical backtest | COMPLETE | 59 valid executable trades; gross P&L ₹52,827.50; trade ledger and annual results committed |
 | P5 Verification/robustness | COMPLETE | Corrected positive-open validation: 57 primary-valid cycles reproduced; 27 primary rejects recovered at the same strike; 28 source-specific strike-reselection cycles retained as sensitivity; 20 primary rejects unresolved; 2 primary-valid cycles not reproduced |
 | P6 Final manuscript | COMPLETE | Final strict 84-cycle frozen-protocol manuscript, figures, statistics, trade-level appendix, cost sensitivity and validation checks committed |
+
+| P7 Loss-trades audit | COMPLETE | 32 strict losing trades audited; leg-level attribution, loss-signature analysis and exploratory entry-state filters completed |
