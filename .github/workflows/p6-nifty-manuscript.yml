@@ -23,7 +23,7 @@ jobs:
           python-version: "3.11"
 
       - name: Install dependencies
-        run: pip install pandas numpy pytest
+        run: pip install pandas numpy pytest requests
 
       - name: Validate repository tests
         env:
