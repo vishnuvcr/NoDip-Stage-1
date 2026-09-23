@@ -30,10 +30,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/huggingface/hub
-          key: p13-hf-nifty-v1-${{ runner.os }}
-          restore-keys: |
-            p13-hf-nifty-v1-
-            p12-hf-nifty-v1-
+          key: p13-hf-nifty-c97e450-${{ runner.os }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
