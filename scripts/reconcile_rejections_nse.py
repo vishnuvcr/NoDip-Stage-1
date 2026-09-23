@@ -40,6 +40,7 @@ def download_day(d: date, cache_dir: Path, session: requests.Session) -> tuple[d
         mirror_name = f"BhavCopy_NSE_FO_0_0_0_{ts:%Y%m%d}_F_0000.csv.zip"
     else:
         mirror_name = f"fo{ts:%d}{ts:%b}".upper() + f"{ts:%Y}bhav.csv.zip"
+    mirror_name = mirror_name.lower()
     mirror_url = f"https://raw.githubusercontent.com/SantoshSrinivas79/NSE-FNO-Data-bank/main/data/{ts:%Y}/{ts:%m}/{mirror_name}"
 
     last = None
