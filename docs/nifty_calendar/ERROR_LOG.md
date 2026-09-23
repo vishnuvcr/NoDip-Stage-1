@@ -109,3 +109,10 @@
 - Branch: research-nifty-4leg-calendar-p5-reconciliation
 - Event: push
 - The failed step should be inspected in GitHub Actions logs before interpreting any P5 result.
+
+
+## 2026-09-23 — P5 argument conflict and scope variable bug
+- Event: the reconciliation script already contained a valid-sample option and rejected-cycle scope logic; an additional option was accidentally inserted, causing an argparse conflict. The same patch also referenced a selected-scope variable before assigning it.
+- Impact: P5 run 14 failed immediately at reconciliation setup; no numerical P5 result was produced.
+- Correction: removed the duplicate option and bound the reconciliation set explicitly to the selected rejected-plus-control scope.
+- Prevention: inspect the current script around the affected CLI block before patching; do not assume the target section is unique or unchanged.
