@@ -20,7 +20,7 @@ def load_module(name,path):
 scanner=load_module('p9_scanner',SCANNER_PATH)
 p8score=load_module('p8_score_module',P8SCORE_PATH)
 
-MANIFEST=ROOT/'reports/nifty_calendar/P9_HF_FETCH_MANIFEST.csv'
+MANIFEST=ROOT/'reports/nifty_calendar/P9_HF_OOS_FETCH_MANIFEST.csv'
 OOS=ROOT/'reports/nifty_calendar/P8_OOS_TRADE_LEDGER_2025_ONWARD.csv'
 OUT=ROOT/'reports/nifty_calendar/P9_OOS_EVENT_TIMING_COMPARISON.csv'
 COSTS=ROOT/'reports/nifty_calendar/P9_OOS_EVENT_TIMING_COSTS.csv'
