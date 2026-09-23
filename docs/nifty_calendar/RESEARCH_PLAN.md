@@ -94,7 +94,7 @@ P9 outputs:
 - reports/nifty_calendar/P9_RISSIN_CUTOFF_SENSITIVITY_REPORT.md
 
 ### P10 — Entry-day offset research
-Status: IN PROGRESS.
+Status: COMPLETE — NOT PROMOTED.
 
 Research question:
 > Keeping the 09:15 IST entry, CBR<=1.20 gate, four-leg structure and near-expiry exit fixed, does changing the trading session relative to the previous expiry improve robustness?
@@ -121,14 +121,19 @@ Design:
 - Brokerage/statutory charges, 0.05% exchange stress and 0/0.5/1/2 point adverse slippage included.
 
 Selection:
-- The seven offsets are a pre-registered timing screen.
-- If a single offset is later considered for promotion, it must be chosen using a pre-registered development-only rule and then validated on a fresh temporal holdout.
+- The seven offsets were treated as a pre-registered timing screen.
+- OOS was not used to choose a winner.
+- OOS paired bootstrap versus D+1: D-1 mean ₹-104.37 (95% CI ₹-1,403.35 to ₹1,114.14); D0 +₹383.69 (−₹797.17 to +₹1,480.94); D+2 +₹330.85 (−₹445.32 to +₹1,099.05); D+3 −₹562.94 (−₹1,480.49 to +₹308.59); D+4 −₹219.25 (−₹1,179.47 to +₹716.87); D+5 −₹940.37 (−₹1,975.86 to −₹69.96).
+- D0 and D+2 therefore remain development-only candidates, not validated replacements for D+1.
+
 
 Outputs:
 - reports/nifty_calendar/P10_ENTRY_DAY_OFFSET_LEDGER.csv
 - reports/nifty_calendar/P10_ENTRY_DAY_OFFSET_SUMMARY.csv
 - reports/nifty_calendar/P10_ENTRY_DAY_OFFSET_PAIRED.csv
 - reports/nifty_calendar/P10_ENTRY_DAY_OFFSET_REPORT.md
+- reports/nifty_calendar/P10_OOS_PAIRED_BOOTSTRAP.md
+- reports/nifty_calendar/P10_FINAL_RESEARCH_CONCLUSION.md
 
 ### P11 — Forward / paper-execution validation
 Status: PLANNED.
