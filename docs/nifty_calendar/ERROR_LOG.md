@@ -202,3 +202,10 @@ Step failure requires inspection before any numerical interpretation.
 ## 2026-09-23 — P10 entry-day offset workflow failure
 Run ID: 35841182028
 Step failure requires inspection before any numerical interpretation.
+
+## 2026-09-23 — P10 pandas sample-column collision
+- Event: P10 run 35841182028 downloaded and loaded the Rissin daily historical Parquet source successfully, passed Python syntax validation, then failed during summary construction with KeyError: False.
+- Root cause: `ledger.sample` resolved to pandas DataFrame.sample() rather than the column named `sample`, so the filter evaluated incorrectly.
+- Correction: summary filtering now uses the explicit `ledger['sample']` column reference.
+- Impact: no numerical P10 result from this run is accepted.
+- Prevention: avoid DataFrame attribute access for columns whose names overlap pandas methods (`sample`, `size`, `mean`, etc.).
