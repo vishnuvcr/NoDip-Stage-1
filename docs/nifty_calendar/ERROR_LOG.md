@@ -136,3 +136,10 @@
 - Impact: only the already-cached UDiFF-period files were reconciled; most 2022-2024 legacy dates remained source gaps.
 - Correction: legacy filenames now use lowercase fo/bhav with an uppercase three-letter month, matching the mirror repository exactly.
 - Prevention: derive source filenames from an observed repository manifest before running bulk reconciliation.
+
+
+## 2026-09-23 — P6 manuscript creation tool-string syntax error
+- Event: the first attempt to create the manuscript through the repository tool embedded Markdown backticks inside a JavaScript template literal.
+- Impact: the repository write was rejected before file creation; no manuscript content was committed by that failed call.
+- Correction: the manuscript is being written using line-array assembly so Markdown backticks cannot terminate the tool-side string.
+- Prevention: avoid unescaped backticks in JavaScript template literals used for large Markdown repository writes.
